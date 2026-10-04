@@ -1,0 +1,207 @@
+.mutual-funds-page { width:100%; max-width:1540px; min-height:calc(100dvh - 56px); margin:0 auto; padding:clamp(12px,2vw,24px); color:var(--text,#f1f5f9); font-size:12px; }
+.mf-page-header,.mf-section-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.mf-page-header { margin-bottom:12px; }.mf-page-header h1 { margin:2px 0 3px; font-size:clamp(19px,2vw,23px); line-height:1.2; letter-spacing:-.035em; }.mf-page-header p,.mf-section-heading p { margin:0; color:var(--muted,#aab6c8); font-size:10px; }
+.mf-eyebrow { color:var(--muted,#aab6c8); font-size:9px; font-weight:750; letter-spacing:.12em; }
+.mf-header-actions { display:flex; align-items:center; gap:7px; }.mf-primary-button,.mf-secondary-button { min-height:32px; display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid var(--border,rgba(255,255,255,.1)); border-radius:9px; padding:0 10px; font:inherit; font-size:10px; font-weight:650; white-space:nowrap; cursor:pointer; transition:background .16s,border-color .16s,transform .16s; }
+.mf-primary-button { border-color:var(--accent,#6366f1); background:var(--accent,#6366f1); color:white; }.mf-primary-button:hover { transform:translateY(-1px); filter:brightness(1.06); }
+.mf-secondary-button { color:var(--text,#f1f5f9); background:var(--surface-2,#1b2130); }.mf-secondary-button:hover { border-color:var(--border-strong,rgba(255,255,255,.16)); background:var(--surface,#151a24); }.mf-secondary-button:disabled { opacity:.45; cursor:not-allowed; }
+.mf-widget-menu-wrap { position:relative; }.mf-widget-menu { position:absolute; top:calc(100% + 6px); right:0; z-index:20; display:grid; min-width:165px; gap:2px; padding:7px; border:1px solid var(--border-strong,rgba(255,255,255,.16)); border-radius:10px; background:var(--surface,#151a24); box-shadow:0 12px 30px rgb(0 0 0 / 20%); }.mf-widget-menu label { display:flex; align-items:center; gap:8px; min-height:29px; padding:0 5px; color:var(--text,#f1f5f9); font-size:10px; cursor:pointer; }.mf-widget-menu input { accent-color:var(--accent,#6366f1); }
+.mf-summary-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:10px; }
+.mf-summary-card,.mf-section { border:1px solid var(--border,rgba(255,255,255,.1)); border-radius:14px; background:radial-gradient(ellipse at top left,rgba(255,255,255,.03),transparent 48%),var(--surface,#151a24); }
+.mf-summary-card { display:flex; min-width:0; flex-direction:column; gap:5px; padding:12px 14px; }.mf-summary-card>span { color:var(--muted,#aab6c8); font-size:10px; }.mf-summary-card>strong { overflow:hidden; color:var(--text,#f1f5f9); font-size:clamp(17px,2vw,22px); font-weight:730; font-variant-numeric:tabular-nums; letter-spacing:-.025em; text-overflow:ellipsis; white-space:nowrap; }.mf-summary-card>small { display:flex; min-height:14px; align-items:center; gap:5px; color:var(--muted,#aab6c8); font-size:9px; }.mf-summary-card.returns.positive>small { color:#10b981; }.mf-summary-card.returns.negative>small { color:#f43f5e; }.mf-summary-card.returns.positive>strong { color:#34d399; }.mf-summary-card.returns.negative>strong { color:#fb7185; }
+.mf-section { min-width:0; margin-bottom:10px; padding:12px; }.mf-section-heading { min-height:31px; margin-bottom:9px; }.mf-section-heading h2 { margin:0 0 2px; color:var(--text,#f1f5f9); font-size:12px; font-weight:700; }.mf-section-heading>span { border:1px solid var(--border); border-radius:999px; padding:4px 7px; color:var(--muted); font-size:9px; }
+.mf-category-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr)); gap:7px; }.mf-category-card { display:grid; gap:9px; min-width:0; border:1px solid var(--border); border-top:2px solid var(--mf-series-color); border-radius:10px; padding:9px 10px; background:var(--surface-2,#1b2130); }
+.mf-category-head { display:flex; align-items:center; gap:6px; min-width:0; }.mf-category-head i,.mf-chart-legend i,.mf-chart-categories i { width:7px; height:7px; flex:0 0 7px; border-radius:50%; background:var(--mf-series-color); }.mf-category-head strong { overflow:hidden; color:var(--text); font-size:10px; text-overflow:ellipsis; white-space:nowrap; }.mf-category-head span { margin-left:auto; color:var(--muted); font-size:8px; white-space:nowrap; }.mf-category-values { display:grid; grid-template-columns:1fr 1fr; gap:8px; }.mf-category-values>div { display:grid; min-width:0; gap:3px; }.mf-category-values small { color:var(--muted); font-size:8px; }.mf-category-values b { overflow:hidden; color:var(--text); font-size:11px; font-variant-numeric:tabular-nums; text-overflow:ellipsis; white-space:nowrap; }.mf-category-return { display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:6px; font-size:9px; }.mf-category-return span { display:flex; align-items:center; gap:3px; }.mf-category-return.positive { color:#34d399; }.mf-category-return.negative { color:#fb7185; }
+.mf-empty-inline { display:flex; align-items:center; gap:9px; border:1px dashed var(--border-strong); border-radius:10px; padding:10px; }.mf-empty-inline>span { display:grid; width:28px; height:28px; flex:0 0 28px; place-items:center; border-radius:8px; color:var(--accent); background:var(--accent-soft); }.mf-empty-inline>div { display:grid; gap:2px; min-width:0; }.mf-empty-inline b { color:var(--text); font-size:10px; }.mf-empty-inline small { color:var(--muted); font-size:9px; }.mf-empty-inline button,.mf-ledger-empty button { margin-left:auto; border:0; color:var(--accent); background:none; font:inherit; font-size:9px; font-weight:650; white-space:nowrap; cursor:pointer; }
+.mf-range-tabs { display:flex; gap:2px; border:1px solid var(--border); border-radius:8px; padding:2px; background:var(--surface-2); }.mf-range-tabs button { min-width:34px; height:24px; border:0; border-radius:6px; color:var(--muted); background:transparent; font:inherit; font-size:9px; cursor:pointer; }.mf-range-tabs button.selected { color:var(--text); background:var(--surface); box-shadow:0 1px 4px rgb(0 0 0 / 16%); }
+.mf-chart-categories { display:flex; flex-wrap:wrap; gap:5px; margin:-1px 0 4px; }.mf-chart-categories button { display:inline-flex; align-items:center; gap:5px; min-height:24px; border:1px solid var(--border); border-radius:999px; padding:0 8px; color:var(--muted); background:var(--surface-2); font:inherit; font-size:9px; cursor:pointer; }.mf-chart-categories button.selected { border-color:var(--border-strong); color:var(--text); }
+.mf-chart-area { min-width:0; }.mf-chart-area svg { display:block; width:100%; height:clamp(170px,22vw,220px); overflow:visible; }.mf-chart-gridline { stroke:var(--border); stroke-dasharray:3 4; stroke-width:1; }.mf-chart-line { fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }.mf-chart-area circle { fill:var(--mf-series-color); stroke:var(--surface); stroke-width:2; }.mf-chart-label { fill:var(--muted); font-size:9px; }.mf-chart-legend { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:2px; color:var(--muted); font-size:9px; }.mf-chart-legend span { display:inline-flex; align-items:center; gap:5px; }
+.mf-chart-empty { display:flex; min-height:102px; align-items:center; justify-content:center; gap:9px; border:1px dashed var(--border); border-radius:10px; color:var(--accent); }.mf-chart-empty div { display:grid; gap:3px; }.mf-chart-empty b { color:var(--text); font-size:10px; }.mf-chart-empty small { color:var(--muted); font-size:9px; }
+.mf-funds-section { margin-bottom:0; }.mf-ledger-tools { display:flex; align-items:center; gap:6px; }.mf-ledger-tools>label { display:flex; width:170px; height:30px; align-items:center; gap:6px; border:1px solid var(--border); border-radius:8px; padding:0 7px; color:var(--muted); background:var(--surface-2); }.mf-ledger-tools input { width:100%; min-width:0; border:0; outline:0; color:var(--text); background:transparent; font:inherit; font-size:9px; }.mf-ledger-tools input::placeholder { color:var(--muted); }
+.mf-fund-list { display:grid; gap:7px; }.mf-fund-card { min-width:0; overflow:hidden; border:1px solid var(--border); border-radius:11px; background:var(--surface-2); }.mf-fund-header { display:flex; min-width:0; align-items:center; gap:8px; padding:7px 9px; }.mf-fund-expander { display:flex; min-width:0; flex:1; align-items:center; gap:8px; border:0; padding:0; color:var(--text); background:transparent; text-align:left; cursor:pointer; }.mf-fund-icon { display:grid; width:31px; height:31px; flex:0 0 31px; place-items:center; border-radius:9px; color:var(--mf-series-color); background:color-mix(in srgb,var(--mf-series-color) 16%,transparent); }.mf-fund-title { display:grid; min-width:0; flex:1; gap:3px; }.mf-fund-title b { overflow:hidden; color:var(--text); font-size:10px; text-overflow:ellipsis; white-space:nowrap; }.mf-fund-title small,.mf-fund-nav small,.mf-fund-current small { color:var(--muted); font-size:8px; }.mf-fund-nav,.mf-fund-current { display:grid; gap:3px; min-width:88px; }.mf-fund-nav b,.mf-fund-current b { color:var(--text); font-size:9px; font-variant-numeric:tabular-nums; }.mf-fund-pnl { display:grid; min-width:91px; gap:2px; text-align:right; }.mf-fund-pnl b { font-size:9px; font-variant-numeric:tabular-nums; }.mf-fund-pnl small { font-size:8px; }.mf-fund-pnl.positive { color:#34d399; }.mf-fund-pnl.negative { color:#fb7185; }.mf-fund-actions { display:flex; gap:2px; }.mf-fund-actions button,.mf-row-actions button,.mf-icon-button { display:grid; width:28px; height:28px; flex:0 0 28px; place-items:center; border:1px solid transparent; border-radius:7px; color:var(--muted); background:transparent; cursor:pointer; }.mf-fund-actions button:hover,.mf-row-actions button:hover,.mf-icon-button:hover { border-color:var(--border); color:var(--text); background:var(--surface); }.mf-fund-actions button:last-child:hover,.mf-row-actions button:last-child:hover { color:#fb7185; }
+.mf-fund-detail { border-top:1px solid var(--border); padding:9px; }.mf-metadata-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(105px,1fr)); gap:5px; }.mf-metadata-grid>div { display:grid; gap:3px; min-width:0; border:1px solid var(--border); border-radius:8px; padding:7px; background:var(--surface); }.mf-metadata-grid span { color:var(--muted); font-size:8px; }.mf-metadata-grid b { overflow:hidden; color:var(--text); font-size:9px; font-variant-numeric:tabular-nums; text-overflow:ellipsis; white-space:nowrap; }
+.mf-ledger-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:10px 0 5px; }.mf-ledger-heading>div { display:flex; align-items:center; gap:7px; }.mf-ledger-heading b { color:var(--text); font-size:10px; }.mf-ledger-heading small { color:var(--muted); font-size:8px; }.mf-ledger-heading .mf-secondary-button { min-height:26px; font-size:9px; }.mf-table-wrap { max-height:none; overflow-x:auto; overflow-y:visible; border:1px solid var(--border); border-radius:8px; scrollbar-width:thin; scrollbar-color:var(--border-strong) transparent; }.mf-table-wrap table { width:100%; border-collapse:collapse; white-space:nowrap; text-align:left; }.mf-table-wrap th { position:sticky; top:0; z-index:1; color:var(--muted); background:var(--surface); font-size:8px; font-weight:600; }.mf-table-wrap td { color:var(--text); font-size:8px; font-variant-numeric:tabular-nums; }.mf-table-wrap th,.mf-table-wrap td { border-bottom:1px solid var(--border); padding:6px 7px; }.mf-table-wrap tbody tr:last-child td { border-bottom:0; }.mf-row-actions { display:flex; }.mf-row-actions button { width:24px; height:24px; flex-basis:24px; }.mf-ledger-empty { display:flex; align-items:center; gap:6px; border:1px dashed var(--border); border-radius:8px; padding:10px; color:var(--muted); font-size:9px; }
+.mf-empty-state { display:grid; justify-items:center; border:1px dashed var(--border-strong); border-radius:12px; padding:25px 15px; text-align:center; }.mf-empty-state>span { display:grid; width:42px; height:42px; place-items:center; border-radius:12px; color:var(--accent); background:var(--accent-soft); }.mf-empty-state h2 { margin:9px 0 4px; color:var(--text); font-size:13px; }.mf-empty-state p { max-width:460px; margin:0 0 12px; color:var(--muted); font-size:10px; line-height:1.5; }
+.mf-modal-backdrop { position:fixed; inset:0; z-index:50; display:grid; place-items:center; overflow:auto; padding:16px; background:rgb(0 0 0 / 58%); backdrop-filter:blur(3px); }.mf-modal { width:min(540px,100%); max-height:min(90dvh,720px); overflow:auto; border:1px solid var(--border-strong); border-radius:15px; padding:15px; color:var(--text); background:var(--surface); box-shadow:0 22px 60px rgb(0 0 0 / 28%); }.mf-modal>header { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:13px; }.mf-modal h2 { margin:3px 0; font-size:15px; }.mf-modal header p { margin:0; color:var(--muted); font-size:10px; }.mf-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }.mf-form-grid label { display:grid; min-width:0; gap:4px; color:var(--text); font-size:9px; font-weight:600; }.mf-form-grid label small { display:inline; color:var(--muted); font-size:8px; font-weight:400; }.mf-form-grid label input,.mf-form-grid label select { width:100%; min-width:0; height:34px; min-height:34px; border:1px solid var(--border-strong); border-radius:8px; padding:0 8px; color:var(--text); background:var(--surface-2); font:inherit; font-size:10px; }.mf-form-grid label input:focus,.mf-form-grid label select:focus { border-color:var(--border-strong); outline:0; box-shadow:none; }.mf-form-grid .span-all { grid-column:1/-1; }.mf-calculation-preview { display:grid; grid-template-columns:1fr 1fr; gap:6px; grid-column:1/-1; }.mf-calculation-preview span { display:flex; justify-content:space-between; gap:6px; border:1px solid var(--border); border-radius:8px; padding:7px; color:var(--muted); background:var(--surface-2); font-size:9px; }.mf-calculation-preview strong { color:var(--text); font-variant-numeric:tabular-nums; }.mf-modal>footer { display:flex; justify-content:flex-end; gap:6px; margin-top:13px; border-top:1px solid var(--border); padding-top:10px; }
+.mf-toast { position:fixed; right:16px; bottom:16px; z-index:60; border:1px solid var(--border); border-radius:9px; padding:9px 12px; color:var(--text); background:var(--surface); font-size:10px; box-shadow:0 8px 22px rgb(0 0 0 / 22%); }
+.mutual-funds-page :focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+@media(max-width:900px) { .mf-fund-nav { display:none; }.mf-fund-current { min-width:80px; }.mf-fund-header { flex-wrap:wrap; }.mf-fund-expander { flex-basis:calc(100% - 120px); }.mf-fund-actions { margin-left:auto; }.mf-fund-pnl { min-width:88px; } }
+@media(max-width:640px) { .mutual-funds-page { min-height:calc(100dvh - 56px); padding:12px 10px calc(84px + env(safe-area-inset-bottom)); }.mf-page-header { align-items:flex-start; flex-direction:column; }.mf-header-actions { width:100%; flex-wrap:wrap; }.mf-header-actions>* { flex:1; }.mf-header-actions .mf-primary-button,.mf-header-actions .mf-secondary-button { width:100%; }.mf-summary-grid { grid-template-columns:1fr 1fr; gap:6px; }.mf-summary-card { padding:9px; }.mf-summary-card:last-child { grid-column:1/-1; }.mf-summary-card>strong { font-size:16px; }.mf-section { padding:9px; }.mf-section-heading { align-items:flex-start; flex-direction:column; }.mf-section-heading>.mf-range-tabs { align-self:flex-end; margin-top:-32px; }.mf-ledger-tools { width:100%; }.mf-ledger-tools>label { width:auto; flex:1; }.mf-fund-header { align-items:center; }.mf-fund-expander { flex-basis:100%; }.mf-fund-current { display:none; }.mf-fund-pnl { min-width:72px; }.mf-fund-actions { margin-left:auto; }.mf-chart-categories { gap:4px; }.mf-chart-area svg { height:170px; }.mf-category-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr)); }.mf-category-values { gap:5px; }.mf-empty-inline { align-items:flex-start; flex-wrap:wrap; }.mf-empty-inline button { margin-left:37px; }.mf-form-grid { grid-template-columns:1fr; }.mf-form-grid .span-all,.mf-calculation-preview { grid-column:1; }.mf-calculation-preview { grid-template-columns:1fr; }.mf-modal { padding:12px; }.mf-modal-backdrop { place-items:start center; padding:12px; }.mf-widget-menu { left:0; right:auto; }.mf-insight-ledger-heading { align-items:flex-start; } }
+@media(prefers-reduced-motion:reduce) { .mutual-funds-page *, .mutual-funds-page *::before, .mutual-funds-page *::after { transition:none; animation:none; } }
+
+/* Tabbed portfolio workspace */
+.mf-tabbed-page { grid-template-rows:auto auto auto minmax(0,1fr); }
+.mf-tabs { display:flex; align-items:center; gap:4px; min-height:36px; border-bottom:1px solid var(--border); }
+.mf-tabs button { display:inline-flex; height:34px; align-items:center; gap:7px; border:0; border-bottom:2px solid transparent; padding:0 11px; color:var(--muted); background:transparent; font:inherit; font-size:10px; font-weight:650; cursor:pointer; }
+.mf-tabs button.active { border-bottom-color:var(--accent); color:var(--text); }
+.mf-tabs button span { display:grid; min-width:18px; height:18px; place-items:center; border-radius:999px; padding:0 5px; color:var(--muted); background:var(--surface-2); font-size:8px; }
+.mf-tab-content { min-width:0; min-height:0; overflow:hidden; }
+.mf-overview-grid { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(270px,1fr); gap:8px; }
+.mf-overview-grid>.mf-section { display:flex; min-width:0; min-height:0; flex-direction:column; margin:0; overflow:hidden; }
+.mf-chart-controls { display:flex; align-items:center; gap:6px; }
+.mf-chart-controls select,.mf-purchase-tools select { height:28px; min-width:100px; border:1px solid var(--border); border-radius:7px; padding:0 7px; color:var(--text); background:var(--surface-2); font:inherit; font-size:9px; }
+.mf-line-chart { position:relative; flex:1; min-height:0; }
+.mf-line-chart svg { width:100%; height:100%; min-height:180px; }
+.mf-chart-point { fill:var(--accent); stroke:var(--surface); stroke-width:2; }
+.mf-chart-line-invested { fill:none; stroke:var(--muted); stroke-width:2; stroke-dasharray:5 4; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.mf-chart-line-value { fill:none; stroke:var(--accent); stroke-width:2.8; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.mf-chart-point-invested { fill:var(--muted); stroke:var(--surface); stroke-width:1.5; }
+.mf-chart-axis-label { fill:var(--muted); font-size:9px; }
+.mf-chart-legend-persistent { justify-content:flex-start; margin:0 0 0 42px; padding:0 0 3px; }
+.mf-chart-legend-persistent .mf-legend-invested,.mf-chart-legend-persistent .mf-legend-value { display:inline-block; width:12px; height:3px; border-radius:99px; }
+.mf-chart-legend-persistent .mf-legend-invested { background:var(--muted); }
+.mf-chart-legend-persistent .mf-legend-value { background:var(--accent); }
+.mf-chart-readout { position:absolute; top:5px; right:8px; display:grid; gap:2px; text-align:right; pointer-events:none; }
+.mf-chart-readout { position:static; display:flex; min-height:30px; align-items:center; justify-content:flex-end; gap:12px; border-top:1px solid var(--border); padding:5px 4px 0; text-align:right; }
+.mf-chart-readout>span { margin-right:auto; color:var(--muted); font-size:9px; }
+.mf-chart-readout>div { display:grid; gap:2px; }
+.mf-chart-readout>div small { color:var(--muted); font-size:7px; }
+.mf-chart-readout>div strong { color:var(--text); font-size:9px; font-variant-numeric:tabular-nums; }
+.mf-chart-point,.mf-chart-point-invested { cursor:pointer; transition:r .15s ease; }
+.mf-chart-point:hover,.mf-chart-point:focus-visible { r:6px; outline:none; stroke:var(--text); stroke-width:2px; }
+.mf-chart-point-invested:hover,.mf-chart-point-invested:focus-visible { r:5.5px; outline:none; stroke:var(--text); stroke-width:2px; }
+.mf-chart-readout span { color:var(--muted); font-size:8px; }
+.mf-chart-readout strong { color:var(--text); font-size:12px; font-variant-numeric:tabular-nums; }
+.mf-overview-holdings .mf-section-heading { align-items:center; }
+.mf-text-button { display:inline-flex; align-items:center; gap:4px; border:0; color:var(--accent); background:none; font:inherit; font-size:9px; font-weight:650; white-space:nowrap; cursor:pointer; }
+.mf-overview-fund-list { display:grid; min-height:0; gap:2px; overflow:auto; }
+.mf-overview-fund { display:grid; grid-template-columns:8px minmax(0,1fr) auto; align-items:center; gap:8px; border:0; border-bottom:1px solid var(--border); padding:9px 2px; color:var(--text); background:transparent; text-align:left; cursor:pointer; }
+.mf-overview-fund>i,.mf-table-fund>i,.mf-category-summary i { width:7px; height:7px; border-radius:50%; }
+.mf-overview-fund>span,.mf-overview-fund>strong { display:grid; min-width:0; gap:3px; }
+.mf-overview-fund>span b { overflow:hidden; font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
+.mf-overview-fund small { color:var(--muted); font-size:8px; font-weight:450; }
+.mf-overview-fund>strong { font-size:9px; text-align:right; font-variant-numeric:tabular-nums; }
+.mf-overview-fund>strong small { font-size:8px; }
+.mf-category-summary { display:grid; gap:3px; margin-top:auto; padding-top:7px; }
+.mf-category-summary>div { display:grid; grid-template-columns:8px minmax(0,1fr) auto; align-items:center; gap:6px; border-top:1px solid var(--border); padding:6px 1px 2px; font-size:8px; }
+.mf-category-summary>div>span { color:var(--muted); }
+.mf-category-summary>div>b { font-variant-numeric:tabular-nums; }
+.mf-funds-tab,.mf-purchases-tab { display:flex; flex-direction:column; }
+.mf-funds-tab>.mf-section-heading,.mf-purchases-tab>.mf-section-heading { flex:0 0 auto; }
+.mf-funds-table-wrap,.mf-purchases-table-wrap { min-height:0; flex:1 1 auto; overflow:auto; border:1px solid var(--border); border-radius:9px; scrollbar-width:thin; scrollbar-color:var(--border-strong) transparent; }
+.mf-funds-table,.mf-purchases-table { width:100%; border-collapse:collapse; white-space:nowrap; text-align:left; }
+.mf-funds-table th,.mf-purchases-table th { position:sticky; top:0; z-index:1; border-bottom:1px solid var(--border); padding:8px; color:var(--muted); background:var(--surface); font-size:8px; font-weight:650; }
+.mf-funds-table td,.mf-purchases-table td { border-bottom:1px solid var(--border); padding:7px 8px; color:var(--text); font-size:8px; font-variant-numeric:tabular-nums; }
+.mf-funds-table tbody tr:last-child td,.mf-purchases-table tbody tr:last-child td { border-bottom:0; }
+.mf-table-fund { display:flex; min-width:155px; align-items:center; gap:7px; }
+.mf-table-fund>span { display:grid; min-width:0; gap:3px; }
+.mf-table-fund b { overflow:hidden; max-width:240px; font-size:9px; text-overflow:ellipsis; }
+.mf-table-fund small { color:var(--muted); font-size:8px; }
+.mf-nav-field { display:flex; width:105px; height:27px; align-items:center; gap:4px; border:1px solid var(--border); border-radius:6px; padding:0 6px; color:var(--muted); background:var(--surface-2); }
+.mf-nav-field input { width:100%; min-width:0; border:0; outline:0; color:var(--text); background:transparent; font:inherit; font-size:9px; font-variant-numeric:tabular-nums; }
+.mf-table-actions { display:flex; gap:2px; }
+.mf-table-actions button { display:grid; width:26px; height:26px; place-items:center; border:1px solid transparent; border-radius:6px; color:var(--muted); background:transparent; cursor:pointer; }
+.mf-table-actions button:hover { border-color:var(--border); color:var(--text); background:var(--surface-2); }
+.mf-table-actions button:last-child:hover { color:#fb7185; }
+.mf-funds-table td.positive,.mf-overview-fund .positive { color:#34d399; }
+.mf-funds-table td.negative,.mf-overview-fund .negative { color:#fb7185; }
+.mf-funds-table td small { color:var(--muted); font-size:8px; }
+.mf-purchase-tools { display:flex; flex:0 0 auto; align-items:center; gap:6px; margin-bottom:7px; }
+.mf-search-field { display:flex; width:min(320px,45%); height:30px; align-items:center; gap:6px; border:1px solid var(--border); border-radius:7px; padding:0 8px; color:var(--muted); background:var(--surface-2); }
+.mf-search-field input { width:100%; min-width:0; border:0; outline:0; color:var(--text); background:transparent; font:inherit; font-size:9px; }
+.mf-search-field input::placeholder { color:var(--muted); }
+.mf-purchase-tools>.mf-secondary-button { margin-left:auto; }
+.mf-table-empty { padding:16px; color:var(--muted); font-size:9px; text-align:center; }
+.mf-header-actions .mf-secondary-button:disabled { opacity:.5; }
+@media(min-width:761px) {
+  .mf-tabbed-page { grid-template-rows:auto auto auto minmax(0,1fr); }
+}
+@media(max-width:760px) {
+  .mf-tabbed-page { display:flex; flex-direction:column; gap:8px; }
+  .mf-tabbed-page .mf-page-header { flex-direction:column; }
+  .mf-tabbed-page .mf-header-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; }
+  .mf-tabbed-page .mf-header-actions>.mf-primary-button { grid-column:1/-1; }
+  .mf-tabbed-page .mf-header-actions .mf-secondary-button,.mf-tabbed-page .mf-header-actions .mf-primary-button { width:100%; }
+  .mf-tabs { flex:0 0 auto; }
+  .mf-tab-content { display:flex; min-height:380px; flex-direction:column; overflow:visible; }
+  .mf-overview-grid { display:flex; flex-direction:column; }
+  .mf-overview-grid>.mf-section { min-height:250px; overflow:visible; }
+  .mf-overview-grid>.mf-overview-holdings { min-height:220px; }
+  .mf-line-chart { min-height:200px; }
+  .mf-line-chart svg { min-height:190px; }
+  .mf-chart-controls { flex-wrap:wrap; justify-content:flex-end; }
+  .mf-section-heading { align-items:flex-start; }
+  .mf-section-heading>.mf-primary-button { flex:0 0 auto; }
+  .mf-funds-table-wrap,.mf-purchases-table-wrap { max-height:65dvh; overflow:auto; }
+  .mf-purchase-tools { flex-wrap:wrap; }
+  .mf-search-field { width:100%; }
+}
+
+/* The app applies dark mode on .app-shell, so scope finance tokens to that root. */
+#root .app-shell.theme-dark .mutual-funds-page,
+:root[data-theme="dark"] .mutual-funds-page {
+  --bg:#0b0f17;
+  --surface:#151a24;
+  --surface-2:#1b2130;
+  --border:rgba(255,255,255,.12);
+  --border-strong:rgba(255,255,255,.22);
+  --text:#f1f5f9;
+  --muted:#cbd5e1;
+  --accent:#a5b4fc;
+  --accent-soft:rgba(129,140,248,.2);
+  color:var(--text);
+}
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-axis-label,
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-label { fill:#cbd5e1; }
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-line-invested { stroke:#aab6c8; }
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-line-value { stroke:#a5b4fc; }
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-point { fill:#a5b4fc; stroke:#151a24; }
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-point-invested { fill:#aab6c8; stroke:#151a24; }
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-legend-persistent { color:#e2e8f0; }
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-legend-persistent .mf-legend-invested { background:#aab6c8; }
+#root .app-shell.theme-dark .mutual-funds-page .mf-chart-legend-persistent .mf-legend-value { background:#a5b4fc; }
+
+/* Compact desktop dashboard: keep the viewport still and scroll only long ledgers. */
+@media(min-width:761px) {
+  .main-content:has(.mutual-funds-page) { display:flex; height:100dvh; min-height:0; flex-direction:column; overflow:hidden; padding-bottom:0; }
+  .main-content:has(.mutual-funds-page) > .topbar { flex:0 0 56px; height:56px; }
+  .mutual-funds-page { display:grid; flex:1 1 auto; grid-template-rows:auto auto auto minmax(0,1fr); gap:7px; width:100%; max-width:none; height:auto; min-height:0; overflow:hidden; padding:8px 12px 10px; }
+  .mf-page-header { min-height:38px; margin:0; }
+  .mf-page-header h1 { margin:0; font-size:17px; }
+  .mf-page-header p { font-size:9px; }
+  .mf-summary-grid { gap:7px; margin:0; }
+  .mf-summary-card { gap:3px; padding:8px 11px; border-radius:11px; }
+  .mf-summary-card>strong { font-size:18px; }
+  .mf-summary-card>small { font-size:8px; }
+  .mf-section { min-height:0; margin:0; padding:9px; border-radius:12px; }
+  .mf-section-heading { min-height:24px; margin-bottom:6px; }
+  .mf-section-heading p { font-size:9px; }
+  .mf-category-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr)); gap:6px; }
+  .mf-category-card { gap:6px; padding:7px 8px; }
+  .mf-main-grid { display:grid; min-width:0; min-height:0; grid-template-columns:minmax(0,1.02fr) minmax(0,1fr); gap:7px; overflow:hidden; }
+  .mf-main-grid>.mf-section { display:flex; min-width:0; min-height:0; flex-direction:column; overflow:hidden; }
+  .mf-performance .mf-section-heading { align-items:center; }
+  .mf-chart-categories { margin-bottom:2px; }
+  .mf-chart-area { display:flex; min-height:0; flex:1; flex-direction:column; justify-content:center; overflow:hidden; }
+  .mf-chart-area svg { height:min(28vh,210px); min-height:120px; }
+  .mf-chart-empty { min-height:0; flex:1; }
+  .mf-funds-section .mf-section-heading { flex:0 0 auto; }
+  .mf-fund-list { min-height:0; flex:1 1 auto; align-content:start; overflow-y:auto; overflow-x:hidden; padding-right:3px; scrollbar-width:thin; scrollbar-color:var(--border-strong) transparent; }
+  .mf-fund-card { flex:0 0 auto; }
+  .mf-fund-detail { max-height:min(36vh,300px); overflow:auto; scrollbar-width:thin; scrollbar-color:var(--border-strong) transparent; }
+  .mf-inline-nav { display:flex; align-items:center; gap:6px; border-top:1px solid var(--border); padding:6px 9px; }
+  .mf-inline-nav label { margin-right:auto; color:var(--muted); font-size:9px; }
+  .mf-inline-nav>span { color:var(--muted); font-size:11px; }
+  .mf-inline-nav input { width:112px; height:28px; min-width:0; border:1px solid var(--border-strong); border-radius:7px; padding:0 7px; color:var(--text); background:var(--surface); font:inherit; font-size:10px; font-variant-numeric:tabular-nums; }
+  .mf-inline-nav .mf-primary-button,.mf-inline-nav .mf-secondary-button { min-height:28px; height:28px; padding:0 8px; font-size:9px; }
+}
+@media(max-width:1100px) and (min-width:761px) {
+  .main-content:has(.mutual-funds-page) { overflow:hidden; }
+  .mutual-funds-page { height:auto; min-height:0; overflow:hidden; }
+  .mf-overview-grid { grid-template-columns:minmax(0,1.25fr) minmax(245px,1fr); }
+  .mf-header-actions { gap:4px; }
+  .mf-header-actions .mf-secondary-button,.mf-header-actions .mf-primary-button { padding:0 7px; font-size:9px; }
+}
+@media(max-width:760px) {
+  .main-content:has(.mutual-funds-page) { display:block; height:auto; min-height:100dvh; overflow:visible; padding-bottom:calc(82px + env(safe-area-inset-bottom)); }
+  .mutual-funds-page { display:block; height:auto; min-height:calc(100dvh - 64px); overflow:visible; padding:12px 10px calc(88px + env(safe-area-inset-bottom)); }
+  .mf-page-header { margin-bottom:9px; }
+  .mf-summary-grid,.mf-section,.mf-main-grid { margin-bottom:9px; }
+  .mf-main-grid { display:grid; grid-template-columns:1fr; gap:9px; overflow:visible; }
+  .mf-main-grid>.mf-section { overflow:visible; }
+  .mf-fund-list { max-height:none; overflow:visible; }
+  .mf-fund-detail { max-height:none; overflow:visible; }
+  .mf-inline-nav { flex-wrap:wrap; }
+}
+
+.mf-chart-value-label { fill:var(--text); font-size:9px; font-weight:700; font-variant-numeric:tabular-nums; paint-order:stroke; stroke:var(--surface); stroke-width:3px; stroke-linejoin:round; pointer-events:none; }

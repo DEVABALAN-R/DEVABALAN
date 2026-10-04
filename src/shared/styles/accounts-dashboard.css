@@ -1,0 +1,181 @@
+/* Accounts section: use the same finance surfaces, radii, and tokens as Money. */
+#root .app-shell:has(.accounts-management-grid) {
+  --color-canvas: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-2);
+  --color-text: var(--text);
+  --color-text-secondary: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--accent);
+  background: var(--bg);
+  color: var(--text);
+}
+#root .app-shell:has(.accounts-management-grid) .main-content {
+  width: calc(100% - 56px);
+  min-height: 100dvh;
+  margin-left: 56px;
+  padding: 0 24px 32px;
+  background: var(--bg);
+  color: var(--text);
+}
+#root .app-shell:has(.accounts-management-grid) .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 56px;
+  min-height: 56px;
+  margin: 0 -24px;
+  padding: 0 24px;
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+#root .app-shell:has(.accounts-management-grid) .breadcrumb,
+#root .app-shell:has(.accounts-management-grid) .breadcrumb strong { color: var(--muted); }
+#root .app-shell:has(.accounts-management-grid) .top-actions { margin: 0 0 0 12px; }
+#root .app-shell:has(.accounts-management-grid) .top-profile-trigger { border-color: var(--border); border-radius: var(--radius-pill); background: var(--surface-2); color: var(--text); }
+#root .app-shell:has(.accounts-management-grid) .top-profile-name { color: var(--text); }
+#root .app-shell:has(.accounts-management-grid) .sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  width: 56px;
+  padding: 12px 6px;
+  overflow: hidden;
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+  transition: width 200ms ease, box-shadow 200ms ease;
+}
+#root .app-shell:has(.accounts-management-grid) .sidebar-heading { min-height: 40px; margin: 0 0 12px; flex-direction: column; gap: 8px; }
+#root .app-shell:has(.accounts-management-grid) .brand { padding: 0; }
+#root .app-shell:has(.accounts-management-grid) .brand-name,
+#root .app-shell:has(.accounts-management-grid) .side-label,
+#root .app-shell:has(.accounts-management-grid) .nav-text,
+#root .app-shell:has(.accounts-management-grid) .nav-chevron { display: none; }
+#root .app-shell:has(.accounts-management-grid) .brand-mark { width: 34px; height: 34px; border-radius: 11px; background: var(--accent-soft); color: var(--accent); }
+#root .app-shell:has(.accounts-management-grid) .main-nav,
+#root .app-shell:has(.accounts-management-grid) .tracker-subnav { display: grid; gap: 12px; margin: 0; padding: 0; border: 0; }
+#root .app-shell:has(.accounts-management-grid) .finance-nav-group { margin-top: 12px; }
+#root .app-shell:has(.accounts-management-grid) .nav-link { position: relative; width: 42px; min-width: 42px; height: 42px; min-height: 42px; justify-content: center; padding: 0; border: 0; border-radius: 12px; background: transparent; color: var(--muted); }
+#root .app-shell:has(.accounts-management-grid) .nav-link:hover { background: var(--surface-2); color: var(--text); }
+#root .app-shell:has(.accounts-management-grid) .nav-link.active { background: var(--accent-soft); color: var(--accent); }
+#root .app-shell:has(.accounts-management-grid) .nav-link.active::before { position: absolute; inset: 9px auto 9px 0; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); content: ""; }
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:hover,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:focus-within { width: 200px; padding: 12px; box-shadow: 8px 0 20px rgb(0 0 0 / 18%); }
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:hover .brand-name,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:hover .side-label,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:hover .nav-text,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:hover .nav-chevron,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:focus-within .brand-name,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:focus-within .side-label,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:focus-within .nav-text,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:focus-within .nav-chevron { display: initial; }
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:hover .sidebar-heading,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:focus-within .sidebar-heading { flex-direction: row; justify-content: space-between; }
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:hover .nav-link,
+#root .app-shell.sidebar-collapsed:has(.accounts-management-grid) .sidebar:focus-within .nav-link { width: 100%; justify-content: flex-start; padding: 0 10px; }
+#root .app-shell:not(.sidebar-collapsed):has(.accounts-management-grid) .sidebar { width: 200px; padding: 12px; }
+#root .app-shell:not(.sidebar-collapsed):has(.accounts-management-grid) .main-content { width: calc(100% - 200px); margin-left: 200px; }
+#root .app-shell:not(.sidebar-collapsed):has(.accounts-management-grid) .brand-name,
+#root .app-shell:not(.sidebar-collapsed):has(.accounts-management-grid) .side-label,
+#root .app-shell:not(.sidebar-collapsed):has(.accounts-management-grid) .nav-text,
+#root .app-shell:not(.sidebar-collapsed):has(.accounts-management-grid) .nav-chevron { display: initial; }
+#root .app-shell:not(.sidebar-collapsed):has(.accounts-management-grid) .sidebar-heading { flex-direction: row; justify-content: space-between; }
+#root .app-shell:not(.sidebar-collapsed):has(.accounts-management-grid) .nav-link { width: 100%; justify-content: flex-start; padding: 0 10px; }
+
+#root .app-shell:has(.accounts-management-grid) .money-setup-page {
+  width: min(100%, 1440px);
+  max-width: none;
+  gap: 16px;
+  margin: 0 auto;
+  padding: 24px 0 32px;
+  color: var(--text);
+}
+#root .app-shell:has(.accounts-management-grid) .money-setup-heading { align-items: center; padding: 0 2px; }
+#root .app-shell:has(.accounts-management-grid) .money-setup-heading .eyebrow { color: var(--muted); }
+#root .app-shell:has(.accounts-management-grid) .money-setup-heading h1 { color: var(--text); font-size: clamp(21px, 2vw, 28px); }
+#root .app-shell:has(.accounts-management-grid) .money-setup-heading p { color: var(--muted); font-size: 13px; }
+#root .app-shell:has(.accounts-management-grid) .setup-summary-grid { gap: 8px; }
+#root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article,
+#root .app-shell:has(.accounts-management-grid) .setup-form-card,
+#root .app-shell:has(.accounts-management-grid) .setup-list-card {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: radial-gradient(ellipse at 0 0, rgb(255 255 255 / 3%), transparent 48%), var(--surface);
+  box-shadow: none;
+  color: var(--text);
+}
+#root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article { min-height: 76px; gap: 8px; padding: 12px 14px; }
+#root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article > span { color: var(--muted); font-size: 11px; }
+#root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article > span svg { color: var(--accent); }
+#root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article > strong { color: var(--text); font-size: 20px; font-variant-numeric: tabular-nums; }
+#root .app-shell:has(.accounts-management-grid) .accounts-management-grid { grid-template-columns: minmax(280px, .78fr) minmax(0, 1.4fr); gap: 8px; align-items: stretch; }
+#root .app-shell:has(.accounts-management-grid) .setup-form-card { align-content: start; gap: 14px; padding: 16px; }
+#root .app-shell:has(.accounts-management-grid) .setup-section-title strong { color: var(--text); font-size: 13px; }
+#root .app-shell:has(.accounts-management-grid) .setup-section-title small,
+#root .app-shell:has(.accounts-management-grid) .setup-help { color: var(--muted); font-size: 11px; }
+#root .app-shell:has(.accounts-management-grid) .setup-title-icon { width: 30px; height: 30px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+#root .app-shell:has(.accounts-management-grid) .setup-form-card label { color: var(--muted); font-size: 11px; }
+#root .app-shell:has(.accounts-management-grid) .setup-form-card input,
+#root .app-shell:has(.accounts-management-grid) .setup-form-card select {
+  height: 40px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13px;
+}
+#root .app-shell:has(.accounts-management-grid) .setup-form-card input::placeholder { color: var(--muted); }
+#root .app-shell:has(.accounts-management-grid) .setup-form-card input:focus,
+#root .app-shell:has(.accounts-management-grid) .setup-form-card select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+#root .app-shell:has(.accounts-management-grid) .setup-form-actions { padding-top: 0; }
+#root .app-shell:has(.accounts-management-grid) .setup-form-actions .primary-button { min-height: 40px; border-radius: 10px; background: var(--accent); color: #fff; }
+#root .app-shell:has(.accounts-management-grid) .setup-form-actions .select-button,
+#root .app-shell:has(.accounts-management-grid) .money-setup-actions .select-button { min-height: 38px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface-2); color: var(--text); }
+#root .app-shell:has(.accounts-management-grid) .setup-list-card { overflow: hidden; }
+#root .app-shell:has(.accounts-management-grid) .setup-list-heading { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+#root .app-shell:has(.accounts-management-grid) .setup-list-heading h2 { color: var(--text); font-size: 13px; }
+#root .app-shell:has(.accounts-management-grid) .setup-list-heading p { color: var(--muted); font-size: 11px; }
+#root .app-shell:has(.accounts-management-grid) .setup-account-list { padding: 0 16px; }
+#root .app-shell:has(.accounts-management-grid) .setup-account-row { min-height: 64px; grid-template-columns: 34px minmax(90px, 1fr) minmax(80px, auto) auto; gap: 10px; border-color: var(--border); }
+#root .app-shell:has(.accounts-management-grid) .setup-account-icon { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: var(--accent); }
+#root .app-shell:has(.accounts-management-grid) .setup-account-icon.credit { color: var(--warn); }
+#root .app-shell:has(.accounts-management-grid) .setup-account-copy strong { color: var(--text); font-size: 12px; }
+#root .app-shell:has(.accounts-management-grid) .setup-account-copy small { color: var(--muted); font-size: 10px; }
+#root .app-shell:has(.accounts-management-grid) .setup-account-balance { color: var(--text); font-size: 12px; font-variant-numeric: tabular-nums; }
+#root .app-shell:has(.accounts-management-grid) .setup-account-actions { display: flex; align-items: center; gap: 6px; }
+#root .app-shell:has(.accounts-management-grid) .setup-account-actions .edit-category { min-width: 32px; min-height: 32px; border-color: var(--border); border-radius: var(--radius-pill); background: var(--surface-2); color: var(--muted); }
+#root .app-shell:has(.accounts-management-grid) .setup-account-actions .remove-category { min-height: 30px; padding: 0 10px; border: 1px solid color-mix(in srgb, var(--expense) 30%, var(--border)); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--expense) 8%, var(--surface)); color: var(--expense); }
+#root .app-shell:has(.accounts-management-grid) .manager-empty-state { margin: 12px; border-color: var(--border-strong); border-radius: 12px; background: var(--surface-2); color: var(--muted); }
+#root .app-shell:has(.accounts-management-grid) :is(button, input, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (max-width: 900px) {
+  #root .app-shell:has(.accounts-management-grid) .accounts-management-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  #root .app-shell:has(.accounts-management-grid) .sidebar { display: none; }
+  #root .app-shell:has(.accounts-management-grid) .main-content { width: 100%; margin: 0; padding: 0 14px 88px; }
+  #root .app-shell:has(.accounts-management-grid) .topbar { position: sticky; top: 0; margin: 0 -14px; padding: 0 14px; }
+  #root .app-shell:has(.accounts-management-grid) .top-profile-name,
+  #root .app-shell:has(.accounts-management-grid) .top-profile-trigger > svg { display: none; }
+  #root .app-shell:has(.accounts-management-grid) .money-setup-page { gap: 12px; padding: 18px 0 26px; }
+  #root .app-shell:has(.accounts-management-grid) .money-setup-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+  #root .app-shell:has(.accounts-management-grid) .money-setup-actions { width: 100%; }
+  #root .app-shell:has(.accounts-management-grid) .money-setup-actions .select-button { flex: 1; min-height: 40px; }
+  #root .app-shell:has(.accounts-management-grid) .setup-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article { min-height: 68px; padding: 9px; }
+  #root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article > span { gap: 4px; font-size: 9px; }
+  #root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article > strong { font-size: 17px; }
+  #root .app-shell:has(.accounts-management-grid) .setup-form-card { padding: 13px; }
+  #root .app-shell:has(.accounts-management-grid) .setup-account-row { grid-template-columns: 32px minmax(0, 1fr) auto; gap: 8px; padding: 9px 0; }
+  #root .app-shell:has(.accounts-management-grid) .setup-account-copy { grid-column: 2; grid-row: 1; }
+  #root .app-shell:has(.accounts-management-grid) .setup-account-balance { grid-column: 3; grid-row: 1; }
+  #root .app-shell:has(.accounts-management-grid) .setup-account-actions { grid-column: 2 / 4; grid-row: 2; justify-self: end; }
+}
+@media (max-width: 390px) {
+  #root .app-shell:has(.accounts-management-grid) .setup-summary-grid { grid-template-columns: 1fr; }
+  #root .app-shell:has(.accounts-management-grid) .setup-summary-grid > article { min-height: 56px; grid-template-columns: 1fr auto; align-items: center; }
+  #root .app-shell:has(.accounts-management-grid) .setup-form-card .form-row { grid-template-columns: 1fr; }
+}
