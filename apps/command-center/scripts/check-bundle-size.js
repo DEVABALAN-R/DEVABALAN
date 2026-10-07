@@ -6,15 +6,17 @@
  * so the ceiling moved 500 → 520 KiB. Replacing Reanimated (~140 KiB gzip on web)
  * with React Native's built-in Animated brought the bundle to ~380 KiB, so the
  * ceiling dropped to 430 KiB: room for the rest of the expense manager, not
- * for regressions. Phase 2.1 added the Supabase client (~70 KiB gzip: auth,
- * PostgREST, realtime and storage clients), so the ceiling moved 430 → 480 KiB. Phase 11 target from the plan: ≤ 350 KiB (route-level code
+ * for regressions. Phase 2.1 added Supabase Auth: first the whole supabase-js
+ * (~70 KiB gzip), then only @supabase/auth-js (~35 KiB less, no unused realtime or
+ * storage clients). With people, photos and Notes the bundle is ~450 KiB, so the
+ * ceiling is 470 KiB. Phase 11 target from the plan: ≤ 350 KiB (route-level code
  * splitting). Raise the ceiling only deliberately, in the same PR that explains why.
  */
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const CEILING_KIB = 480;
+const CEILING_KIB = 470;
 const TARGET_KIB = 350;
 // npm scripts run from the package root.
 const dir = path.join(process.cwd(), 'dist', '_expo', 'static', 'js', 'web');

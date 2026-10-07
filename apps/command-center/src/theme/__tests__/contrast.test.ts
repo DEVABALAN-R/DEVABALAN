@@ -1,4 +1,5 @@
 import { darkColors, lightColors, type ColorRoles } from '../colors';
+import { noteColors } from '../noteColors';
 
 function luminance(hex: string): number {
   const value = hex.replace('#', '');
@@ -73,5 +74,17 @@ describe.each([
   it('keeps the categorical chart palette at 8 fixed slots', () => {
     expect(colors.chart).toHaveLength(8);
     expect(new Set(colors.chart).size).toBe(8);
+  });
+});
+
+describe('note colours', () => {
+  it.each([
+    ['light', lightColors],
+    ['dark', darkColors],
+  ] as const)('keep body and secondary text readable in %s mode', (scheme, colors) => {
+    for (const background of Object.values(noteColors[scheme])) {
+      expect(contrast(colors.textPrimary, background)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(colors.textSecondary, background)).toBeGreaterThanOrEqual(3);
+    }
   });
 });

@@ -8,6 +8,7 @@ import {
   Lightbulb,
   Menu,
   Settings,
+  StickyNote,
   Wallet,
   type LucideIcon,
 } from '@/components/icons';
@@ -55,6 +56,14 @@ export const destinations: readonly Destination[] = [
     label: 'Stocks',
     icon: ChartCandlestick,
     placement: { desktop: 'top', mobile: 'tab' },
+  },
+  {
+    name: 'notes',
+    href: '/dashboard/notes',
+    label: 'Notes',
+    icon: StickyNote,
+    // Phones: the bottom bar is full (four sections, More and the add button).
+    placement: { desktop: 'top', mobile: 'more' },
   },
   {
     name: 'reports',

@@ -3,6 +3,7 @@ import { AppState, Platform } from 'react-native';
 import { currentSession, onAuthChange, setAutoRefresh } from '@/lib/data/authRepository';
 import { isSupabaseConfigured } from '@/lib/data/supabaseClient';
 import { useExpenseStore } from '@/features/expenses/state/expenseStore';
+import { useNotesStore } from '@/features/notes/state/notesStore';
 import { useSession } from './sessionStore';
 
 /** Keeps `useSession` in step with Supabase Auth for the whole app. */
@@ -26,6 +27,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       } else {
         // Signed out (here, elsewhere, or the session expired): drop anything entered.
         useExpenseStore.getState().resetPreview();
+        useNotesStore.getState().resetPreview();
         session.setSignedOut();
       }
     });

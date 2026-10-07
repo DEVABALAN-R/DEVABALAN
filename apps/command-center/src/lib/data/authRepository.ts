@@ -1,6 +1,6 @@
-import type { Session } from '@supabase/supabase-js';
+import type { Session } from '@supabase/auth-js';
 import * as Linking from 'expo-linking';
-import { getSupabase } from './supabaseClient';
+import { getAuth } from './supabaseClient';
 
 /**
  * Every Supabase Auth call the app makes. Screens get plain results with
@@ -27,10 +27,10 @@ export function signInMessage(status: number | undefined, code: string | undefin
 }
 
 export async function signInWithPassword(email: string, password: string): Promise<AuthResult> {
-  const supabase = getSupabase();
-  if (!supabase) return NOT_CONFIGURED;
+  const auth = getAuth();
+  if (!auth) return NOT_CONFIGURED;
   try {
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const { error } = await auth.signInWithPassword({ email: email.trim(), password });
     return error ? { ok: false, message: signInMessage(error.status, error.code) } : { ok: true };
   } catch {
     return { ok: false, message: GENERIC };
@@ -44,10 +44,10 @@ export function passwordResetUrl(): string {
 
 /** Always reports success when the request was sent, so it never reveals which emails exist. */
 export async function requestPasswordReset(email: string): Promise<AuthResult> {
-  const supabase = getSupabase();
-  if (!supabase) return NOT_CONFIGURED;
+  const auth = getAuth();
+  if (!auth) return NOT_CONFIGURED;
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    const { error } = await auth.resetPasswordForEmail(email.trim(), {
       redirectTo: passwordResetUrl(),
     });
     if (error?.status === 429) {
@@ -61,10 +61,10 @@ export async function requestPasswordReset(email: string): Promise<AuthResult> {
 
 /** Sets a new password for the session opened by the reset link. */
 export async function updatePassword(password: string): Promise<AuthResult> {
-  const supabase = getSupabase();
-  if (!supabase) return NOT_CONFIGURED;
+  const auth = getAuth();
+  if (!auth) return NOT_CONFIGURED;
   try {
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await auth.updateUser({ password });
     if (!error) return { ok: true };
     if (error.code === 'weak_password') {
       return { ok: false, message: 'Choose a stronger password.' };
@@ -81,17 +81,17 @@ export async function updatePassword(password: string): Promise<AuthResult> {
 /** Ends the session on this device only. */
 export async function signOut(): Promise<void> {
   try {
-    await getSupabase()?.auth.signOut({ scope: 'local' });
+    await getAuth()?.signOut({ scope: 'local' });
   } catch {
     // The local session is cleared by the caller regardless.
   }
 }
 
 export async function currentSession(): Promise<Session | null> {
-  const supabase = getSupabase();
-  if (!supabase) return null;
+  const auth = getAuth();
+  if (!auth) return null;
   try {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await auth.getSession();
     return data.session;
   } catch {
     return null;
@@ -102,16 +102,16 @@ export async function currentSession(): Promise<Session | null> {
 export function onAuthChange(
   listener: (event: string, session: Session | null) => void,
 ): () => void {
-  const supabase = getSupabase();
-  if (!supabase) return () => undefined;
-  const { data } = supabase.auth.onAuthStateChange((event, session) => listener(event, session));
+  const auth = getAuth();
+  if (!auth) return () => undefined;
+  const { data } = auth.onAuthStateChange((event, session) => listener(event, session));
   return () => data.subscription.unsubscribe();
 }
 
 /** Native only: refresh tokens while the app is in the foreground (Supabase's RN guidance). */
 export function setAutoRefresh(active: boolean): void {
-  const supabase = getSupabase();
-  if (!supabase) return;
-  if (active) void supabase.auth.startAutoRefresh();
-  else void supabase.auth.stopAutoRefresh();
+  const auth = getAuth();
+  if (!auth) return;
+  if (active) void auth.startAutoRefresh();
+  else void auth.stopAutoRefresh();
 }

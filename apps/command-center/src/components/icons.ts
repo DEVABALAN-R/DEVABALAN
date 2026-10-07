@@ -105,6 +105,7 @@ export { default as Smartphone } from 'lucide-react-native/icons/smartphone';
 export { default as Sofa } from 'lucide-react-native/icons/sofa';
 export { default as Sparkles } from 'lucide-react-native/icons/sparkles';
 export { default as Split } from 'lucide-react-native/icons/split';
+export { default as Square } from 'lucide-react-native/icons/square';
 export { default as SquareCheck } from 'lucide-react-native/icons/square-check';
 export { default as StickyNote } from 'lucide-react-native/icons/sticky-note';
 export { default as Sun } from 'lucide-react-native/icons/sun';
