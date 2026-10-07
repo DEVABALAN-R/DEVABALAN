@@ -1,5 +1,6 @@
 import { isValidIsoDate } from './dates';
-import { splitsError } from './people';
+import { formatMoney } from '@/lib/formatting/currency';
+import { equalShares, splitsError, type SplitMode } from './people';
 import type { Photo } from './photos';
 import type { Account, Category, Person, Split, Transaction, TransactionKind } from './types';
 
@@ -40,10 +41,16 @@ export type TransactionDraft = {
   toAccountId: string | null;
   feeText: string;
   note: string;
-  /** Expense shares owed by other people, as typed. */
+  /** Expense shares owed by other people, as typed (or worked out, in the equal modes). */
   splits: SplitDraft[];
+  /** Equal shares follow the amount; custom shares are typed and must add up to it. */
+  splitMode: SplitMode;
+  /** Your own share, typed in custom mode. */
+  myShareText: string;
   /** Set when editing a repayment (income from a person, no category). */
   personId: string | null;
+  /** Editing a repayment: the expenses it was for (kept as they were). */
+  settles?: string[];
   /** Receipt photo, checked when it was picked. */
   photo: Photo | null;
 };
@@ -109,12 +116,19 @@ export function validateDraft(
   const splits: Split[] = [];
   if (draft.kind === 'expense' && draft.splits.length) {
     const known = new Set((context.people ?? []).map((item) => item.id));
-    for (const split of draft.splits) {
-      const value = parseAmount(split.amountText);
-      if (!known.has(split.personId)) errors.split = 'Someone in the split no longer exists.';
-      splits.push({ personId: split.personId, amount: value ?? 0 });
-    }
+    if (draft.splits.some((split) => !known.has(split.personId)))
+      errors.split = 'Someone in the split no longer exists.';
+    splits.push(...draftShares(draft, amount ?? 0));
     errors.split ??= splitsError(amount ?? 0, splits) ?? undefined;
+    if (!errors.split && draft.splitMode === 'custom' && amount !== null) {
+      const mine = parseAmount(draft.myShareText);
+      const total = splits.reduce((sum, split) => sum + split.amount, 0) + (mine ?? 0);
+      if (mine === null) errors.split = 'Enter your share (0 if you paid only for them).';
+      else if (total !== amount) {
+        const gap = amount - total;
+        errors.split = `Shares add up to ${formatMoney(total)}, not ${formatMoney(amount)} (${formatMoney(Math.abs(gap))} ${gap > 0 ? 'left to assign' : 'too much'}).`;
+      }
+    }
     if (!errors.split) delete errors.split;
   }
 
@@ -137,8 +151,37 @@ export function validateDraft(
       note,
       splits: draft.kind === 'expense' ? splits : [],
       personId: draft.kind === 'income' ? draft.personId : null,
+      settles: draft.kind === 'income' && draft.personId ? (draft.settles ?? []) : [],
       photo: draft.photo,
     },
+  };
+}
+
+/** Each person's share for the draft: worked out from the amount in the equal modes. */
+export function draftShares(draft: TransactionDraft, amount: number): Split[] {
+  if (draft.splitMode === 'custom') {
+    return draft.splits.map((split) => ({
+      personId: split.personId,
+      amount: parseAmount(split.amountText) ?? 0,
+    }));
+  }
+  const shares = equalShares(amount, draft.splits.length, draft.splitMode === 'equal');
+  return draft.splits.map((split, index) => ({
+    personId: split.personId,
+    amount: shares[index] ?? 0,
+  }));
+}
+
+/** Keeps the shown shares in step with the amount and people in the equal modes. */
+export function rebalanceSplits(draft: TransactionDraft): TransactionDraft {
+  if (draft.splitMode === 'custom' || !draft.splits.length) return draft;
+  const shares = draftShares(draft, parseAmount(draft.amountText) ?? 0);
+  return {
+    ...draft,
+    splits: draft.splits.map((split, index) => ({
+      ...split,
+      amountText: amountToInput(shares[index].amount),
+    })),
   };
 }
 

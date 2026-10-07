@@ -69,6 +69,11 @@ export type Transaction = {
    * not income, and it settles that person's splits (oldest first).
    */
   personId?: string | null;
+  /**
+   * Repayments only: the expenses this payment was for. Those shares are settled
+   * first; anything left over settles the person's oldest shares.
+   */
+  settles?: string[];
   /** Receipt photo (preview: in memory only). */
   photo?: Photo | null;
 };

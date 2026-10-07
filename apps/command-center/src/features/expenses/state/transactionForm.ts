@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import {
   amountToInput,
+  inferSplitMode,
+  rebalanceSplits,
+  splitTotal,
   DRAFT_FIELD_ORDER,
   todayIso,
   validateDraft,
@@ -36,6 +39,14 @@ export function nextField(draft: TransactionDraft, current: DraftField): DraftFi
   const order = FLOW[draft.kind];
   const rest = order.slice(order.indexOf(current) + 1);
   return rest.find((field) => isEmpty(draft, field)) ?? (current === 'note' ? null : 'note');
+}
+
+/** Split mode and your own share for an expense opened for editing. */
+function editSplitMode(transaction: Transaction) {
+  const shares = (transaction.splits ?? []).map((split) => split.amount);
+  const splitMode = inferSplitMode(transaction.amount, shares);
+  const mine = transaction.amount - splitTotal(transaction);
+  return { splitMode, myShareText: splitMode === 'custom' ? amountToInput(mine) || '0' : '' };
 }
 
 export type SubmitResult =
@@ -74,6 +85,8 @@ const emptyDraft = (
   feeText: '',
   note: '',
   splits: [],
+  splitMode: 'equal',
+  myShareText: '',
   personId: null,
   photo: null,
 });
@@ -130,7 +143,9 @@ export const useTransactionForm = create<FormState>((set, get) => ({
           personId: split.personId,
           amountText: amountToInput(split.amount),
         })),
+        ...editSplitMode(transaction),
         personId: transaction.personId ?? null,
+        settles: transaction.settles ?? [],
         photo: transaction.photo ?? null,
       },
     }),
@@ -149,6 +164,8 @@ export const useTransactionForm = create<FormState>((set, get) => ({
           toAccountId: null,
           feeText: '',
           splits: [],
+          splitMode: 'equal',
+          myShareText: '',
           personId: null,
         },
         errors: {},
@@ -159,7 +176,8 @@ export const useTransactionForm = create<FormState>((set, get) => ({
     set((state) => {
       const errors = { ...state.errors };
       for (const field of fieldsOf(patch)) delete errors[field];
-      return { draft: { ...state.draft, ...patch }, errors };
+      // Equal shares follow the amount and the people in the split.
+      return { draft: rebalanceSplits({ ...state.draft, ...patch }), errors };
     }),
 
   setActive: (active) => set({ active }),

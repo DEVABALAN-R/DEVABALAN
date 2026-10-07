@@ -11,16 +11,26 @@ import { useTransactionForm } from '../state/transactionForm';
 type PersonDetailProps = {
   balance: PersonBalance;
   onSettle: () => void;
+  /** Mark one shared expense as paid. */
+  onSettleOne: (split: OpenSplit, title: string) => void;
   onRename: () => void;
   onDelete: () => void;
 };
 
 /** One person: what they owe, each shared expense and its status, and their repayments. */
-export function PersonDetail({ balance, onSettle, onRename, onDelete }: PersonDetailProps) {
+export function PersonDetail({
+  balance,
+  onSettle,
+  onSettleOne,
+  onRename,
+  onDelete,
+}: PersonDetailProps) {
   const theme = useTheme();
   const lookup = useLookup();
   const openEdit = useTransactionForm((state) => state.openEdit);
   const { person, outstanding, lent, repaid } = balance;
+  const shareTitle = (split: OpenSplit) =>
+    split.transaction.note || lookup.path(split.transaction.categoryId) || 'Expense';
   return (
     <View style={{ gap: theme.space[4] }}>
       <View style={{ gap: theme.space[1] }}>
@@ -38,7 +48,7 @@ export function PersonDetail({ balance, onSettle, onRename, onDelete }: PersonDe
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
         <Button
-          label="Mark as paid"
+          label="Record payment"
           icon={HandCoins}
           disabled={outstanding <= 0}
           onPress={onSettle}
@@ -54,8 +64,9 @@ export function PersonDetail({ balance, onSettle, onRename, onDelete }: PersonDe
           <ShareRow
             key={split.transaction.id}
             split={split}
-            title={split.transaction.note || lookup.path(split.transaction.categoryId) || 'Expense'}
-            onPress={() => openEdit(split.transaction)}
+            title={shareTitle(split)}
+            onOpen={() => openEdit(split.transaction)}
+            onSettle={() => onSettleOne(split, shareTitle(split))}
           />
         ))
       ) : (
@@ -98,26 +109,21 @@ export function PersonDetail({ balance, onSettle, onRename, onDelete }: PersonDe
 function ShareRow({
   split,
   title,
-  onPress,
+  onOpen,
+  onSettle,
 }: {
   split: OpenSplit;
   title: string;
-  onPress: () => void;
+  onOpen: () => void;
+  onSettle: () => void;
 }) {
   const theme = useTheme();
   const { hovered, handlers } = useInteractionState();
-  const status =
-    split.remaining === 0
-      ? { label: 'Paid', tone: 'success' as const }
-      : split.paid > 0
-        ? { label: `${formatEntry(split.remaining)} left`, tone: 'warning' as const }
-        : { label: 'Unpaid', tone: 'neutral' as const };
+  const settled = split.remaining === 0;
+  const part = !settled && split.paid > 0;
+  const status = settled ? 'paid' : part ? `${formatEntry(split.remaining)} left` : 'unpaid';
   return (
-    <Pressable
-      role="button"
-      accessibilityLabel={`${title}, ${dayLabel(split.transaction.date)}, their share ${formatEntry(split.amount)}, ${status.label}`}
-      onPress={onPress}
-      {...handlers}
+    <View
       style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -127,18 +133,47 @@ function ShareRow({
         backgroundColor: hovered ? theme.colors.surfaceMuted : 'transparent',
       }}
     >
-      <View style={{ flex: 1, minWidth: 0 }}>
+      <Pressable
+        role="button"
+        accessibilityLabel={`${title}, ${dayLabel(split.transaction.date)}, their share ${formatEntry(split.amount)}, ${status}. Edit the expense`}
+        onPress={onOpen}
+        {...handlers}
+        style={{ flex: 1, minWidth: 0 }}
+      >
         <Text variant="label" numberOfLines={1}>
           {title}
         </Text>
         <Text variant="caption" color="textTertiary" numberOfLines={1}>
-          {`${dayLabel(split.transaction.date, 'short')} · bill ${formatEntry(split.transaction.amount)}`}
+          {`${dayLabel(split.transaction.date, 'short')} · bill ${formatEntry(split.transaction.amount)}${part ? ` · ${formatEntry(split.paid)} paid` : ''}`}
         </Text>
+      </Pressable>
+      <View style={{ alignItems: 'flex-end' }}>
+        {/* Paid money is struck out: all of it once settled, the paid part while partly paid. */}
+        <Text
+          variant={settled ? 'label' : part ? 'caption' : 'label'}
+          color={settled || part ? 'textTertiary' : 'textPrimary'}
+          numeric
+          style={{ textDecorationLine: settled || part ? 'line-through' : 'none' }}
+        >
+          {formatEntry(split.amount)}
+        </Text>
+        {part ? (
+          <Text variant="label" numeric>
+            {formatEntry(split.remaining)}
+          </Text>
+        ) : null}
       </View>
-      <Text variant="label" numeric>
-        {formatEntry(split.amount)}
-      </Text>
-      <Badge label={status.label} tone={status.tone} />
-    </Pressable>
+      {settled ? (
+        <Badge label="Paid" tone="success" />
+      ) : (
+        <Button
+          label="Mark paid"
+          size="sm"
+          variant="secondary"
+          accessibilityLabel={`Mark ${title} paid, ${formatEntry(split.remaining)}`}
+          onPress={onSettle}
+        />
+      )}
+    </View>
   );
 }

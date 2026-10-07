@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { View } from 'react-native';
 import { Text } from '@/components/ui';
 import { suggestNotes, type DraftField, type TransactionKind } from '@/lib/domain/expenses';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTheme } from '@/theme';
 import { useExpenseStore } from '../state/expenseStore';
 import { useTransactionForm } from '../state/transactionForm';
@@ -120,6 +121,23 @@ export function EntryPanel({ columns }: { columns: number }) {
           as an expense (Transfer fees), while the transfer itself is not.
         </Text>
       )}
+    </View>
+  );
+}
+
+/**
+ * Phones: the picker for the active field, shown right under that field instead of
+ * at the end of the form, so choosing never means scrolling down and back.
+ */
+export function InlinePanel({ field }: { field: EntryPanelKind }) {
+  const theme = useTheme();
+  const { isMobile } = useBreakpoint();
+  const active = useTransactionForm((state) => state.active);
+  const kind = useTransactionForm((state) => state.draft.kind);
+  if (!isMobile || panelFor(active, kind) !== field) return null;
+  return (
+    <View style={{ paddingTop: theme.space[2], paddingBottom: theme.space[3] }}>
+      <EntryPanel columns={3} />
     </View>
   );
 }

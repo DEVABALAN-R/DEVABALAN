@@ -3,6 +3,7 @@ import { monthBounds } from '../dates';
 import { accountBalance } from '../balances';
 import {
   equalShares,
+  inferSplitMode,
   isRepayment,
   ownShare,
   personBalances,
@@ -104,10 +105,40 @@ describe('splits', () => {
     expect(priya).toMatchObject({ lent: 50_000, repaid: 0, outstanding: 50_000 });
   });
 
-  it('splits equally, leaving odd paise with you', () => {
+  it('settles the chosen expense first when a payment names it', () => {
+    // Ravi pays exactly his movie share; the older dinner share stays open.
+    const forMovie: Transaction = {
+      ...raviPays,
+      id: 'movie-pay',
+      amount: 30_000,
+      settles: ['movie'],
+    };
+    const [ravi] = personBalances(people, [dinner, movie, forMovie]);
+    expect(ravi.splits.map((split) => [split.transaction.id, split.paid, split.remaining])).toEqual(
+      [
+        ['movie', 30_000, 0],
+        ['dinner', 0, 50_000],
+      ],
+    );
+    // Paying more than the named share spills over to the oldest open share.
+    const extra: Transaction = { ...forMovie, amount: 40_000 };
+    const [again] = personBalances(people, [dinner, movie, extra]);
+    expect(again.splits.map((split) => split.paid)).toEqual([30_000, 10_000]);
+    expect(again.outstanding).toBe(40_000);
+  });
+
+  it('splits equally: odd paise stay with you, or spread so the others pay it all', () => {
     expect(equalShares(100_000, 2, true)).toEqual([33_333, 33_333]);
     expect(equalShares(100_000, 2, false)).toEqual([50_000, 50_000]);
+    expect(equalShares(100, 3, false)).toEqual([34, 33, 33]);
     expect(equalShares(100_000, 0, true)).toEqual([]);
+  });
+
+  it('recognises the split mode of a saved expense', () => {
+    expect(inferSplitMode(150_000, [50_000, 50_000])).toBe('equal');
+    expect(inferSplitMode(100, [34, 33, 33])).toBe('others');
+    expect(inferSplitMode(150_000, [70_000, 20_000])).toBe('custom');
+    expect(inferSplitMode(150_000, [])).toBe('equal');
   });
 
   it('rejects shares that are empty, repeated or larger than the expense', () => {

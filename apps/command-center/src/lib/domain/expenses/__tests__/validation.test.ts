@@ -39,6 +39,8 @@ const draft = (patch: Partial<TransactionDraft>): TransactionDraft => ({
   toAccountId: null,
   feeText: '',
   splits: [],
+  splitMode: 'equal',
+  myShareText: '',
   personId: null,
   photo: null,
   note: '  Masala tea  ',
@@ -61,22 +63,35 @@ describe('validateDraft', () => {
       note: 'Masala tea',
       splits: [],
       personId: null,
+      settles: [],
       photo: null,
     });
   });
 
   it('keeps valid splits on expenses and rejects shares above the amount', () => {
     const people = [{ id: 'ravi', name: 'Ravi', order: 0 }];
-    const ok = validateDraft(draft({ splits: [{ personId: 'ravi', amountText: '100' }] }), {
-      ...context,
-      people,
-    });
-    expect(ok.value?.splits).toEqual([{ personId: 'ravi', amount: 10_000 }]);
-    const tooMuch = validateDraft(draft({ splits: [{ personId: 'ravi', amountText: '300' }] }), {
-      ...context,
-      people,
-    });
-    expect(tooMuch.errors.split).toBe('Shares add up to more than the expense.');
+    const custom = (amountText: string, myShareText: string) =>
+      validateDraft(
+        draft({
+          splits: [{ personId: 'ravi', amountText }],
+          splitMode: 'custom',
+          myShareText,
+        }),
+        { ...context, people },
+      );
+    expect(custom('100', '150').value?.splits).toEqual([{ personId: 'ravi', amount: 10_000 }]);
+    expect(custom('300', '0').errors.split).toBe('Shares add up to more than the expense.');
+    // Custom shares, yours included, must add up to the amount (₹250).
+    expect(custom('100', '100').errors.split).toBe(
+      'Shares add up to ₹200.00, not ₹250.00 (₹50.00 left to assign).',
+    );
+    expect(custom('100', '').errors.split).toBe('Enter your share (0 if you paid only for them).');
+    // Equal modes work the shares out from the amount, whatever was typed.
+    const equal = validateDraft(
+      draft({ splits: [{ personId: 'ravi', amountText: '1' }], splitMode: 'others' }),
+      { ...context, people },
+    );
+    expect(equal.value?.splits).toEqual([{ personId: 'ravi', amount: 25_000 }]);
     const unknown = validateDraft(draft({ splits: [{ personId: 'gone', amountText: '10' }] }), {
       ...context,
       people,

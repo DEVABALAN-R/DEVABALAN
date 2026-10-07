@@ -6,7 +6,7 @@ import { Screen, useFitMode } from '@/components/layout/Screen';
 import { Sheet } from '@/components/overlays';
 import { Card } from '@/components/ui';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import { personBalances } from '@/lib/domain/expenses';
+import { personBalances, type OpenSplit } from '@/lib/domain/expenses';
 import { ExpensesHeader } from '../components/ExpensesHeader';
 import { PeopleListCard } from '../people/PeopleListCard';
 import { PersonDetail } from '../people/PersonDetail';
@@ -35,7 +35,10 @@ export function PeopleScreen() {
   );
   const [selection, setSelection] = useState<string | null>(null);
   const [naming, setNaming] = useState<'new' | 'rename' | null>(null);
-  const [settling, setSettling] = useState(false);
+  // null = closed; { target: null } = a general payment; otherwise one shared expense.
+  const [settling, setSettling] = useState<{
+    target: { split: OpenSplit; title: string } | null;
+  } | null>(null);
   const chosen =
     balances.find((item) => item.person.id === selection) ?? (isDesktop ? balances[0] : undefined);
   const remove = () => {
@@ -59,7 +62,11 @@ export function PeopleScreen() {
       onSettle={() => {
         // Keep this person selected when the list re-sorts after the payment.
         setSelection(chosen.person.id);
-        setSettling(true);
+        setSettling({ target: null });
+      }}
+      onSettleOne={(split, title) => {
+        setSelection(chosen.person.id);
+        setSettling({ target: { split, title } });
       }}
       onRename={() => {
         setSelection(chosen.person.id);
@@ -113,10 +120,11 @@ export function PeopleScreen() {
       ) : null}
       {settling && chosen ? (
         <SettleSheet
-          key={chosen.person.id}
+          key={`${chosen.person.id}-${settling.target?.split.transaction.id ?? 'all'}`}
           balance={chosen}
+          target={settling.target}
           visible
-          onClose={() => setSettling(false)}
+          onClose={() => setSettling(null)}
         />
       ) : null}
     </Screen>

@@ -19,15 +19,30 @@ export function ownShare(transaction: Transaction): number {
   return transaction.amount;
 }
 
+/** How an expense is shared: equally with you, equally among the others only, or by hand. */
+export type SplitMode = 'equal' | 'others' | 'custom';
+
 /**
  * Equal shares of `amount` for `people` others, with you taking a share too when
- * `includeMe`. Paise that do not divide evenly stay with you, so the shares never
- * add up to more than the amount.
+ * `includeMe`. With you included, paise that do not divide evenly stay with you; when
+ * the others pay all, they are spread over the first people so the shares add up to
+ * exactly the amount.
  */
 export function equalShares(amount: number, people: number, includeMe: boolean): number[] {
   if (people <= 0 || amount <= 0) return [];
   const each = Math.floor(amount / (people + (includeMe ? 1 : 0)));
-  return Array.from({ length: people }, () => each);
+  const extra = includeMe ? 0 : amount - each * people;
+  return Array.from({ length: people }, (_, index) => each + (index < extra ? 1 : 0));
+}
+
+/** The mode an existing split matches (used when an expense is opened for editing). */
+export function inferSplitMode(amount: number, shares: number[]): SplitMode {
+  if (!shares.length) return 'equal';
+  const same = (expected: number[]) =>
+    expected.length === shares.length && expected.every((value, index) => value === shares[index]);
+  if (same(equalShares(amount, shares.length, true))) return 'equal';
+  if (same(equalShares(amount, shares.length, false))) return 'others';
+  return 'custom';
 }
 
 /** Problem with a set of splits for an expense of `amount`, or null. */
@@ -65,7 +80,10 @@ export type PersonBalance = {
 const byDate = (a: Transaction, b: Transaction) =>
   a.date.localeCompare(b.date) || a.createdAt - b.createdAt;
 
-/** Each person's shares and repayments; repayments settle their oldest shares first. */
+/**
+ * Each person's shares and repayments. A repayment made for particular expenses settles
+ * those shares; general repayments (and any excess) settle the oldest shares first.
+ */
 export function personBalances(people: Person[], transactions: Transaction[]): PersonBalance[] {
   const sorted = [...transactions].sort(byDate);
   return people.map((person) => {
@@ -81,12 +99,31 @@ export function personBalances(people: Person[], transactions: Transaction[]): P
     );
     const lent = shares.reduce((sum, share) => sum + share.amount, 0);
     const repaid = repayments.reduce((sum, transaction) => sum + transaction.amount, 0);
-    let pool = repaid;
-    const splits = shares.map((share) => {
-      const paid = Math.min(pool, share.amount);
-      pool -= paid;
-      return { ...share, paid, remaining: share.amount - paid };
+    const paid = shares.map(() => 0);
+    let pool = 0;
+    // Payments made for particular expenses settle those shares first (oldest first).
+    for (const repayment of repayments) {
+      let left = repayment.amount;
+      const targets = new Set(repayment.settles ?? []);
+      shares.forEach((share, index) => {
+        if (!targets.has(share.transaction.id) || left <= 0) return;
+        const take = Math.min(left, share.amount - paid[index]);
+        paid[index] += take;
+        left -= take;
+      });
+      pool += left;
+    }
+    // General payments, and anything left over, settle the oldest shares still open.
+    shares.forEach((share, index) => {
+      const take = Math.min(pool, share.amount - paid[index]);
+      paid[index] += take;
+      pool -= take;
     });
+    const splits = shares.map((share, index) => ({
+      ...share,
+      paid: paid[index],
+      remaining: share.amount - paid[index],
+    }));
     return {
       person,
       lent,
