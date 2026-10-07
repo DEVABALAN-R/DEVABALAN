@@ -8,7 +8,6 @@ import {
   categoryTrend,
   entryCounts,
   limitSlices,
-  recentNotes,
   resolveCategory,
   searchCategories,
   subcategoryBreakdown,
@@ -96,11 +95,6 @@ describe('category breakdowns', () => {
     ]);
     expect(limited[2].name).toBe('Other (2)');
     expect(limited.reduce((sum, slice) => sum + slice.share, 0)).toBeCloseTo(1);
-  });
-
-  it('suggests distinct recent notes for a category, newest first', () => {
-    expect(recentNotes(transactions, 'tea')).toEqual(['Tea']);
-    expect(recentNotes(transactions, null)).toEqual([]);
   });
 });
 

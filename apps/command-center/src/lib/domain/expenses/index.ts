@@ -6,3 +6,4 @@ export * from './dates';
 export * from './periods';
 export * from './types';
 export * from './validation';
+export * from './notes';

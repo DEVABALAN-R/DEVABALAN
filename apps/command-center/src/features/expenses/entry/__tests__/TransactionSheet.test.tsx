@@ -124,6 +124,18 @@ describe('TransactionSheet', () => {
     expect(screen.getByText('Expense added · ₹120')).toBeTruthy();
   });
 
+  it('suggests earlier notes while typing and brings their category', async () => {
+    await renderWithProviders(<TransactionSheet />);
+    await open();
+    await act(() => useTransactionForm.getState().setActive('note'));
+    await fireEvent.changeText(screen.getByLabelText('Note'), 'morn');
+    await fireEvent.press(screen.getByRole('button', { name: 'Morning tea' }));
+    expect(useTransactionForm.getState().draft).toMatchObject({
+      note: 'Morning tea',
+      categoryId: TEA,
+    });
+  });
+
   it('says what is missing and keeps the entry open', async () => {
     await renderWithProviders(<TransactionSheet />);
     await open();

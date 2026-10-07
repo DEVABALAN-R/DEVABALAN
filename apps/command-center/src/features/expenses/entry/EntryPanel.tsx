@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { View } from 'react-native';
 import { Text } from '@/components/ui';
-import { recentNotes, type DraftField, type TransactionKind } from '@/lib/domain/expenses';
+import { suggestNotes, type DraftField, type TransactionKind } from '@/lib/domain/expenses';
 import { useTheme } from '@/theme';
 import { useExpenseStore } from '../state/expenseStore';
 import { useTransactionForm } from '../state/transactionForm';
@@ -24,7 +24,7 @@ const titles: Record<EntryPanelKind, string> = {
   account: 'Account',
   toAccount: 'To account',
   fee: 'Transfer fee',
-  note: 'Recent notes',
+  note: 'Suggestions',
 };
 
 /** The picker for the active field (right column on wide screens, under the fields on phones). */
@@ -38,8 +38,15 @@ export function EntryPanel({ columns }: { columns: number }) {
   const transactions = useExpenseStore((state) => state.transactions);
   const panel = panelFor(active, draft.kind);
   const notes = useMemo(
-    () => (panel === 'note' ? recentNotes(transactions, draft.categoryId, 8) : []),
-    [panel, transactions, draft.categoryId],
+    () =>
+      panel === 'note'
+        ? suggestNotes(transactions, {
+            query: draft.note,
+            kind: draft.kind,
+            categoryId: draft.categoryId,
+          })
+        : [],
+    [panel, transactions, draft.note, draft.kind, draft.categoryId],
   );
   const title = panel === 'account' && draft.kind === 'transfer' ? 'From account' : titles[panel];
   return (
@@ -79,18 +86,27 @@ export function EntryPanel({ columns }: { columns: number }) {
       ) : panel === 'note' ? (
         notes.length ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-            {notes.map((note) => (
+            {notes.map((suggestion) => (
               <PickChip
-                key={note}
-                label={note}
-                selected={note === draft.note}
-                onPress={() => update({ note })}
+                key={suggestion.note}
+                label={suggestion.note}
+                selected={false}
+                onPress={() =>
+                  // A note you used before brings its usual category when none is chosen yet.
+                  update(
+                    !draft.categoryId && suggestion.categoryId && draft.kind !== 'transfer'
+                      ? { note: suggestion.note, categoryId: suggestion.categoryId }
+                      : { note: suggestion.note },
+                  )
+                }
               />
             ))}
           </View>
         ) : (
           <Text color="textSecondary">
-            Notes you use with this category will be suggested here.
+            {draft.note.trim()
+              ? 'No earlier note matches. It will be suggested next time.'
+              : 'Start typing: notes from earlier entries are suggested here.'}
           </Text>
         )
       ) : (
