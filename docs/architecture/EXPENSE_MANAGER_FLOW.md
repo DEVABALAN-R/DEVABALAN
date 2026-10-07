@@ -81,6 +81,7 @@ Shared state across Expenses pages:
    - Tapping a parent without subcategories selects it.
    - Tapping a parent with subcategories expands them beneath its row; you then pick a subcategory or "All ‹Food›".
    - Search filters parents and subcategories.
+   - **Missing category?** Create it without leaving the entry: when a search finds no match, `Create "…"` adds it and selects it; `+ New` at the end of an opened category's subcategories adds a subcategory there; "New … category" under the grid adds a top-level one. New items get a default icon and colour (subcategories take their parent's), editable later in Categories; names must be unique among their siblings.
    - Choosing a category jumps to **Account** (skipped when the default account is already set) and then to **Note**.
 4. **Note.** Suggestions show recent notes for the chosen category. Enter saves.
 5. **Save** closes the sheet and shows "Expense added · Undo". **Continue** saves and keeps the type, date and account for the next entry.

@@ -52,6 +52,50 @@ describe('CategoryPicker', () => {
   });
 });
 
+describe('creating a category while adding an entry', () => {
+  const picker = (onChoose: jest.Mock) =>
+    renderWithProviders(
+      <CategoryPicker kind="expense" selectedId={null} onChoose={onChoose} columns={3} />,
+    );
+  const byName = (name: string) =>
+    useExpenseStore.getState().categories.find((item) => item.name === name);
+
+  it('creates a category from a search that finds nothing, and picks it', async () => {
+    const onChoose = jest.fn();
+    await picker(onChoose);
+    await fireEvent.changeText(screen.getByLabelText('Search categories'), 'Pets');
+    await fireEvent.press(
+      screen.getByRole('button', { name: 'Create the expense category Pets and use it' }),
+    );
+    expect(byName('Pets')).toMatchObject({ kind: 'expense', parentId: null });
+    expect(onChoose).toHaveBeenCalledWith(byName('Pets')?.id);
+  });
+
+  it('adds a subcategory under the opened category', async () => {
+    const onChoose = jest.fn();
+    await picker(onChoose);
+    await fireEvent.press(screen.getByRole('button', { name: 'Food' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Add a subcategory to Food' }));
+    await fireEvent.changeText(screen.getByLabelText('New subcategory of Food'), 'Pizza');
+    await fireEvent.press(screen.getByRole('button', { name: 'Add and use' }));
+    expect(byName('Pizza')).toMatchObject({ parentId: 'expense-food', icon: 'food' });
+    expect(onChoose).toHaveBeenCalledWith(byName('Pizza')?.id);
+  });
+
+  it('adds a top-level category from the button under the grid, refusing duplicates', async () => {
+    const onChoose = jest.fn();
+    await picker(onChoose);
+    await fireEvent.press(screen.getByRole('button', { name: 'New expense category' }));
+    const field = screen.getByLabelText('New expense category');
+    await fireEvent.changeText(field, 'food');
+    await fireEvent.press(screen.getByRole('button', { name: 'Add and use' }));
+    expect(screen.getByText('That name is already used here.')).toBeTruthy();
+    await fireEvent.changeText(field, 'Charity');
+    await fireEvent.press(screen.getByRole('button', { name: 'Add and use' }));
+    expect(onChoose).toHaveBeenCalledWith(byName('Charity')?.id);
+  });
+});
+
 describe('TransactionSheet', () => {
   const open = () => act(() => useTransactionForm.getState().openNew());
 

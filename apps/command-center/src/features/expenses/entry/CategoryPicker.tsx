@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TextInput, View } from 'react-native';
-import { Search } from '@/components/icons';
-import { Text } from '@/components/ui';
+import { Plus, Search } from '@/components/icons';
+import { Button, Text } from '@/components/ui';
 import {
   resolveCategory,
   searchCategories,
@@ -15,7 +15,8 @@ import { useExpenseStore } from '../state/expenseStore';
 import { useExpenseUi } from '../state/expenseUi';
 import { CategoryTile } from './CategoryTile';
 import { GridRows } from './GridRows';
-import { PickChip } from './PickChip';
+import { createCategory, NewCategoryForm } from './NewCategory';
+import { SubcategoryStrip } from './SubcategoryStrip';
 
 type CategoryPickerProps = {
   kind: CategoryKind;
@@ -36,6 +37,22 @@ export function CategoryPicker({ kind, selectedId, onChoose, columns }: Category
   const selectedParent = resolveCategory(categories, selectedId).parent;
   const [expanded, setExpanded] = useState<string | null>(selectedParent?.id ?? null);
   const [query, setQuery] = useState('');
+  // Which "new category" form is open: 'top' for a category, else the parent's id.
+  const [creating, setCreating] = useState<string | null>(null);
+  const trimmed = query.trim();
+  const exactMatch = (list: Category[]) =>
+    list.some((item) => item.name.toLocaleLowerCase() === trimmed.toLocaleLowerCase());
+  const createFromSearch = () => {
+    const result = createCategory(kind, trimmed, null);
+    if ('id' in result) {
+      setQuery('');
+      onChoose(result.id);
+    }
+  };
+  const created = (id: string) => {
+    setCreating(null);
+    onChoose(id);
+  };
   const parents = useMemo(() => topLevelCategories(categories, kind), [categories, kind]);
   const results = useMemo(
     () =>
@@ -77,82 +94,100 @@ export function CategoryPicker({ kind, selectedId, onChoose, columns }: Category
           }}
         />
       </View>
-      {query.trim() ? (
-        results.length ? (
+      {trimmed ? (
+        <View style={{ gap: theme.space[3] }}>
+          {results.length ? (
+            <GridRows
+              items={results}
+              columns={columns}
+              gap={theme.space[2]}
+              keyOf={(category) => category.id}
+              render={(category) => (
+                <CategoryTile
+                  category={category}
+                  caption={parentName(category)}
+                  selected={category.id === selectedId}
+                  onPress={() => onChoose(category.id)}
+                />
+              )}
+            />
+          ) : (
+            <Text color="textSecondary" align="center" style={{ paddingTop: theme.space[3] }}>
+              No category matches “{trimmed}”.
+            </Text>
+          )}
+          {exactMatch(parents) ? null : (
+            <View style={{ alignItems: 'center' }}>
+              <Button
+                label={`Create “${trimmed}”`}
+                icon={Plus}
+                size="sm"
+                variant="ink"
+                accessibilityLabel={`Create the ${kind} category ${trimmed} and use it`}
+                onPress={createFromSearch}
+              />
+            </View>
+          )}
+        </View>
+      ) : (
+        <>
           <GridRows
-            items={results}
+            items={parents}
             columns={columns}
             gap={theme.space[2]}
             keyOf={(category) => category.id}
-            render={(category) => (
-              <CategoryTile
-                category={category}
-                caption={parentName(category)}
-                selected={category.id === selectedId}
-                onPress={() => onChoose(category.id)}
-              />
-            )}
-          />
-        ) : (
-          <Text color="textSecondary" align="center" style={{ paddingVertical: theme.space[4] }}>
-            No category matches “{query.trim()}”.
-          </Text>
-        )
-      ) : (
-        <GridRows
-          items={parents}
-          columns={columns}
-          gap={theme.space[2]}
-          keyOf={(category) => category.id}
-          render={(parent) => {
-            const children = withSubcategories ? subcategoriesOf(categories, parent.id).length : 0;
-            return (
-              <CategoryTile
-                category={parent}
-                selected={selectedParent?.id === parent.id}
-                expandable={children > 0}
-                expanded={expanded === parent.id}
-                onPress={() =>
-                  children
-                    ? setExpanded(expanded === parent.id ? null : parent.id)
-                    : onChoose(parent.id)
-                }
-              />
-            );
-          }}
-          after={(row) => {
-            const parent = row.find((item) => item.id === expanded);
-            if (!parent) return null;
-            return (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: theme.space[2],
-                  padding: theme.space[3],
-                  borderRadius: theme.radius.md,
-                  backgroundColor: theme.colors.surfaceMuted,
-                }}
-              >
-                <PickChip
-                  label={`All ${parent.name}`}
-                  accessibilityLabel={`${parent.name}, no subcategory`}
-                  selected={selectedId === parent.id}
-                  onPress={() => onChoose(parent.id)}
+            render={(parent) => {
+              const children = withSubcategories
+                ? subcategoriesOf(categories, parent.id).length
+                : 0;
+              return (
+                <CategoryTile
+                  category={parent}
+                  selected={selectedParent?.id === parent.id}
+                  expandable={children > 0}
+                  expanded={expanded === parent.id}
+                  onPress={() =>
+                    children
+                      ? setExpanded(expanded === parent.id ? null : parent.id)
+                      : onChoose(parent.id)
+                  }
                 />
-                {subcategoriesOf(categories, parent.id).map((sub) => (
-                  <PickChip
-                    key={sub.id}
-                    label={sub.name}
-                    accessibilityLabel={`${parent.name}, ${sub.name}`}
-                    selected={selectedId === sub.id}
-                    onPress={() => onChoose(sub.id)}
-                  />
-                ))}
-              </View>
-            );
-          }}
-        />
+              );
+            }}
+            after={(row) => {
+              const parent = row.find((item) => item.id === expanded);
+              if (!parent) return null;
+              return (
+                <SubcategoryStrip
+                  kind={kind}
+                  parent={parent}
+                  selectedId={selectedId}
+                  creating={creating === parent.id}
+                  onCreate={() => setCreating(parent.id)}
+                  onCancelCreate={() => setCreating(null)}
+                  onCreated={created}
+                  onChoose={onChoose}
+                />
+              );
+            }}
+          />
+          {creating === 'top' ? (
+            <NewCategoryForm
+              kind={kind}
+              parent={null}
+              onCreated={created}
+              onCancel={() => setCreating(null)}
+            />
+          ) : (
+            <Button
+              label={`New ${kind} category`}
+              icon={Plus}
+              size="sm"
+              variant="secondary"
+              onPress={() => setCreating('top')}
+            />
+          )}
+        </>
       )}
     </View>
   );
