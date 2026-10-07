@@ -1,12 +1,15 @@
 import { useMemo } from 'react';
 import {
+  addMonths,
   categoryBreakdown,
   categoryTrend,
   limitSlices,
   monthBounds,
   monthLabel,
+  monthOf,
   periodTotals,
   subcategoryBreakdown,
+  todayIso,
   transactionsInCategory,
   yearBounds,
   yearOfMonth,
@@ -16,6 +19,15 @@ import { useExpenseUi } from '../state/expenseUi';
 
 /** Most slices a pie shows; the rest fold into "Other". */
 const PIE_SLICES = 10;
+/** Months in a category's trend: the selected month in the middle, as in Money Manager. */
+const TREND_MONTHS = 7;
+
+/** Last month of the trend: three after the selected one, but never past this month. */
+function trendEnd(month: string): string {
+  const ahead = addMonths(month, Math.floor(TREND_MONTHS / 2));
+  const current = monthOf(todayIso());
+  return ahead > current ? (month > current ? month : current) : ahead;
+}
 
 /** Stats for the selected kind (income or expenses), period and account, plus the drill-down. */
 export function useStatsView() {
@@ -35,6 +47,7 @@ export function useStatsView() {
     return {
       kind,
       period,
+      month,
       range,
       totals,
       total: kind === 'income' ? totals.income : totals.expense,
@@ -52,7 +65,14 @@ export function useStatsView() {
       trend: drill
         ? period === 'year'
           ? categoryTrend(transactions, categories, drill.id, `${year}-12`, 12, accountId)
-          : categoryTrend(transactions, categories, drill.id, month, 6, accountId)
+          : categoryTrend(
+              transactions,
+              categories,
+              drill.id,
+              trendEnd(month),
+              TREND_MONTHS,
+              accountId,
+            )
         : [],
     };
   }, [transactions, categories, month, kind, period, accountId, drillId]);
