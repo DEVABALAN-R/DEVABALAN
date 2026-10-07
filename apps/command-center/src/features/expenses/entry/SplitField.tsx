@@ -8,18 +8,28 @@ import { useLookup } from '../hooks/useLedger';
 import { useExpenseStore } from '../state/expenseStore';
 import { useTransactionForm } from '../state/transactionForm';
 import { FieldRow } from './FieldRow';
-import { NewPersonForm, ShareInput, SplitStatus } from './SplitParts';
+import { NewPersonForm, PaidShare, ShareInput, SplitStatus } from './SplitParts';
 import { PickChip } from './PickChip';
 
 /** "Split" line of the entry form (expenses): who shares it and your own share. */
 export function SplitRow() {
   const lookup = useLookup();
   const draft = useTransactionForm((state) => state.draft);
+  const editingId = useTransactionForm((state) => state.editingId);
   const active = useTransactionForm((state) => state.active);
   const error = useTransactionForm((state) => state.errors.split);
   const setActive = useTransactionForm((state) => state.setActive);
-  const names = draft.splits.map((split) => lookup.person(split.personId)?.name ?? 'Someone');
-  const summary = names.length ? `With ${names.join(', ')}` : 'Not split';
+  const open: string[] = [];
+  const paid: string[] = [];
+  for (const split of draft.splits) {
+    const name = lookup.person(split.personId)?.name ?? 'Someone';
+    const status = lookup.share(editingId, split.personId);
+    (status && status.remaining === 0 ? paid : open).push(name);
+  }
+  const summary =
+    [open.length ? `With ${open.join(', ')}` : '', paid.length ? `${paid.join(', ')} paid` : '']
+      .filter(Boolean)
+      .join(' · ') || 'Not split';
   return (
     <FieldRow
       label="Split"
@@ -28,7 +38,7 @@ export function SplitRow() {
       onPress={() => setActive('split')}
       accessibilityLabel={`Split, ${summary}`}
     >
-      <Text numberOfLines={1} color={names.length ? 'textPrimary' : 'textTertiary'}>
+      <Text numberOfLines={1} color={draft.splits.length ? 'textPrimary' : 'textTertiary'}>
         {summary}
       </Text>
     </FieldRow>
@@ -60,8 +70,10 @@ const modes = [
  */
 export function SplitPanel() {
   const theme = useTheme();
+  const lookup = useLookup();
   const people = useExpenseStore((state) => state.people);
   const draft = useTransactionForm((state) => state.draft);
+  const editingId = useTransactionForm((state) => state.editingId);
   const update = useTransactionForm((state) => state.update);
   const [adding, setAdding] = useState(false);
   const amount = parseAmount(draft.amountText) ?? 0;
@@ -130,12 +142,18 @@ export function SplitPanel() {
             accessibilityLabel="How to split"
           />
           {draft.splits.map((split) => {
-            const person = people.find((item) => item.id === split.personId);
+            const name = lookup.person(split.personId)?.name ?? 'Someone';
+            const status = lookup.share(editingId, split.personId);
+            // A share already paid back is shown struck out and kept as it is.
+            if (status && status.remaining === 0) {
+              return <PaidShare key={split.personId} name={name} amount={status.amount} />;
+            }
             return (
               <ShareInput
                 key={split.personId}
-                name={person?.name ?? 'Someone'}
+                name={name}
                 value={split.amountText}
+                paid={status?.paid}
                 onChange={(text) => setShare(split.personId, text)}
                 onRemove={() => toggle(split.personId)}
               />
@@ -151,6 +169,10 @@ export function SplitPanel() {
           <SplitStatus
             amount={amount}
             others={others}
+            repaid={draft.splits.reduce(
+              (sum, split) => sum + (lookup.share(editingId, split.personId)?.paid ?? 0),
+              0,
+            )}
             mine={draft.splitMode === 'custom' ? parseAmount(draft.myShareText) : null}
             onRestToMe={() =>
               update({ myShareText: amountToInput(Math.max(0, amount - others)) || '0' })

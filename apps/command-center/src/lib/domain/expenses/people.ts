@@ -135,6 +135,24 @@ export function personBalances(people: Person[], transactions: Transaction[]): P
   });
 }
 
+/** Key for one person's share of one expense in `shareStatuses`. */
+export const shareKey = (transactionId: string, personId: string): string =>
+  `${transactionId}:${personId}`;
+
+/** How much of each share has been paid back, keyed by `shareKey`. */
+export function shareStatuses(
+  people: Person[],
+  transactions: Transaction[],
+): Map<string, OpenSplit> {
+  const statuses = new Map<string, OpenSplit>();
+  for (const balance of personBalances(people, transactions)) {
+    for (const split of balance.splits) {
+      statuses.set(shareKey(split.transaction.id, balance.person.id), split);
+    }
+  }
+  return statuses;
+}
+
 /** True when deleting the person would orphan shares or repayments. */
 export const personInUse = (personId: string, transactions: Transaction[]): boolean =>
   transactions.some(

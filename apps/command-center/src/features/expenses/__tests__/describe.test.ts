@@ -57,4 +57,31 @@ describe('formatEntry', () => {
     expect(formatEntry(-12_000, 'always')).toBe('−₹120');
     expect(formatEntry(500, 'always')).toBe('+₹5');
   });
+
+  it('lists who still owes on a split expense and who has paid back', () => {
+    const people = [
+      { id: 'p1', name: 'Arun', order: 0 },
+      { id: 'p2', name: 'Meera', order: 1 },
+    ];
+    const dinner: Transaction = {
+      ...byId('t3'),
+      amount: 30_000,
+      splits: [
+        { personId: 'p1', amount: 10_000 },
+        { personId: 'p2', amount: 10_000 },
+      ],
+    };
+    const repayment: Transaction = {
+      ...byId('t1'),
+      id: 'r1',
+      amount: 10_000,
+      categoryId: null,
+      personId: 'p2',
+      settles: [dinner.id],
+    };
+    const withPaid = buildLookup(accounts, categories, people, [dinner, repayment]);
+    expect(describeTransaction(dinner, withPaid).caption).toBe(
+      'Food › Tea · Card · split with Arun · Meera paid · your share ₹100',
+    );
+  });
 });
