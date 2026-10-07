@@ -8,15 +8,15 @@
 
 ## 1. What we take from each reference
 
-| From | Keep | Improve |
-|---|---|---|
-| Owner's tracker | Month navigator; Income / Expenses / Net / Balance strip with "vs last month"; account filter pills; Calendar ⇄ Transactions ⇄ Insights views; category donut + recent list beside the calendar | One consistent visual system; correct bank balance (card bills reduce bank cash); compact layout with no page scroll on desktop |
-| Money Manager — Trans. | Daily / Calendar / Monthly views of the same month; Income · Exp. · Total summary; day headers with day totals; floating **+** | Same three views on web, with a details panel beside them instead of separate screens |
-| Money Manager — Add | Income / Expense / Transfer switch; Date → Amount → Category → Account → Note order; picker panel for the active field; **Save** and **Continue** | Auto-advance between fields, category search, "general" option for a parent with subcategories, recent-note suggestions, inline validation, undo |
-| Money Manager — Category grid | 3-column grid; a parent with subcategories expands **in place** beneath its row | Icons and colour tints, keyboard and screen-reader support |
-| Money Manager — Stats | Income / Expense toggle with totals; month/year period; pie with callout labels; ranked list with coloured % badges | Drill-down to subcategories, a 6-month trend and the category's transactions; colours stay attached to a category, not its rank |
-| Money Manager — Budget | Per-category monthly budget vs spent | Overall budget hero, daily allowance, inline budget editing |
-| Money Manager — Category settings | Expense / Income lists, "Subcategory" toggle, `Food(80)` counts with previews, edit, reorder, delete | Delete asks where existing transactions should go, with undo; duplicate names are prevented |
+| From                              | Keep                                                                                                                                                                                            | Improve                                                                                                                                          |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Owner's tracker                   | Month navigator; Income / Expenses / Net / Balance strip with "vs last month"; account filter pills; Calendar ⇄ Transactions ⇄ Insights views; category donut + recent list beside the calendar | One consistent visual system; correct bank balance (card bills reduce bank cash); compact layout with no page scroll on desktop                  |
+| Money Manager — Trans.            | Daily / Calendar / Monthly views of the same month; Income · Exp. · Total summary; day headers with day totals; floating **+**                                                                  | Same three views on web, with a details panel beside them instead of separate screens                                                            |
+| Money Manager — Add               | Income / Expense / Transfer switch; Date → Amount → Category → Account → Note order; picker panel for the active field; **Save** and **Continue**                                               | Auto-advance between fields, category search, "general" option for a parent with subcategories, recent-note suggestions, inline validation, undo |
+| Money Manager — Category grid     | 3-column grid; a parent with subcategories expands **in place** beneath its row                                                                                                                 | Icons and colour tints, keyboard and screen-reader support                                                                                       |
+| Money Manager — Stats             | Income / Expense toggle with totals; month/year period; pie with callout labels; ranked list with coloured % badges                                                                             | Drill-down to subcategories, a 6-month trend and the category's transactions; colours stay attached to a category, not its rank                  |
+| Money Manager — Budget            | Per-category monthly budget vs spent                                                                                                                                                            | Overall budget hero, daily allowance, inline budget editing                                                                                      |
+| Money Manager — Category settings | Expense / Income lists, "Subcategory" toggle, `Food(80)` counts with previews, edit, reorder, delete                                                                                            | Delete asks where existing transactions should go, with undo; duplicate names are prevented                                                      |
 
 ---
 
@@ -44,10 +44,10 @@ Shared state across Expenses pages:
 
 ## 3. Entities and money rules
 
-| Entity | Fields (preview store ≈ planned tables) |
-|---|---|
-| **Account** | `name`, `group` (cash · bank · card · wallet · investment · loan), `openingBalance` (paise, signed: negative = owed), `order` |
-| **Category** | `kind` (expense · income), `parentId` (null = top level; one level of subcategories), `name`, `icon`, `tint`, `budget` (monthly, top-level expense only), `order` |
+| Entity          | Fields (preview store ≈ planned tables)                                                                                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Account**     | `name`, `group` (cash · bank · card · wallet · investment · loan), `openingBalance` (paise, signed: negative = owed), `order`                                                                           |
+| **Category**    | `kind` (expense · income), `parentId` (null = top level; one level of subcategories), `name`, `icon`, `tint`, `budget` (monthly, top-level expense only), `order`                                       |
 | **Transaction** | `kind` (expense · income · transfer), `date`, `amount` (paise > 0), `accountId`, `toAccountId` (transfer), `fee` (transfer, paise ≥ 0), `categoryId` (leaf: subcategory or parent), `note`, `createdAt` |
 
 **Rules.** These are pure functions in `src/lib/domain/expenses`, all unit-tested:
@@ -64,7 +64,7 @@ Shared state across Expenses pages:
    - totals count only that account's income and expenses (fees on transfers out of it count too);
    - lists also show transfers in and out of it;
    - Balance shows that account's balance alone.
-6. **Category deletion** must say where existing transactions go: either another category of the same kind, or *Uncategorized*. Deleting a subcategory moves its transactions to the parent. Every destructive action can be undone.
+6. **Category deletion** must say where existing transactions go: either another category of the same kind, or _Uncategorized_. Deleting a subcategory moves its transactions to the parent. Every destructive action can be undone.
 
 ---
 
@@ -87,19 +87,23 @@ Shared state across Expenses pages:
 5. **Save** closes the sheet and shows "Expense added · Undo". **Continue** saves and keeps the type, date and account for the next entry.
 
 ### 4.2 Transfer, card bill or SIP
+
 Choose **Transfer**. The fields become **From**, **To**, **Amount** and **Fee**; From and To must differ. Both balances update and the totals are unchanged.
 
 ### 4.3 Review and correct
+
 - Browse by **Daily** (grouped list with day totals), **Calendar** (per-day income and expense) or **Monthly** (12 months, expandable weeks).
 - Click any row to open the same sheet in edit mode, which has **Delete** with undo.
 - In the calendar, a day click shows that day's entries and an "Add on this day" button.
 
 ### 4.4 Understand spending
+
 - **Stats**: pick Income or Expenses and Month or Year to see the pie and ranked list.
 - Click a category to drill down to subcategories, its 6-month trend and its transactions.
 - **Budget** shows the overall budget, daily allowance and per-category bars; budgets are edited inline.
 
 ### 4.5 Organise
+
 - **Categories**: Expense or Income list with a Subcategories toggle, counts and previews.
 - The editor covers name, icon, colour, budget and subcategories (add, rename, reorder, delete).
 - **Accounts**: groups with balances. Clicking an account opens its transactions; accounts can be added or edited.
@@ -108,17 +112,17 @@ Choose **Transfer**. The fields become **From**, **To**, **Amount** and **Fee**;
 
 ## 5. Screen layout per breakpoint
 
-| Screen | Desktop (no page scroll; panels scroll) | Tablet / phone (scroll) |
-|---|---|---|
-| Header (all Expenses pages) | Title · section tabs · month navigator · Add | Title + Add; section tabs and navigator on their own rows |
-| Transactions | Summary strip (Income · Expenses · Total · Balance) → view switcher + account filter → view (8 cols) + context panel (4 cols) | Summary row of 3, view switcher, account chips, view, panel below |
-| Calendar | 6-week grid filling the height; context panel shows the selected day | Shorter fixed row height; day details below |
-| Daily | Grouped list; panel shows the month's category donut and top categories | List only, donut below |
-| Monthly | 12-month table with expandable weeks; panel shows a year bar chart and totals | Table, chart below |
-| Stats | Pie with callouts (6 cols) and ranked list / drill-down (6 cols) | Pie (callouts kept short), list below |
-| Budget | Budget hero and per-category list | Same, stacked |
-| Categories | List (5 cols) and editor (7 cols) | List; the editor opens as a sheet |
-| Add / edit | Dialog: fields on the left, active picker on the right | Bottom sheet: fields, picker beneath, sticky Save / Continue |
+| Screen                      | Desktop (no page scroll; panels scroll)                                                                                       | Tablet / phone (scroll)                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Header (all Expenses pages) | Title · section tabs · month navigator · Add                                                                                  | Title + Add; section tabs and navigator on their own rows         |
+| Transactions                | Summary strip (Income · Expenses · Total · Balance) → view switcher + account filter → view (8 cols) + context panel (4 cols) | Summary row of 3, view switcher, account chips, view, panel below |
+| Calendar                    | 6-week grid filling the height; context panel shows the selected day                                                          | Shorter fixed row height; day details below                       |
+| Daily                       | Grouped list; panel shows the month's category donut and top categories                                                       | List only, donut below                                            |
+| Monthly                     | 12-month table with expandable weeks; panel shows a year bar chart and totals                                                 | Table, chart below                                                |
+| Stats                       | Pie with callouts (6 cols) and ranked list / drill-down (6 cols)                                                              | Pie (callouts kept short), list below                             |
+| Budget                      | Budget hero and per-category list                                                                                             | Same, stacked                                                     |
+| Categories                  | List (5 cols) and editor (7 cols)                                                                                             | List; the editor opens as a sheet                                 |
+| Add / edit                  | Dialog: fields on the left, active picker on the right                                                                        | Bottom sheet: fields, picker beneath, sticky Save / Continue      |
 
 ---
 
@@ -151,15 +155,33 @@ Errors appear under the field and are announced to screen readers. On save, focu
 
 ---
 
+## 8a. Additions (October 2026)
+
+**Subcategory focus in Stats.** Inside a category, pressing a subcategory (pie slice or row) focuses it: the trend line, the total row and the entry list follow that subcategory; "All ‹category›" or pressing it again returns. Entries filed directly under the parent are the "(general)" slice.
+
+**Note suggestions.** Typing in the note field suggests notes from earlier entries of the same kind, ranked by: used with the chosen category, then match quality (starts with › a word starts with › contains), then how often, then how recently. Picking one fills the note and, when no category is chosen yet, the category it is usually filed under.
+
+**People and split expenses.**
+
+- A **person** is someone you share expenses with (managed like categories; deletable only when unused).
+- An expense can carry **splits**: shares that people owe you. Your **own share** = amount − splits. Stats, budgets and income/expense totals count only your own share; the paying account still pays the full amount.
+- When someone pays you back, **Mark as paid** records a **repayment**: income linked to the person, into the account that received it. It raises that account's balance but is **not income** (excluded from totals and Stats).
+- A person's balance = their shares − their repayments. Repayments settle their **oldest shares first**, so each share shows Paid, part paid (₹x left) or Unpaid.
+- Expenses › **People** lists everyone with what they owe; a person's page lists shared expenses and repayments (both open in the edit sheet).
+
+**Receipt photos.** Any expense or income can carry one photo, taken with the camera or uploaded (images only: JPEG, PNG, WebP, HEIC; up to 10 MB; compressed; no EXIF requested). Rows with a photo show a camera mark; the sheet shows a thumbnail and a full-size viewer. In the preview the photo stays in memory.
+
 ## 9. Path to real data (Phases 2–3)
 
-| Preview store action | Phase 3 replacement |
-|---|---|
-| `saveTransaction` | `insert` / `update` on `transactions` (RLS; composite FKs; `version` check) via TanStack Query mutation with optimistic update |
-| `deleteTransaction` / `restoreTransaction` | soft delete (`deleted_at`) and undo within 30 days |
-| `transfer` | the `create_transfer` RPC (atomic; both accounts must belong to the caller) |
-| category / account actions | `categories` / `accounts` tables; reassignment through one RPC (single transaction) |
-| calculations | unchanged pure functions, plus SQL read models (`f_monthly_cashflow`, `v_account_balances`) tested against the same fixtures |
+| Preview store action                       | Phase 3 replacement                                                                                                                                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `saveTransaction`                          | `insert` / `update` on `transactions` (RLS; composite FKs; `version` check) via TanStack Query mutation with optimistic update                                                             |
+| `deleteTransaction` / `restoreTransaction` | soft delete (`deleted_at`) and undo within 30 days                                                                                                                                         |
+| `transfer`                                 | the `create_transfer` RPC (atomic; both accounts must belong to the caller)                                                                                                                |
+| category / account actions                 | `categories` / `accounts` tables; reassignment through one RPC (single transaction)                                                                                                        |
+| calculations                               | unchanged pure functions, plus SQL read models (`f_monthly_cashflow`, `v_account_balances`) tested against the same fixtures                                                               |
+| people / splits / repayments               | `people` table; `transaction_splits (transaction_id, person_id, amount)` with a check that splits ≤ amount; repayment = income row with `person_id` (excluded from the income read models) |
+| receipt photo                              | private `attachments` bucket, `{user_id}/{uuid}` paths, 60-second signed URLs, EXIF stripped before upload (plan §8.5)                                                                     |
 
 The seed data and the preview banner go away once the repositories are connected.
 
@@ -167,18 +189,21 @@ The seed data and the preview banner go away once the repositories are connected
 
 ## 10. Implementation map
 
-| Area | Route | Code |
-|---|---|---|
-| Rules and calculations | — | `src/lib/domain/expenses/` (balances, periods, categories, breakdowns, budgets, dates, validation), unit-tested against a hand-checked fixture |
-| Preview store and seed | — | `src/features/expenses/state/` (`expenseStore`, `expenseUi`, `transactionForm`, seed files) |
-| Transactions | `/dashboard/expenses` | `screens/TransactionsScreen` + `components/` (header, summary, Calendar / Daily / Monthly, panels) |
-| Add / edit sheet | global | `entry/` (`TransactionSheet`, fields, category / account / date pickers), opened by Quick add, the phone **+**, Add buttons and any row |
-| Stats | `/dashboard/expenses/stats` | `stats/` + `components/charts/PieChart` (callout layout in `pieLayout.ts`) |
-| Budget | `/dashboard/expenses/budget` | `budget/` |
-| Categories | `/dashboard/expenses/categories` | `categories/` |
-| Accounts | `/dashboard/accounts` | `accounts/` |
-| Overview | `/dashboard` | `features/overview/useOverviewData` reads the same ledger; fund and stock values are still samples |
+| Area                   | Route                            | Code                                                                                                                                           |
+| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules and calculations | —                                | `src/lib/domain/expenses/` (balances, periods, categories, breakdowns, budgets, dates, validation), unit-tested against a hand-checked fixture |
+| Preview store and seed | —                                | `src/features/expenses/state/` (`expenseStore`, `expenseUi`, `transactionForm`, seed files)                                                    |
+| Transactions           | `/dashboard/expenses`            | `screens/TransactionsScreen` + `components/` (header, summary, Calendar / Daily / Monthly, panels)                                             |
+| Add / edit sheet       | global                           | `entry/` (`TransactionSheet`, fields, category / account / date pickers), opened by Quick add, the phone **+**, Add buttons and any row        |
+| Stats                  | `/dashboard/expenses/stats`      | `stats/` + `components/charts/PieChart` (callout layout in `pieLayout.ts`)                                                                     |
+| Budget                 | `/dashboard/expenses/budget`     | `budget/`                                                                                                                                      |
+| Categories             | `/dashboard/expenses/categories` | `categories/`                                                                                                                                  |
+| Accounts               | `/dashboard/accounts`            | `accounts/`                                                                                                                                    |
+| Overview               | `/dashboard`                     | `features/overview/useOverviewData` reads the same ledger; fund and stock values are still samples                                             |
+| People and splits      | `/dashboard/expenses/people`     | `lib/domain/expenses/people.ts`, `people/`, `entry/SplitField.tsx`, `state/peopleActions.ts`                                                   |
+| Note suggestions       | global sheet                     | `lib/domain/expenses/notes.ts`, `entry/EntryPanel.tsx`                                                                                         |
+| Receipt photos         | global sheet                     | `lib/domain/expenses/photos.ts`, `photos/` (`expo-image-picker`)                                                                               |
 
 **Verified (web, headless Chromium):** every page at 1440×900, 1366×768, 1366×705, 820×1180 and 390×844 in light and dark. Fit pages do not scroll at desktop sizes, nothing overflows horizontally, and there are no console errors. An end-to-end run covered Quick add from the Overview through Transport › Bus, Cash, a note and Enter to save, the toast with Undo, the Overview total rising by exactly ₹250, the entry appearing under today, and Escape closing the sheet. Native (iOS/Android) rendering has not been verified in the authoring environment.
 
-**Known limits of the preview:** nothing is persisted. Search is still a placeholder. Mutual fund purchases and stock trades open clearly labelled "planned" sheets. Recurring entries, CSV import/export and attachments are not part of this step (plan §21–22).
+**Known limits of the preview:** nothing is persisted. Search is still a placeholder. Mutual fund purchases and stock trades open clearly labelled "planned" sheets. Recurring entries and CSV import/export are not part of this step (plan §21–22); photos are not uploaded until Phase 3.

@@ -12,6 +12,11 @@ current phase order is in [`ROADMAP.md`](../../docs/architecture/ROADMAP.md).
   labelled sample data. You can add, edit and delete entries, categories, budgets and accounts.
   Every change is lost on reload, and a "Preview · not saved" badge says so. Flows and rules:
   [`EXPENSE_MANAGER_FLOW.md`](../../docs/architecture/EXPENSE_MANAGER_FLOW.md).
+- **People and splits:** split an expense with friends; Stats and budgets count your share, and
+  Expenses › People tracks who owes you and records repayments. Notes are suggested as you type,
+  and entries can carry a receipt photo (kept in memory in the preview).
+- **Notes** (Google Keep style): text notes and checklists with colours, pins, labels, archive
+  and search, on the same preview footing.
 - **Overview** reads the same expense ledger. Mutual funds and Stocks are designs driven by
   static sample data (fictional names, "Sample data · design preview" badge).
 - Goals, Insights and Reports are labelled placeholders.

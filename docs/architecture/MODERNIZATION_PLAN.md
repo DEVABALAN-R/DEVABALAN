@@ -1108,8 +1108,10 @@ Each phase is one or more PRs. Each must pass CI and its acceptance criteria bef
 implemented: Supabase client with the key guards (`src/lib/data`), session storage
 (`sessionStorage` on web, chunked SecureStore on native), sign-in / forgot / reset screens, the
 dashboard guard (labelled preview mode when no project is configured), `safeRedirect`, and
-security headers in `apps/command-center/vercel.json`. Adding `@supabase/supabase-js` moved the
-web bundle to ~469 KiB gzip; the CI ceiling is now 480 KiB. The migration, MFA, sessions screen,
+security headers in `apps/command-center/vercel.json`. The client is `@supabase/auth-js` on its own
+(not the whole `supabase-js`, which carried ~35 KiB of unused realtime and storage code); Phase 3
+adds `@supabase/postgrest-js` beside it. Web bundle ~450 KiB gzip with people, photos and Notes;
+CI ceiling 470 KiB. The migration, MFA, sessions screen,
 idle timeout and Sentry follow in 2.2–2.4.
 
 | Item | Detail |
