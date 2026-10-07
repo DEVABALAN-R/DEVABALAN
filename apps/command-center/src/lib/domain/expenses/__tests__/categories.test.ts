@@ -49,6 +49,11 @@ describe('category breakdowns', () => {
       { month: '2026-09', amount: 4_000 },
       { month: '2026-10', amount: 35_000 },
     ]);
+    // Only the card's tea purchases remain when filtering to the card.
+    expect(categoryTrend(transactions, categories, 'food', '2026-10', 2, 'card')).toEqual([
+      { month: '2026-09', amount: 4_000 },
+      { month: '2026-10', amount: 5_000 },
+    ]);
   });
 
   it('searches categories and subcategories of one kind', () => {

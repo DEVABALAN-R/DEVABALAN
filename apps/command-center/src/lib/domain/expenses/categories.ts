@@ -180,6 +180,7 @@ export function categoryTrend(
   parentId: string,
   endMonth: string,
   months = 6,
+  accountId?: string | null,
 ) {
   return Array.from({ length: months }, (_, index) => {
     const month = addMonths(endMonth, index - months + 1);
@@ -188,6 +189,7 @@ export function categoryTrend(
       categories,
       parentId,
       monthBounds(month),
+      accountId,
     ).reduce((sum, transaction) => sum + transaction.amount, 0);
     return { month, amount };
   });
