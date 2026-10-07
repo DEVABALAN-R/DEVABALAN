@@ -8,8 +8,8 @@ import { useTheme } from '@/theme';
 import { isActive, mobileMore, mobileTabs } from './navigation';
 
 /**
- * Phone navigation: a floating ink bar whose active tab expands into a sky-blue
- * pill with its label, plus a separate sky-blue quick-add button.
+ * Phone navigation: a floating ink bar whose active tab expands into an inverted
+ * pill with its label, plus a separate quick-add button.
  */
 export function FloatingTabBar() {
   const theme = useTheme();
@@ -65,17 +65,17 @@ export function FloatingTabBar() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 6,
-                  backgroundColor: active ? theme.colors.primary : 'transparent',
+                  backgroundColor: active ? theme.colors.onInk : 'transparent',
                 })}
               >
                 <item.icon
                   size={20}
-                  color={active ? theme.colors.onPrimary : theme.colors.onInkMuted}
+                  color={active ? theme.colors.textPrimary : theme.colors.onInkMuted}
                   strokeWidth={2}
                 />
                 {active ? (
                   <Appear duration={200}>
-                    <Text variant="label" color="onPrimary" numberOfLines={1}>
+                    <Text variant="label" color="textPrimary" numberOfLines={1}>
                       {item.shortLabel ?? item.label}
                     </Text>
                   </Appear>

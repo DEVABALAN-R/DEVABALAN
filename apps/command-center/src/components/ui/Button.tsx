@@ -37,7 +37,7 @@ function palette(variant: ButtonVariant, colors: ColorRoles): Palette {
   }
 }
 
-/** Pill button. Primary is sky blue with dark text (the main action on a screen). */
+/** Pill button. Primary is black with white text (inverted in dark mode) (the main action on a screen). */
 export function Button({
   label,
   variant = 'primary',

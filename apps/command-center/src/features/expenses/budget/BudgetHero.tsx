@@ -31,7 +31,7 @@ export function BudgetHero({ view, style }: { view: BudgetView; style?: StylePro
             value={used}
             size={112}
             strokeWidth={11}
-            tone={over ? 'warning' : 'primary'}
+            tone={over ? 'warning' : 'onBrand'}
             accessibilityLabel="Budget used"
           >
             <Text variant="title" color="onBrand" numeric>

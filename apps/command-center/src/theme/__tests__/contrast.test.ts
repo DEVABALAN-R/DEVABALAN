@@ -35,7 +35,7 @@ const pairs: Pair[] = [
   ['onBrand', 'brandFrom', 4.5],
   ['onBrand', 'brandTo', 4.5],
   ['onBrandMuted', 'brandFrom', 4.5],
-  ['primary', 'brandTo', 4.5],
+  ['onBrandMuted', 'brandTo', 4.5],
   ['onDanger', 'danger', 4.5],
   ['income', 'surface', 4.5],
   ['expense', 'surface', 4.5],

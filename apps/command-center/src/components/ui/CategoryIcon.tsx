@@ -44,7 +44,7 @@ export function CategoryIcon({
   );
 }
 
-/** Initials avatar on the sky-blue primary colour. */
+/** Initials avatar on the primary colour. */
 export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   const theme = useTheme();
   const initials = name

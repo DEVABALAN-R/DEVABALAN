@@ -6,7 +6,7 @@ import { useTheme, type ColorRoles } from '@/theme';
 
 type RingTone = Extract<
   keyof ColorRoles,
-  'accent' | 'primary' | 'brandFrom' | 'success' | 'warning' | 'danger' | 'investment'
+  'accent' | 'primary' | 'brandFrom' | 'success' | 'warning' | 'danger' | 'investment' | 'onBrand'
 >;
 
 type ProgressRingProps = {

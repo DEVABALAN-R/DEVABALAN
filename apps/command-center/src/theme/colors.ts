@@ -2,7 +2,8 @@
  * Semantic colour roles for light and dark. Components use roles, never hex.
  *
  * Visual language (2026 redesign): soft grey canvas, white rounded cards,
- * a sky-blue "primary" for the main actions, a deep blue gradient for hero cards,
+ * a black "primary" for the main actions (white in dark mode), a graphite gradient for
+ * hero cards,
  * near-black "ink" pills for the active navigation state, and a set of colourful
  * tints for categories. Contrast is enforced by src/theme/__tests__/contrast.test.ts.
  */
@@ -24,7 +25,7 @@ export type ColorRoles = {
   accentPressed: string;
   accentSoft: string;
   onAccent: string;
-  /** Sky-blue fill for primary actions; always paired with `onPrimary` text. */
+  /** Black (light) / white (dark) fill for primary actions; always paired with `onPrimary` text. */
   primary: string;
   primaryPressed: string;
   primarySoft: string;
@@ -88,23 +89,23 @@ export const lightColors: ColorRoles = {
   textPrimary: '#111214',
   textSecondary: '#5B6068',
   textTertiary: '#6B7079',
-  accent: '#0369A1',
-  accentPressed: '#075985',
-  accentSoft: '#E0F2FE',
+  accent: '#111214',
+  accentPressed: '#2A2C30',
+  accentSoft: '#E9EAED',
   onAccent: '#FFFFFF',
-  primary: '#38BDF8',
-  primaryPressed: '#0EA5E9',
-  primarySoft: '#E0F2FE',
-  onPrimary: '#111214',
+  primary: '#111214',
+  primaryPressed: '#2A2C30',
+  primarySoft: '#E9EAED',
+  onPrimary: '#FFFFFF',
   ink: '#121315',
   inkPressed: '#2A2C30',
   onInk: '#FFFFFF',
   onInkMuted: '#B4B8BE',
-  brandFrom: '#0369A1',
-  brandTo: '#082F49',
+  brandFrom: '#3A3D42',
+  brandTo: '#0B0C0E',
   onBrand: '#FFFFFF',
-  onBrandMuted: '#E0F2FE',
-  focus: '#0369A1',
+  onBrandMuted: '#D9DBDF',
+  focus: '#111214',
   income: '#286F2E',
   incomeSoft: '#EAF6E3',
   expense: '#C62828',
@@ -128,7 +129,7 @@ export const lightColors: ColorRoles = {
   scrim: 'rgba(17, 18, 20, 0.45)',
   inverseSurface: '#121315',
   onInverseSurface: '#F3F4F6',
-  inverseAccent: '#38BDF8',
+  inverseAccent: '#FFFFFF',
   tints: [
     { bg: '#EAF8D2', fg: '#3E7A12' },
     { bg: '#EFE8FE', fg: '#6D28D9' },
@@ -140,8 +141,8 @@ export const lightColors: ColorRoles = {
     { bg: '#E7E9FD', fg: '#4338CA' },
   ],
   chart: ['#2A78D6', '#EB6834', '#1BAF7A', '#EDA100', '#E87BA4', '#008300', '#4A3AA7', '#E34948'],
-  chartPositive: '#38BDF8',
-  chartNegative: '#121315',
+  chartPositive: '#121315',
+  chartNegative: '#B4B8BE',
   chartGrid: '#ECEDEF',
   hatch: '#D9DCE0',
 };
@@ -156,23 +157,23 @@ export const darkColors: ColorRoles = {
   textPrimary: '#F3F4F6',
   textSecondary: '#A9AEB6',
   textTertiary: '#8E939B',
-  accent: '#7DD3FC',
-  accentPressed: '#BAE6FD',
-  accentSoft: '#0C2A3D',
+  accent: '#F3F4F6',
+  accentPressed: '#D9DBDF',
+  accentSoft: '#2A2D31',
   onAccent: '#111214',
-  primary: '#38BDF8',
-  primaryPressed: '#7DD3FC',
-  primarySoft: '#0C2A3D',
+  primary: '#F3F4F6',
+  primaryPressed: '#D9DBDF',
+  primarySoft: '#2A2D31',
   onPrimary: '#111214',
   ink: '#F3F4F6',
   inkPressed: '#D9DBDF',
   onInk: '#111214',
   onInkMuted: '#4B5058',
-  brandFrom: '#0369A1',
-  brandTo: '#082F49',
+  brandFrom: '#3A3D42',
+  brandTo: '#1C1E21',
   onBrand: '#FFFFFF',
-  onBrandMuted: '#E0F2FE',
-  focus: '#7DD3FC',
+  onBrandMuted: '#D9DBDF',
+  focus: '#F3F4F6',
   income: '#8BD86A',
   incomeSoft: '#1E2D18',
   expense: '#FF7A7A',
@@ -196,7 +197,7 @@ export const darkColors: ColorRoles = {
   scrim: 'rgba(0, 0, 0, 0.6)',
   inverseSurface: '#F3F4F6',
   onInverseSurface: '#111214',
-  inverseAccent: '#0369A1',
+  inverseAccent: '#111214',
   tints: [
     { bg: '#26331A', fg: '#B6F03C' },
     { bg: '#2A2140', fg: '#C4B5FD' },
@@ -208,8 +209,8 @@ export const darkColors: ColorRoles = {
     { bg: '#1E2142', fg: '#A5B0FF' },
   ],
   chart: ['#3987E5', '#D95926', '#199E70', '#C98500', '#D55181', '#008300', '#9085E9', '#E66767'],
-  chartPositive: '#38BDF8',
-  chartNegative: '#F3F4F6',
+  chartPositive: '#F3F4F6',
+  chartNegative: '#6A6F78',
   chartGrid: '#25272B',
   hatch: '#3A3D42',
 };

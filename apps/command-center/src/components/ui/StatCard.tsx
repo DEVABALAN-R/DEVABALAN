@@ -15,7 +15,7 @@ type StatCardProps = {
   delta?: number;
   goodWhen?: 'up' | 'down';
   caption?: string;
-  /** `brand` = blue gradient hero tile (use once per row). */
+  /** `brand` = graphite gradient hero tile (use once per row). */
   variant?: 'default' | 'brand';
   index?: number;
   compact?: boolean;
@@ -111,7 +111,7 @@ export function StatCard({
         >
           <Icon
             size={compact ? 16 : 18}
-            color={brand ? theme.colors.primary : theme.colors.textPrimary}
+            color={brand ? theme.colors.onBrand : theme.colors.textPrimary}
             strokeWidth={2}
           />
         </View>

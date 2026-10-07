@@ -26,7 +26,7 @@ export function GradientFill({ from, to, glow }: GradientFillProps) {
         </LinearGradient>
         {glow ? (
           <RadialGradient id={`rg${id}`} cx="0.85" cy="0.1" r="0.7">
-            <Stop offset="0" stopColor={glow} stopOpacity={0.45} />
+            <Stop offset="0" stopColor={glow} stopOpacity={0.14} />
             <Stop offset="1" stopColor={glow} stopOpacity={0} />
           </RadialGradient>
         ) : null}

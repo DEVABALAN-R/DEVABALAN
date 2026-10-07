@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { GradientFill, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
 
-/** Gradient roundel with a sky-blue monogram; optional wordmark. */
+/** Gradient roundel with a white monogram; optional wordmark. */
 export function BrandMark({ size = 40, wordmark = true }: { size?: number; wordmark?: boolean }) {
   const theme = useTheme();
   return (
@@ -21,7 +21,7 @@ export function BrandMark({ size = 40, wordmark = true }: { size?: number; wordm
         <GradientFill from={theme.colors.brandFrom} to={theme.colors.brandTo} />
         <Text
           variant="title"
-          style={{ color: theme.colors.primary, fontSize: size * 0.48, lineHeight: size * 0.6 }}
+          style={{ color: theme.colors.onBrand, fontSize: size * 0.48, lineHeight: size * 0.6 }}
         >
           D
         </Text>
