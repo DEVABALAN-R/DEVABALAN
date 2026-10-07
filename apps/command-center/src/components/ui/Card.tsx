@@ -19,7 +19,7 @@ type CardProps = {
   accessibilityLabel?: string;
 };
 
-/** Rounded bento card. `brand` is the green gradient hero used once per screen. */
+/** Rounded bento card. `brand` is the blue gradient hero used once per screen. */
 export function Card({
   children,
   variant = 'default',

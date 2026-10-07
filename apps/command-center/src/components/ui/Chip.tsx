@@ -20,11 +20,11 @@ export function Chip({ label, selected = false, onPress, disabled }: ChipProps) 
       accessibilityState={{ checked: selected, disabled: !!disabled }}
       onPress={onPress}
       disabled={disabled}
-      hitSlop={(minHitSize - 32) / 2}
+      hitSlop={(minHitSize - 28) / 2}
       {...handlers}
       style={[
         {
-          height: 32,
+          height: 28,
           justifyContent: 'center',
           paddingHorizontal: theme.space[3],
           borderRadius: theme.radius.pill,

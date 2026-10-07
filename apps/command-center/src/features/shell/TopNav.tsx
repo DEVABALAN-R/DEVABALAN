@@ -80,7 +80,7 @@ function TopNavItem({
           {...handlers}
           style={StyleSheet.flatten([
             {
-              height: 40,
+              height: 34,
               justifyContent: 'center',
               paddingHorizontal: compact ? theme.space[3] : theme.space[5],
               borderRadius: theme.radius.pill,

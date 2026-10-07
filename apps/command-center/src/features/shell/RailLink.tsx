@@ -3,7 +3,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { LucideIcon } from '@/components/icons';
 import { TooltipBubble } from '@/components/ui';
 import { useInteractionState } from '@/hooks/useInteractionState';
-import { minHitSize, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
+
+/** Rail buttons stay ≥ 40pt; the rail itself has room around them. */
+const RAIL_BUTTON = 40;
 
 type RailLinkProps = { href: string; label: string; icon: LucideIcon; active: boolean };
 
@@ -21,9 +24,9 @@ export function RailLink({ href, label, icon: Icon, active }: RailLinkProps) {
           {...handlers}
           style={StyleSheet.flatten([
             {
-              width: minHitSize,
-              height: minHitSize,
-              borderRadius: minHitSize / 2,
+              width: RAIL_BUTTON,
+              height: RAIL_BUTTON,
+              borderRadius: RAIL_BUTTON / 2,
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: active

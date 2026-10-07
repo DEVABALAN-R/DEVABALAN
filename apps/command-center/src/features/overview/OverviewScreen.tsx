@@ -39,7 +39,7 @@ export function OverviewScreen() {
               flexDirection: 'row',
               alignItems: 'center',
               gap: 8,
-              height: 44,
+              height: 36,
               paddingHorizontal: theme.space[4],
               borderRadius: theme.radius.pill,
               backgroundColor: theme.colors.surface,

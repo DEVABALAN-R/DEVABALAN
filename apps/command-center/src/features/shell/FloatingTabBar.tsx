@@ -8,8 +8,8 @@ import { useTheme } from '@/theme';
 import { isActive, mobileMore, mobileTabs } from './navigation';
 
 /**
- * Phone navigation: a floating ink bar whose active tab expands into a lime
- * pill with its label, plus a separate lime quick-add button.
+ * Phone navigation: a floating ink bar whose active tab expands into a sky-blue
+ * pill with its label, plus a separate sky-blue quick-add button.
  */
 export function FloatingTabBar() {
   const theme = useTheme();
@@ -35,8 +35,8 @@ export function FloatingTabBar() {
         aria-label="Main"
         style={{
           flex: 1,
-          height: 60,
-          borderRadius: 30,
+          height: 54,
+          borderRadius: 27,
           paddingHorizontal: 6,
           flexDirection: 'row',
           alignItems: 'center',
@@ -57,10 +57,10 @@ export function FloatingTabBar() {
                 aria-current={active ? 'page' : undefined}
                 accessibilityState={{ selected: active }}
                 style={StyleSheet.flatten({
-                  height: 48,
-                  minWidth: 48,
+                  height: 44,
+                  minWidth: 44,
                   paddingHorizontal: active ? 14 : 0,
-                  borderRadius: 24,
+                  borderRadius: 22,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -90,9 +90,9 @@ export function FloatingTabBar() {
         accessibilityLabel="Quick add"
         onPress={() => openNew()}
         style={({ pressed }) => ({
-          width: 60,
-          height: 60,
-          borderRadius: 30,
+          width: 54,
+          height: 54,
+          borderRadius: 27,
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: pressed ? theme.colors.primaryPressed : theme.colors.primary,

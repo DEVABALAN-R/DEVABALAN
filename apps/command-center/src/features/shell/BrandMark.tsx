@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { GradientFill, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
 
-/** Gradient roundel with a lime monogram; optional wordmark. */
+/** Gradient roundel with a sky-blue monogram; optional wordmark. */
 export function BrandMark({ size = 40, wordmark = true }: { size?: number; wordmark?: boolean }) {
   const theme = useTheme();
   return (

@@ -32,7 +32,7 @@ export function MonthNavigator({ mode = 'month', stretch = false }: MonthNavigat
           flex: stretch ? 1 : undefined,
           flexDirection: 'row',
           alignItems: 'center',
-          height: 44,
+          height: 38,
           paddingHorizontal: 4,
           borderRadius: theme.radius.pill,
           backgroundColor: theme.colors.surface,
@@ -49,7 +49,7 @@ export function MonthNavigator({ mode = 'month', stretch = false }: MonthNavigat
           align="center"
           numeric
           accessibilityLiveRegion="polite"
-          style={{ minWidth: mode === 'year' ? 64 : 140, flex: stretch ? 1 : undefined }}
+          style={{ minWidth: mode === 'year' ? 56 : 120, flex: stretch ? 1 : undefined }}
         >
           {label}
         </Text>

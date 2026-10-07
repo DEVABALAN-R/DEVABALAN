@@ -15,7 +15,7 @@ type FieldRowProps = {
   children: ReactNode;
 };
 
-const LABEL_WIDTH = 76;
+const LABEL_WIDTH = 68;
 
 /** One line of the entry form: label on the left, value on the right (Money Manager style). */
 export function FieldRow({
@@ -35,7 +35,7 @@ export function FieldRow({
         flexDirection: 'row',
         alignItems: 'center',
         gap: theme.space[3],
-        minHeight: 50,
+        minHeight: 42,
         paddingHorizontal: theme.space[2],
         borderBottomWidth: 1.5,
         borderBottomColor: line,

@@ -115,9 +115,9 @@ function DayButton({ date, inMonth, selected, isToday, onPress }: DayButtonProps
         {...handlers}
         style={[
           {
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 34,
+            height: 34,
+            borderRadius: 17,
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: isToday && !selected ? 2 : 0,

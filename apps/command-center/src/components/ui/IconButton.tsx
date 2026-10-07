@@ -30,7 +30,7 @@ export function IconButton({
 }: IconButtonProps) {
   const theme = useTheme();
   const { hovered, focused, handlers } = useInteractionState();
-  const box = size === 'sm' ? 36 : minHitSize;
+  const box = size === 'sm' ? 30 : 36;
   const resolved = selected ? 'ink' : variant;
   const background = {
     plain: hovered ? theme.colors.surfaceMuted : 'transparent',
@@ -74,7 +74,7 @@ export function IconButton({
           focused && { outlineColor: theme.colors.focus, outlineWidth: 2, outlineStyle: 'solid' },
         ]}
       >
-        <Icon size={size === 'sm' ? 18 : 20} color={iconColor} strokeWidth={1.9} />
+        <Icon size={size === 'sm' ? 15 : 17} color={iconColor} strokeWidth={1.9} />
       </Pressable>
       {tooltip && (hovered || focused) ? (
         <TooltipBubble label={accessibilityLabel} placement={tooltip} />

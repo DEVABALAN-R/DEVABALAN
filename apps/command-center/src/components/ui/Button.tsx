@@ -16,7 +16,7 @@ type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
   fullWidth?: boolean;
 };
 
-const heights: Record<ButtonSize, number> = { sm: 36, md: 44, lg: 52 };
+const heights: Record<ButtonSize, number> = { sm: 30, md: 36, lg: 42 };
 
 type Palette = { bg: string; bgActive: string; fg: keyof ColorRoles };
 
@@ -37,7 +37,7 @@ function palette(variant: ButtonVariant, colors: ColorRoles): Palette {
   }
 }
 
-/** Pill button. Primary is lime with dark text (the main action on a screen). */
+/** Pill button. Primary is sky blue with dark text (the main action on a screen). */
 export function Button({
   label,
   variant = 'primary',
@@ -84,7 +84,7 @@ export function Button({
         {loading ? (
           <ActivityIndicator size="small" color={fg} />
         ) : Icon ? (
-          <Icon size={size === 'lg' ? 20 : 18} color={fg} strokeWidth={2} />
+          <Icon size={size === 'lg' ? 18 : size === 'sm' ? 14 : 16} color={fg} strokeWidth={2} />
         ) : null}
         <Text
           variant={size === 'sm' ? 'label' : 'bodyStrong'}

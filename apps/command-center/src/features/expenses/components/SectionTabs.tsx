@@ -72,7 +72,7 @@ function SectionLink({ href, label, icon: Icon, active, stacked }: SectionLinkPr
             alignItems: 'center',
             justifyContent: 'center',
             gap: stacked ? 2 : 6,
-            height: stacked ? 52 : 36,
+            height: stacked ? 46 : 30,
             paddingHorizontal: stacked ? 2 : theme.space[4],
             borderRadius: stacked ? theme.radius.md : theme.radius.pill,
             backgroundColor: active

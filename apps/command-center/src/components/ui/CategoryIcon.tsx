@@ -13,8 +13,15 @@ type CategoryIconProps = {
 };
 
 /** Colourful tinted circle with an icon. Decorative: the row names the category. */
-export function CategoryIcon({ icon: Icon, tint, size = 40, colors: override }: CategoryIconProps) {
+export function CategoryIcon({
+  icon: Icon,
+  tint,
+  size: requested = 40,
+  colors: override,
+}: CategoryIconProps) {
   const theme = useTheme();
+  // Compact density: every tinted icon renders at 85% of its requested size.
+  const size = Math.round(requested * 0.85);
   const colors =
     override ??
     theme.colors.tints[
@@ -37,7 +44,7 @@ export function CategoryIcon({ icon: Icon, tint, size = 40, colors: override }: 
   );
 }
 
-/** Initials avatar on the lime primary colour. */
+/** Initials avatar on the sky-blue primary colour. */
 export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   const theme = useTheme();
   const initials = name

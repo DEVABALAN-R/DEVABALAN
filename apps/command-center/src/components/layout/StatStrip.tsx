@@ -18,7 +18,7 @@ export function StatStrip({ hero, children, height }: StatStripProps) {
   const theme = useTheme();
   const { mode, isDense } = useBreakpoint();
   // Shorter strip on short laptop screens so the panels below keep their rows.
-  const rowHeight = height ?? (isDense ? 100 : 150);
+  const rowHeight = height ?? (isDense ? 92 : 124);
   if (mode === 'desktop') {
     return (
       <View style={{ flexDirection: 'row', gap: theme.space[4], height: rowHeight }}>

@@ -53,7 +53,7 @@ export function CategoryPicker({ kind, selectedId, onChoose, columns }: Category
           flexDirection: 'row',
           alignItems: 'center',
           gap: theme.space[2],
-          height: 40,
+          height: 34,
           paddingHorizontal: theme.space[3],
           borderRadius: theme.radius.pill,
           backgroundColor: theme.colors.surface,

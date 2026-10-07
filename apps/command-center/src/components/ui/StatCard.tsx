@@ -15,7 +15,7 @@ type StatCardProps = {
   delta?: number;
   goodWhen?: 'up' | 'down';
   caption?: string;
-  /** `brand` = green gradient hero tile (use once per row). */
+  /** `brand` = blue gradient hero tile (use once per row). */
   variant?: 'default' | 'brand';
   index?: number;
   compact?: boolean;

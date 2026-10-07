@@ -16,7 +16,7 @@ export function DesktopHeader() {
   const openNew = useTransactionForm((state) => state.openNew);
   const openSearch = useUiStore((state) => state.openSearch);
   const pill = {
-    height: 50,
+    height: 44,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.surface,
     justifyContent: 'center',

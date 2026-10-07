@@ -112,7 +112,7 @@ function SegmentButton<T extends string>({
       style={[
         {
           flex: fill ? 1 : undefined,
-          minHeight: size === 'sm' ? 32 : 40,
+          minHeight: size === 'sm' ? 28 : 34,
           alignItems: 'center',
           justifyContent: 'center',
           paddingHorizontal: theme.space[size === 'sm' ? 3 : 4],

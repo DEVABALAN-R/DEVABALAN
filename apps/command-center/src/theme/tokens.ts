@@ -3,23 +3,24 @@
  * nothing outside src/theme should contain raw sizes or hex colours.
  */
 
+/** Compact spacing scale (owner preference: dense layouts). */
 export const space = {
   0: 0,
   0.5: 2,
   1: 4,
-  2: 8,
-  3: 12,
-  4: 16,
-  5: 20,
-  6: 24,
-  8: 32,
-  10: 40,
-  14: 56,
-  18: 72,
+  2: 6,
+  3: 10,
+  4: 12,
+  5: 16,
+  6: 20,
+  8: 26,
+  10: 32,
+  14: 44,
+  18: 56,
 } as const;
 export type SpaceToken = keyof typeof space;
 
-export const radius = { xs: 6, sm: 10, md: 14, lg: 20, xl: 26, pill: 999 } as const;
+export const radius = { xs: 5, sm: 8, md: 11, lg: 16, xl: 20, pill: 999 } as const;
 export type RadiusToken = keyof typeof radius;
 
 export const breakpoints = { sm: 0, md: 768, lg: 1024, xl: 1440 } as const;
@@ -30,13 +31,13 @@ export const minHitSize = 44;
 
 export const layout = {
   /** Floating icon rail on tablet/desktop. */
-  railWidth: 64,
+  railWidth: 56,
   /** Floating pill tab bar on phones (excluding safe-area inset). */
-  bottomBarHeight: 72,
+  bottomBarHeight: 64,
   contentMaxWidth: 1480,
-  headerHeight: 60,
+  headerHeight: 52,
   /** Outer canvas padding around the floating chrome on desktop. */
-  canvasPadding: 16,
+  canvasPadding: 12,
 } as const;
 
 export const duration = { instant: 0, fast: 120, base: 200, slow: 320 } as const;

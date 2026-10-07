@@ -13,7 +13,7 @@ type EntryInputProps = Omit<TextInputProps, 'style'> & {
 /** Borderless input that sits inside a FieldRow. */
 export function EntryInput({ ref, money = false, size = 'md', ...rest }: EntryInputProps) {
   const theme = useTheme();
-  const fontSize = size === 'lg' ? 24 : 16;
+  const fontSize = size === 'lg' ? 20 : 14;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       {money ? (
@@ -31,7 +31,7 @@ export function EntryInput({ ref, money = false, size = 'md', ...rest }: EntryIn
         style={{
           flex: 1,
           minWidth: 0,
-          paddingVertical: 8,
+          paddingVertical: 6,
           color: theme.colors.textPrimary,
           fontFamily: money ? fontFamily.semibold : fontFamily.regular,
           fontSize,

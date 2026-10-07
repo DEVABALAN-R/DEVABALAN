@@ -21,11 +21,11 @@ export function PickChip({ label, onPress, selected = false, accessibilityLabel 
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ selected }}
       onPress={onPress}
-      hitSlop={(minHitSize - 34) / 2}
+      hitSlop={(minHitSize - 30) / 2}
       {...handlers}
       style={[
         {
-          height: 34,
+          height: 30,
           justifyContent: 'center',
           paddingHorizontal: theme.space[3],
           borderRadius: theme.radius.pill,
