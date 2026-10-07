@@ -1,6 +1,9 @@
-import { Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { View } from 'react-native';
 import Svg, { Circle, G, Line, Polyline, Text as SvgText } from 'react-native-svg';
 import { fontFamily, useTheme } from '@/theme';
+import { HitColumns, PointButtons } from './HitColumns';
+import { anchorFor, trendLayout } from './trendLayout';
 import { useChartSize } from './useChartSize';
 
 export type TrendPoint = {
@@ -8,122 +11,154 @@ export type TrendPoint = {
   /** Second line under the label (e.g. the year under January). */
   sublabel?: string;
   value: number;
-  /** Name read out for the point's button, e.g. "December 2025". */
+  /** Name read out for the point, e.g. "December 2025". */
   name: string;
 };
 
 type TrendLineChartProps = {
   points: TrendPoint[];
-  color: string;
-  /** Index of the highlighted point (the period on screen). */
+  /** Line colour; defaults to the app's trend orange. */
+  color?: string;
+  /** A second series drawn as a dashed grey line (e.g. amount invested). */
+  compare?: { name: string; values: number[] };
+  /** Index of the ringed point (the period on screen). Dense series ring the latest. */
   selected?: number;
   formatValue: (value: number) => string;
-  /** Pressing a point; each point is also a labelled button. */
+  /** Pressing a point; each point is then a labelled button. Without it, touch shows values. */
   onSelect?: (index: number) => void;
   accessibilityLabel: string;
+  /** Fixed height; omit to fill the parent (fit layouts). */
   height?: number;
 };
 
-const TOP = 24;
-const BOTTOM = 40;
-
 /**
- * Money Manager's category trend: one line across months with the value over
- * each point and the selected month ringed; pressing a month opens it.
+ * The app's line chart, after Money Manager's category trend: an orange line
+ * with the value over each point and the selected point ringed.
  */
 export function TrendLineChart({
   points,
   color,
+  compare,
   selected,
   formatValue,
   onSelect,
   accessibilityLabel,
-  height = 170,
+  height,
 }: TrendLineChartProps) {
   const theme = useTheme();
-  const { width, onLayout } = useChartSize();
-  const step = points.length ? width / points.length : 0;
+  const { width, height: measured, onLayout } = useChartSize();
+  const [touched, setTouched] = useState<number | null>(null);
+  const chartHeight = height ?? measured;
   const values = points.map((point) => point.value);
-  const min = Math.min(...values, 0);
-  const max = Math.max(...values, 1);
-  const plot = height - TOP - BOTTOM;
-  const x = (index: number) => step * (index + 0.5);
-  const y = (value: number) => TOP + (1 - (value - min) / (max - min || 1)) * plot;
-  const labelY = height - BOTTOM + 18;
+  const layout = trendLayout({
+    values,
+    compare: compare?.values,
+    width,
+    height: chartHeight,
+    active: touched ?? selected,
+  });
+  const { x, y, dense } = layout;
+  const ringed = touched ?? selected ?? (dense ? values.length - 1 : undefined);
+  const line = color ?? theme.colors.pie[1];
+  const path = (series: number[]) =>
+    series.map((value, index) => `${x(index)},${y(value)}`).join(' ');
+  const textFor = (active: boolean) => ({
+    fontFamily: active ? fontFamily.semibold : fontFamily.regular,
+    fill: active ? theme.colors.textPrimary : theme.colors.textSecondary,
+  });
   return (
-    <View role="img" accessibilityLabel={accessibilityLabel} onLayout={onLayout} style={{ height }}>
-      {width > 0 ? (
-        <Svg width={width} height={height} aria-hidden>
-          {[0, 0.5, 1].map((share) => (
+    <View
+      role="img"
+      accessibilityLabel={accessibilityLabel}
+      onLayout={onLayout}
+      style={height ? { height } : { flex: 1, minHeight: 140 }}
+    >
+      {width > 0 && chartHeight > 0 ? (
+        <Svg width={width} height={chartHeight} aria-hidden>
+          {layout.gridY.map((gridY) => (
             <Line
-              key={share}
+              key={gridY}
               x1={0}
               x2={width}
-              y1={TOP + share * plot}
-              y2={TOP + share * plot}
+              y1={gridY}
+              y2={gridY}
               stroke={theme.colors.chartGrid}
-              strokeWidth={1}
             />
           ))}
-          {points.map((point, index) => (
+          {layout.ticks.map((index) => (
             <Line
-              key={point.name}
+              key={index}
               x1={x(index)}
               x2={x(index)}
-              y1={TOP - 8}
-              y2={TOP + plot}
+              y1={layout.plotTop - 8}
+              y2={layout.plotBottom}
               stroke={theme.colors.chartGrid}
-              strokeWidth={1}
             />
           ))}
+          {compare ? (
+            <Polyline
+              points={path(compare.values)}
+              fill="none"
+              stroke={theme.colors.textTertiary}
+              strokeWidth={1.5}
+              strokeDasharray="4 4"
+            />
+          ) : null}
           <Polyline
-            points={points.map((point, index) => `${x(index)},${y(point.value)}`).join(' ')}
+            points={path(values)}
             fill="none"
-            stroke={color}
-            strokeWidth={2.5}
+            stroke={line}
+            strokeWidth={dense ? 2 : 2.5}
             strokeLinejoin="round"
           />
           {points.map((point, index) => {
-            const active = index === selected;
-            const text = active ? theme.colors.textPrimary : theme.colors.textSecondary;
+            if (!layout.labelled.has(index)) return null;
+            const active = index === ringed;
+            const pointY = y(point.value);
             return (
-              <G key={point.name}>
+              <G key={index}>
                 <Circle
                   cx={x(index)}
-                  cy={y(point.value)}
-                  r={active ? 5 : 4}
-                  fill={active ? theme.colors.surface : color}
-                  stroke={color}
+                  cy={pointY}
+                  r={active ? 5 : dense ? 3 : 4}
+                  fill={active ? theme.colors.surface : line}
+                  stroke={line}
                   strokeWidth={active ? 2.5 : 0}
                 />
                 <SvgText
+                  {...textFor(active)}
                   x={x(index)}
-                  y={y(point.value) - 10}
+                  y={pointY > 20 ? pointY - 10 : pointY + 18}
                   fontSize={10}
-                  fontFamily={active ? fontFamily.semibold : fontFamily.regular}
-                  fill={text}
-                  textAnchor="middle"
+                  textAnchor={anchorFor(x(index), width)}
                 >
                   {formatValue(point.value)}
                 </SvgText>
+              </G>
+            );
+          })}
+          {layout.ticks.map((index) => {
+            const point = points[index];
+            const anchor = dense ? anchorFor(x(index), width) : 'middle';
+            return (
+              <G key={index}>
                 <SvgText
+                  {...textFor(index === ringed)}
                   x={x(index)}
-                  y={labelY}
-                  fontSize={12}
-                  fontFamily={active ? fontFamily.semibold : fontFamily.regular}
-                  fill={text}
-                  textAnchor="middle"
+                  y={layout.labelY}
+                  fontSize={dense ? 11 : 12}
+                  textAnchor={anchor}
                 >
                   {point.label}
                 </SvgText>
                 {point.sublabel ? (
                   <SvgText
                     x={x(index)}
-                    y={labelY + 14}
+                    y={layout.labelY + 14}
                     fontSize={10}
                     fontFamily={fontFamily.regular}
                     fill={theme.colors.textTertiary}
-                    textAnchor="middle"
+                    textAnchor={anchor}
                   >
                     {point.sublabel}
                   </SvgText>
@@ -134,27 +169,19 @@ export function TrendLineChart({
         </Svg>
       ) : null}
       {onSelect && width > 0 ? (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: 0,
-            flexDirection: 'row',
-          }}
-        >
-          {points.map((point, index) => (
-            <Pressable
-              key={point.name}
-              role="button"
-              accessibilityLabel={`Show ${point.name}: ${formatValue(point.value)}`}
-              accessibilityState={{ selected: index === selected }}
-              onPress={() => onSelect(index)}
-              style={{ width: step, height: '100%' }}
-            />
-          ))}
-        </View>
+        <PointButtons
+          names={points.map((point) => `${point.name}: ${formatValue(point.value)}`)}
+          selected={selected}
+          width={layout.step}
+          onSelect={onSelect}
+        />
+      ) : width > 0 && points.length > 1 ? (
+        <HitColumns
+          count={points.length}
+          left={dense ? x(0) - layout.step / 2 : 0}
+          width={dense ? layout.step * points.length : width}
+          onActive={setTouched}
+        />
       ) : null}
     </View>
   );

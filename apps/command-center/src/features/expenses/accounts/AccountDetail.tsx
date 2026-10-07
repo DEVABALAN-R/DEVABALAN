@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { AreaChart } from '@/components/charts';
+import { TrendLineChart } from '@/components/charts';
 import { ArrowRight, Pencil, Plus } from '@/components/icons';
 import { Button, CategoryIcon, IconButton, Money, Text } from '@/components/ui';
 import { useFitMode } from '@/components/layout/Screen';
@@ -73,14 +73,18 @@ export function AccountDetail({ detail, onEdit, onOpenTransactions }: AccountDet
         <Flow label="In this month" value={thisMonth.income} tone="income" />
         <Flow label="Out this month" value={-thisMonth.expense} tone="expense" />
       </View>
-      <AreaChart
-        height={fit ? 130 : 160}
-        labels={history.map((point) => monthLabel(point.month, 'short'))}
-        values={history.map((point) => Math.abs(point.balance))}
-        seriesName={owed ? 'Owed at month end' : 'Balance at month end'}
-        color={owed ? theme.colors.expense : theme.colors.brandFrom}
-        formatValue={formatMoneyWhole}
-        formatAxis={formatAxisMoney}
+      <TrendLineChart
+        height={fit ? 140 : 170}
+        points={history.map((point, index) => ({
+          label: monthLabel(point.month, 'short'),
+          sublabel:
+            index === 0 || point.month.endsWith('-01') ? point.month.slice(0, 4) : undefined,
+          value: Math.abs(point.balance),
+          name: monthLabel(point.month),
+        }))}
+        selected={history.length - 1}
+        color={owed ? theme.colors.expense : undefined}
+        formatValue={formatAxisMoney}
         accessibilityLabel={`${account.name} at each month end: ${history.map((point) => `${monthLabel(point.month, 'short')} ${formatMoneyWhole(point.balance)}`).join(', ')}.`}
       />
       <View style={{ flexDirection: 'row', gap: theme.space[2], flexWrap: 'wrap' }}>

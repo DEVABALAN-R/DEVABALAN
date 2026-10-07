@@ -2,6 +2,10 @@
 module.exports = {
   preset: 'jest-expo',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  // Screen tests render whole sheets; on 2-core CI runners with coverage the
+  // first render in a file can pass Jest's 5 s default (seen on the category
+  // delete test, which takes under 1 s locally).
+  testTimeout: 20000,
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     // lucide ships ESM as .mjs, which Jest does not transform; use its CJS build.

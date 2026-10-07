@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
-import { AreaChart } from '@/components/charts';
+import { TrendLineChart } from '@/components/charts';
 import { Card, Delta, Money, SegmentedControl, Text } from '@/components/ui';
 import {
   sampleStocks,
@@ -8,7 +8,7 @@ import {
   tradingDayLabels,
   type SampleStock,
 } from '@/features/preview/sampleStocks';
-import { formatAxisMoney, formatMoney } from '@/lib/formatting/currency';
+import { formatMoney, formatMoneyWhole } from '@/lib/formatting/currency';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTheme } from '@/theme';
 import { TickerBadge } from './TickerBadge';
@@ -105,13 +105,12 @@ export function PriceChartCard({
           ]}
         />
       </View>
-      <AreaChart
-        labels={tradingDayLabels(selected.history.length).slice(-history.length)}
-        values={history}
-        seriesName="Price"
-        color={up ? theme.colors.brandFrom : theme.colors.expense}
-        formatValue={(value) => formatMoney(value)}
-        formatAxis={formatAxisMoney}
+      <TrendLineChart
+        points={tradingDayLabels(selected.history.length)
+          .slice(-history.length)
+          .map((label, index) => ({ label, value: history[index], name: label }))}
+        color={up ? undefined : theme.colors.expense}
+        formatValue={formatMoneyWhole}
         accessibilityLabel={`${selected.name} price over ${range === '1M' ? 'one month' : 'three months'}: from ${formatMoney(history[0])} to ${formatMoney(history[history.length - 1])}.`}
       />
     </Card>

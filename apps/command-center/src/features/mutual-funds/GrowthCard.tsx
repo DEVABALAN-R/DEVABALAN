@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AreaChart } from '@/components/charts';
+import { TrendLineChart } from '@/components/charts';
 import { Card, CardHeader, SegmentedControl } from '@/components/ui';
 import { sampleValueSeries } from '@/features/preview/sampleInvestments';
 import { formatAxisMoney, formatMoneyWhole } from '@/lib/formatting/currency';
@@ -20,7 +20,7 @@ export function GrowthCard({ style }: { style?: object }) {
     <Card index={5} style={[{ gap: theme.space[2] }, style]}>
       <CardHeader
         title="Growth"
-        subtitle="Portfolio value vs amount invested"
+        subtitle="Value (line) vs amount invested (dashed)"
         action={
           <SegmentedControl
             size="sm"
@@ -35,14 +35,10 @@ export function GrowthCard({ style }: { style?: object }) {
           />
         }
       />
-      <AreaChart
-        labels={labels}
-        values={value}
-        seriesName="Value"
-        color={theme.colors.brandFrom}
+      <TrendLineChart
+        points={labels.map((label, index) => ({ label, value: value[index], name: label }))}
         compare={{ name: 'Invested', values: invested }}
-        formatValue={(amount) => formatMoneyWhole(amount)}
-        formatAxis={formatAxisMoney}
+        formatValue={formatAxisMoney}
         accessibilityLabel={`Portfolio value grew from ${formatMoneyWhole(value[0])} to ${formatMoneyWhole(value[value.length - 1])} over ${range === '6M' ? 'six months' : 'one year'}, against ${formatMoneyWhole(invested[invested.length - 1])} invested.`}
       />
     </Card>
