@@ -4,6 +4,7 @@ import { ChartPie, ChevronLeft } from '@/components/icons';
 import { EmptyState } from '@/components/feedback';
 import { Button, Card, CardHeader, Money, Text } from '@/components/ui';
 import { useFitMode } from '@/components/layout/Screen';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { formatShare } from '../components/SliceRow';
@@ -21,6 +22,8 @@ type StatsPieCardProps = {
 export function StatsPieCard({ view, active, style }: StatsPieCardProps) {
   const theme = useTheme();
   const fit = useFitMode(true);
+  // Phones: the pie is width-bound, so a shorter box avoids empty space under it.
+  const { isMobile } = useBreakpoint();
   const drillInto = useExpenseUi((state) => state.drillInto);
   const slices = view.drill ? view.subSlices : view.pie;
   const colors = useSliceColors(slices);
@@ -59,7 +62,7 @@ export function StatsPieCard({ view, active, style }: StatsPieCardProps) {
       </View>
       {slices.length ? (
         <PieChart
-          height={fit ? undefined : 260}
+          height={fit ? undefined : isMobile ? 240 : 300}
           segments={slices.map((slice, index) => ({
             label: slice.name,
             value: slice.amount,

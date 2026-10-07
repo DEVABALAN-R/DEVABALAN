@@ -32,6 +32,8 @@ type PieLayoutOptions = {
   height: number;
   /** Width reserved for each label column. */
   labelWidth: number;
+  /** Room between the pie and a label column for the leader line. */
+  leader?: number;
   /** Minimum vertical distance between labels on one side. */
   gap?: number;
   /** Slices below this share get no callout (they stay in the list). */
@@ -39,16 +41,14 @@ type PieLayoutOptions = {
 };
 
 const TAU = Math.PI * 2;
-/** Room between the pie and a label column for the leader line. */
-const LEADER = 26;
 const EDGE = 12;
 
 export function pieLayout(
   items: { label: string; value: number }[],
-  { width, height, labelWidth, gap = 30, minShare = 0.02 }: PieLayoutOptions,
+  { width, height, labelWidth, leader = 26, gap = 30, minShare = 0.015 }: PieLayoutOptions,
 ): PieLayout {
   const total = items.reduce((sum, item) => sum + Math.max(0, item.value), 0);
-  const radius = Math.max(0, Math.min(height / 2 - EDGE, (width - 2 * (labelWidth + LEADER)) / 2));
+  const radius = Math.max(0, Math.min(height / 2 - EDGE, (width - 2 * (labelWidth + leader)) / 2));
   const cx = width / 2;
   const cy = height / 2;
   const at = (angle: number, distance: number): Point => ({
@@ -90,9 +90,9 @@ export function pieLayout(
         share: wedge.share,
         side,
         anchor: at(wedge.mid, radius),
-        elbow: at(wedge.mid, radius + 12),
+        elbow: at(wedge.mid, radius + 14),
         y: ys[index],
-        textX: side === 'right' ? cx + radius + LEADER : cx - radius - LEADER,
+        textX: side === 'right' ? cx + radius + leader : cx - radius - leader,
       }),
     );
   }

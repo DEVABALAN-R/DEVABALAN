@@ -1,11 +1,11 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 import { View } from 'react-native';
-import { BarChart } from '@/components/charts';
+import { TrendLineChart } from '@/components/charts';
 import { ReceiptText } from '@/components/icons';
 import { EmptyState } from '@/components/feedback';
-import { Card, CardHeader, CategoryIcon, Text } from '@/components/ui';
+import { Card, CardHeader, CategoryIcon, Money, Text } from '@/components/ui';
 import { useFitMode } from '@/components/layout/Screen';
-import { monthLabel, monthOf, todayIso } from '@/lib/domain/expenses';
+import { monthLabel } from '@/lib/domain/expenses';
 import { formatAxisMoney, formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { iconFor } from '../categoryIcons';
@@ -31,7 +31,12 @@ export function CategoryDetailCard({ view, active, onHover, style }: CategoryDet
   const colors = useSliceColors(view.subSlices);
   const category = view.drill;
   if (!category) return null;
-  const trendLabel = view.period === 'year' ? 'Each month of the year' : 'Last 6 months';
+  const trendLabel =
+    view.period === 'year' ? 'Each month of the year' : 'Month by month · press one to open it';
+  const selected = view.trend.findIndex((point) => point.month === view.month);
+  const openMonth = (index: number) =>
+    // Keeps the category open while switching to that month.
+    useExpenseUi.setState({ month: view.trend[index].month, statsPeriod: 'month' });
   return (
     <Card index={2} style={[{ gap: theme.space[3] }, style]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[3] }}>
@@ -40,27 +45,42 @@ export function CategoryDetailCard({ view, active, onHover, style }: CategoryDet
           <CardHeader title={category.name} subtitle={trendLabel} />
         </View>
       </View>
-      <BarChart
-        height={fit ? 130 : 160}
-        data={view.trend.map((point) => ({
+      <TrendLineChart
+        height={fit ? 150 : 170}
+        color={theme.colors.pie[1]}
+        selected={view.period === 'month' ? selected : undefined}
+        onSelect={openMonth}
+        points={view.trend.map((point, index) => ({
           label: monthLabel(point.month, 'short'),
-          values: [point.amount],
-          projected: point.month === monthOf(todayIso()),
+          sublabel:
+            index === 0 || point.month.endsWith('-01') ? point.month.slice(0, 4) : undefined,
+          value: point.amount,
+          name: monthLabel(point.month),
         }))}
-        series={[{ name: category.name, color: theme.colors.chartNegative }]}
-        formatValue={formatMoneyWhole}
-        formatAxis={formatAxisMoney}
+        formatValue={(value) => (value >= 1e7 ? formatAxisMoney(value) : formatMoneyWhole(value))}
         accessibilityLabel={`${category.name} by month: ${view.trend
           .map((point) => `${monthLabel(point.month, 'short')} ${formatMoneyWhole(point.amount)}`)
           .join(', ')}.`}
       />
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: theme.space[2],
+          paddingHorizontal: theme.space[3],
+          borderRadius: theme.radius.md,
+          backgroundColor: theme.colors.surfaceMuted,
+        }}
+      >
+        <Text variant="label" color="textSecondary" style={{ flex: 1 }}>
+          {category.name} · {view.periodLabel}
+        </Text>
+        <Money value={view.drillTotal} whole variant="bodyStrong" />
+      </View>
       {view.entries.length ? (
         <PanelScroll>
           {view.subSlices.length > 1 ? (
             <>
-              <Text variant="eyebrow" color="textTertiary" uppercase style={{ marginTop: 4 }}>
-                Subcategories
-              </Text>
               {view.subSlices.map((slice, index) => (
                 <SliceRow
                   key={slice.id}

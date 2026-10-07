@@ -21,7 +21,7 @@ export function RankedListCard({ view, active, onHover, style }: RankedListCardP
   // Rows folded into the pie's "Other" slice share its grey.
   const pieColors = useSliceColors(view.pie);
   const colorAt = (index: number) =>
-    view.pie[index]?.id === view.ranked[index].id ? pieColors[index] : theme.colors.borderStrong;
+    view.pie[index]?.id === view.ranked[index].id ? pieColors[index] : theme.colors.pieOther;
   return (
     <Card index={2} style={[{ gap: theme.space[2] }, style]}>
       <CardHeader
