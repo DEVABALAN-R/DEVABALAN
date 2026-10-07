@@ -1,0 +1,163 @@
+# Expense Manager: Logical Flow and Screen Plan
+
+> Scope: the Expenses module of `apps/command-center`.
+> References: the owner's current Vite expense tracker (calendar view) and the Money Manager app by Realbyte Inc. (transaction entry, category grid with subcategories, stats pie, category management).
+> Status: implemented against an **in-memory preview store** seeded with labelled sample data. The flows, rules and calculations are final. Persistence moves to Supabase in Phases 2–3 (§9).
+
+---
+
+## 1. What we take from each reference
+
+| From | Keep | Improve |
+|---|---|---|
+| Owner's tracker | Month navigator; Income / Expenses / Net / Balance strip with "vs last month"; account filter pills; Calendar ⇄ Transactions ⇄ Insights views; category donut + recent list beside the calendar | One consistent visual system; correct bank balance (card bills reduce bank cash); compact layout with no page scroll on desktop |
+| Money Manager — Trans. | Daily / Calendar / Monthly views of the same month; Income · Exp. · Total summary; day headers with day totals; floating **+** | Same three views on web, with a details panel beside them instead of separate screens |
+| Money Manager — Add | Income / Expense / Transfer switch; Date → Amount → Category → Account → Note order; picker panel for the active field; **Save** and **Continue** | Auto-advance between fields, category search, "general" option for a parent with subcategories, recent-note suggestions, inline validation, undo |
+| Money Manager — Category grid | 3-column grid; a parent with subcategories expands **in place** beneath its row | Icons and colour tints, keyboard and screen-reader support |
+| Money Manager — Stats | Income / Expense toggle with totals; month/year period; pie with callout labels; ranked list with coloured % badges | Drill-down to subcategories, a 6-month trend and the category's transactions; colours stay attached to a category, not its rank |
+| Money Manager — Budget | Per-category monthly budget vs spent | Overall budget hero, daily allowance, inline budget editing |
+| Money Manager — Category settings | Expense / Income lists, "Subcategory" toggle, `Food(80)` counts with previews, edit, reorder, delete | Delete asks where existing transactions should go, with undo; duplicate names are prevented |
+
+---
+
+## 2. Information architecture
+
+```
+Expenses (top nav)                       Accounts (left rail)
+├── Transactions   /dashboard/expenses   └── /dashboard/accounts
+│     views: Daily · Calendar · Monthly       Assets · Liabilities · Total
+├── Stats          /dashboard/expenses/stats   groups → accounts → open filtered transactions
+├── Budget         /dashboard/expenses/budget
+└── Categories     /dashboard/expenses/categories
+
+Add / edit transaction: one sheet, reachable from everywhere
+  (header "Quick add", phone "+" button, "Add" on any expense page, any transaction row)
+```
+
+Shared state across Expenses pages:
+
+- the selected month (one navigator, so switching tabs keeps the period)
+- the account filter
+- the selected calendar day, which becomes the default date for new entries
+
+---
+
+## 3. Entities and money rules
+
+| Entity | Fields (preview store ≈ planned tables) |
+|---|---|
+| **Account** | `name`, `group` (cash · bank · card · wallet · investment · loan), `openingBalance` (paise, signed: negative = owed), `order` |
+| **Category** | `kind` (expense · income), `parentId` (null = top level; one level of subcategories), `name`, `icon`, `tint`, `budget` (monthly, top-level expense only), `order` |
+| **Transaction** | `kind` (expense · income · transfer), `date`, `amount` (paise > 0), `accountId`, `toAccountId` (transfer), `fee` (transfer, paise ≥ 0), `categoryId` (leaf: subcategory or parent), `note`, `createdAt` |
+
+**Rules.** These are pure functions in `src/lib/domain/expenses`, all unit-tested:
+
+1. **Balances.**
+   - An income adds to its account; an expense subtracts from its account.
+   - A transfer subtracts **amount + fee** from the source and adds **amount** to the destination.
+   - Cards hold a negative balance (money owed), so a card purchase makes it more negative and a card bill payment (a transfer bank → card) brings it back towards zero.
+   - This fixes defect F1 from the plan, where the old app never reduced the bank balance when a card bill was paid.
+2. **Income / Expense totals** count income and expense transactions. They **exclude transfers**: moving money between your own accounts is neither earning nor spending. A transfer **fee** is a real cost, so it counts as an expense and shows in Stats as "Transfer fees".
+3. **"Savings" and "Credit card bill" are transfers, not expense categories.** Treating them as expenses double-counts spending: the card purchases are already expenses, and money moved into investments is not spent. Seed data models a SIP as bank → Investments and a bill as bank → card. The future CSV importer maps these old categories to transfers (plan §21).
+4. **Assets / Liabilities / Total:** Assets are the sum of positive account balances, liabilities the sum of negative ones, and Total = assets + liabilities.
+5. **Account filter.** When an account is selected:
+   - totals count only that account's income and expenses (fees on transfers out of it count too);
+   - lists also show transfers in and out of it;
+   - Balance shows that account's balance alone.
+6. **Category deletion** must say where existing transactions go: either another category of the same kind, or *Uncategorized*. Deleting a subcategory moves its transactions to the parent. Every destructive action can be undone.
+
+---
+
+## 4. Primary flows
+
+### 4.1 Add an expense (fast path, about 4 interactions)
+
+1. Open: press **Quick add**, the phone **+**, or the "Add" button on any expense page.
+   - **Type** defaults to the last used type, otherwise Expense.
+   - **Date** defaults to the selected calendar day, otherwise today.
+   - **Account** defaults to the last used one.
+2. **Amount** is focused with the numeric keyboard. Enter or "Next" opens the category grid.
+3. **Category grid.**
+   - Tapping a parent without subcategories selects it.
+   - Tapping a parent with subcategories expands them beneath its row; you then pick a subcategory or "All ‹Food›".
+   - Search filters parents and subcategories.
+   - Choosing a category jumps to **Account** (skipped when the default account is already set) and then to **Note**.
+4. **Note.** Suggestions show recent notes for the chosen category. Enter saves.
+5. **Save** closes the sheet and shows "Expense added · Undo". **Continue** saves and keeps the type, date and account for the next entry.
+
+### 4.2 Transfer, card bill or SIP
+Choose **Transfer**. The fields become **From**, **To**, **Amount** and **Fee**; From and To must differ. Both balances update and the totals are unchanged.
+
+### 4.3 Review and correct
+- Browse by **Daily** (grouped list with day totals), **Calendar** (per-day income and expense) or **Monthly** (12 months, expandable weeks).
+- Click any row to open the same sheet in edit mode, which has **Delete** with undo.
+- In the calendar, a day click shows that day's entries and an "Add on this day" button.
+
+### 4.4 Understand spending
+- **Stats**: pick Income or Expenses and Month or Year to see the pie and ranked list.
+- Click a category to drill down to subcategories, its 6-month trend and its transactions.
+- **Budget** shows the overall budget, daily allowance and per-category bars; budgets are edited inline.
+
+### 4.5 Organise
+- **Categories**: Expense or Income list with a Subcategories toggle, counts and previews.
+- The editor covers name, icon, colour, budget and subcategories (add, rename, reorder, delete).
+- **Accounts**: groups with balances. Clicking an account opens its transactions; accounts can be added or edited.
+
+---
+
+## 5. Screen layout per breakpoint
+
+| Screen | Desktop (no page scroll; panels scroll) | Tablet / phone (scroll) |
+|---|---|---|
+| Header (all Expenses pages) | Title · section tabs · month navigator · Add | Title + Add; section tabs and navigator on their own rows |
+| Transactions | Summary strip (Income · Expenses · Total · Balance) → view switcher + account filter → view (8 cols) + context panel (4 cols) | Summary row of 3, view switcher, account chips, view, panel below |
+| Calendar | 6-week grid filling the height; context panel shows the selected day | Shorter fixed row height; day details below |
+| Daily | Grouped list; panel shows the month's category donut and top categories | List only, donut below |
+| Monthly | 12-month table with expandable weeks; panel shows a year bar chart and totals | Table, chart below |
+| Stats | Pie with callouts (6 cols) and ranked list / drill-down (6 cols) | Pie (callouts kept short), list below |
+| Budget | Budget hero and per-category list | Same, stacked |
+| Categories | List (5 cols) and editor (7 cols) | List; the editor opens as a sheet |
+| Add / edit | Dialog: fields on the left, active picker on the right | Bottom sheet: fields, picker beneath, sticky Save / Continue |
+
+---
+
+## 6. Validation (client now; mirrored by database constraints in Phase 3)
+
+- **Amount:** greater than 0 and at most ₹100 crore, with up to 2 decimals. Accepts "1,250.50" and "₹ 250".
+- **Date:** a real calendar date.
+- **Income / Expense:** a category of the same kind and an existing account.
+- **Transfer:** two different existing accounts, and a fee of 0 or more.
+- **Note:** at most 120 characters.
+- **Category names:** 1–30 characters, unique within their parent (case-insensitive); likewise for subcategories.
+
+Errors appear under the field and are announced to screen readers. On save, focus moves to the first invalid field.
+
+---
+
+## 7. Accessibility and keyboard
+
+- Every tile and row is a real button with a name. The selected category or account is announced as "selected".
+- Enter advances between fields; Escape closes the sheet; Tab order follows the visual order.
+- Amounts always carry a sign or label (never colour alone). Calendar cells announce the date and that day's totals.
+
+---
+
+## 8. Test plan
+
+- **Domain:** balances (including the card-bill regression), totals excluding transfers with fees counted, day/calendar/month/week grouping, category and subcategory breakdowns, trends, budgets, amount parsing, draft validation.
+- **Store:** add / edit / delete with undo; category delete with reassignment and undo; subcategory delete moving its transactions to the parent; reorder.
+- **Components:** category grid expand → select subcategory; the form's fast path (amount → category → account → note → save); validation messages.
+
+---
+
+## 9. Path to real data (Phases 2–3)
+
+| Preview store action | Phase 3 replacement |
+|---|---|
+| `saveTransaction` | `insert` / `update` on `transactions` (RLS; composite FKs; `version` check) via TanStack Query mutation with optimistic update |
+| `deleteTransaction` / `restoreTransaction` | soft delete (`deleted_at`) and undo within 30 days |
+| `transfer` | the `create_transfer` RPC (atomic; both accounts must belong to the caller) |
+| category / account actions | `categories` / `accounts` tables; reassignment through one RPC (single transaction) |
+| calculations | unchanged pure functions, plus SQL read models (`f_monthly_cashflow`, `v_account_balances`) tested against the same fixtures |
+
+The seed data and the preview banner go away once the repositories are connected.

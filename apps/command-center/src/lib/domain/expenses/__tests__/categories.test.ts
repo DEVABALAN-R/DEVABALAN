@@ -1,0 +1,89 @@
+import { budgetStatus, dailyAllowance } from '../budgets';
+import {
+  OTHER_ID,
+  TRANSFER_FEES_ID,
+  UNCATEGORIZED_ID,
+  categoryBreakdown,
+  categoryPath,
+  categoryTrend,
+  limitSlices,
+  recentNotes,
+  resolveCategory,
+  subcategoryBreakdown,
+} from '../categories';
+import { periodTotals } from '../periods';
+import { categories, october, transactions } from '../__fixtures__/ledger';
+
+describe('category breakdowns', () => {
+  it('sums exactly to the period expense total, with fees and uncategorised buckets', () => {
+    const slices = categoryBreakdown(transactions, categories, 'expense', october);
+    expect(slices.map((slice) => [slice.id, slice.amount])).toEqual([
+      ['rent', 1_000_000],
+      ['food', 35_000],
+      [UNCATEGORIZED_ID, 10_000],
+      [TRANSFER_FEES_ID, 1_000],
+    ]);
+    const total = slices.reduce((sum, slice) => sum + slice.amount, 0);
+    expect(total).toBe(periodTotals(transactions, october).expense);
+    expect(slices[0].share).toBeCloseTo(1_000_000 / 1_046_000);
+  });
+
+  it('splits a category into subcategories plus a general bucket', () => {
+    const slices = subcategoryBreakdown(transactions, categories, 'food', october);
+    expect(slices.map((slice) => [slice.name, slice.amount])).toEqual([
+      ['Food (general)', 30_000],
+      ['Tea', 5_000],
+    ]);
+  });
+
+  it('resolves leaf ids to parent and subcategory', () => {
+    expect(resolveCategory(categories, 'tea').parent?.id).toBe('food');
+    expect(categoryPath(categories, 'tea')).toBe('Food › Tea');
+    expect(categoryPath(categories, 'rent')).toBe('Rent');
+    expect(categoryPath(categories, null)).toBeNull();
+  });
+
+  it('builds a monthly trend for one category', () => {
+    expect(categoryTrend(transactions, categories, 'food', '2026-10', 2)).toEqual([
+      { month: '2026-09', amount: 4_000 },
+      { month: '2026-10', amount: 35_000 },
+    ]);
+  });
+
+  it('folds the smallest slices into Other', () => {
+    const slices = categoryBreakdown(transactions, categories, 'expense', october);
+    expect(limitSlices(slices, 4)).toBe(slices);
+    const limited = limitSlices(slices, 3);
+    expect(limited.map((slice) => [slice.id, slice.amount, slice.count])).toEqual([
+      ['rent', 1_000_000, 1],
+      ['food', 35_000, 2],
+      [OTHER_ID, 11_000, 2],
+    ]);
+    expect(limited[2].name).toBe('Other (2)');
+    expect(limited.reduce((sum, slice) => sum + slice.share, 0)).toBeCloseTo(1);
+  });
+
+  it('suggests distinct recent notes for a category, newest first', () => {
+    expect(recentNotes(transactions, 'tea')).toEqual(['Tea']);
+    expect(recentNotes(transactions, null)).toEqual([]);
+  });
+});
+
+describe('budgets', () => {
+  it('reports budget lines sorted by how much is used', () => {
+    const status = budgetStatus(categories, transactions, '2026-10');
+    expect(status.lines.map((line) => [line.category.id, line.spent, line.remaining])).toEqual([
+      ['rent', 1_000_000, 0],
+      ['food', 35_000, 465_000],
+    ]);
+    expect(status.totalBudget).toBe(1_500_000);
+    expect(status.remaining).toBe(465_000);
+    expect(status.unbudgeted.map((item) => item.category.id)).toEqual(['gift']);
+  });
+
+  it('computes a daily allowance only when money is left', () => {
+    expect(dailyAllowance(465_000, 10)).toBe(46_500);
+    expect(dailyAllowance(0, 10)).toBeNull();
+    expect(dailyAllowance(100, 0)).toBeNull();
+  });
+});
