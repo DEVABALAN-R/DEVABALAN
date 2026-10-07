@@ -868,7 +868,9 @@ interface MarketDataProvider { mutualFunds: MutualFundDataProvider; prices?: Pri
 
 ## 14. 3D / ANIMATION STRATEGY
 
-### 14.1 Animation (Reanimated)
+### 14.1 Animation
+
+> **Status (Oct 2026):** shipped on React Native's built-in `Animated`, which react-native-web already includes, instead of Reanimated. On web Reanimated cost ~140 KiB gzip (a quarter of the bundle) for what the app uses: entrance fades, sliding selection indicators and a skeleton pulse. Bring Reanimated back deliberately, together with Gesture Handler, when swipe actions or gesture-driven sheets land, and re-measure the bundle then. Layout transitions for list insert/delete wait for that too.
 
 | Pattern | Spec |
 |---|---|
@@ -879,7 +881,7 @@ interface MarketDataProvider { mutualFunds: MutualFundDataProvider; prices?: Pri
 | Success | Check animation on save (≤ 600 ms) plus a toast with **Undo** (5 s) |
 | Skeletons | Shimmer; static under reduced motion |
 
-Animations never block input. Durations are capped by tokens. `useReducedMotion()` from Reanimated, plus the OS setting, zeroes all non-essential motion. Loops (shimmer) stop when off-screen and when the app is backgrounded.
+Animations never block input. Durations are capped by tokens. `useReducedMotion()` (`src/theme/motion.ts`: one shared subscription to the OS or browser setting) zeroes all non-essential motion. Loops (shimmer) stop when off-screen and when the app is backgrounded.
 
 ### 14.2 3D evaluation
 
@@ -1091,6 +1093,7 @@ Each phase is one or more PRs. Each must pass CI and its acceptance criteria bef
 - **Chart kit** in `src/components/charts` is SVG-based, as planned in §13. It provides draw-in animation, hover/press tooltips and text summaries.
 - **Sample data:** these screens are driven by clearly labelled sample data in `src/features/preview`, with fictional names, until Phases 3–6 connect real repositories.
 - **Bundle ceiling** raised 500 → 520 KiB gzip for the added UI code (current ~502 KiB); the Phase 11 target is unchanged.
+- **Motion without Reanimated (expense manager work):** replacing Reanimated with React Native's `Animated` (see §14.1) cut the web bundle from ~523 to ~380 KiB gzip, so the CI ceiling dropped to 430 KiB.
 
 ### PHASE 2: Authentication + security foundation
 

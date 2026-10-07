@@ -1,28 +1,19 @@
 import { Link, usePathname, type Href } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View, type LayoutRectangle } from 'react-native';
-import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { Animated, Pressable, StyleSheet, View, type LayoutRectangle } from 'react-native';
 import { Text } from '@/components/ui';
 import { useInteractionState } from '@/hooks/useInteractionState';
-import { useMotion, useTheme } from '@/theme';
+import { useSlidingIndicator } from '@/hooks/useSlidingIndicator';
+import { useTheme } from '@/theme';
 import { isActive, topNav, type Destination } from './navigation';
 
 /** Primary navigation pills with an ink indicator that springs to the active page. */
 export function TopNav({ compact = false }: { compact?: boolean }) {
   const theme = useTheme();
   const pathname = usePathname();
-  const { reduceMotion, spring } = useMotion();
   const [layouts, setLayouts] = useState<Record<string, LayoutRectangle>>({});
   const active = topNav.find((item) => isActive(pathname, item.href));
-  const target = active ? layouts[active.name] : undefined;
-  const indicator = useAnimatedStyle(() => {
-    const move = (value: number) => (reduceMotion ? value : withSpring(value, spring));
-    return {
-      opacity: target ? 1 : 0,
-      width: move(target?.width ?? 0),
-      transform: [{ translateX: move(target?.x ?? 0) }],
-    };
-  });
+  const indicator = useSlidingIndicator(active ? layouts[active.name] : undefined, 'spring');
 
   return (
     <View
@@ -46,7 +37,11 @@ export function TopNav({ compact = false }: { compact?: boolean }) {
             borderRadius: theme.radius.pill,
             backgroundColor: theme.colors.ink,
           },
-          indicator,
+          {
+            opacity: indicator.visible ? 1 : 0,
+            width: indicator.width,
+            transform: [{ translateX: indicator.x }],
+          },
         ]}
       />
       {topNav.map((item) => (

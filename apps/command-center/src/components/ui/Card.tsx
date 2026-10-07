@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Pressable, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useInteractionState } from '@/hooks/useInteractionState';
-import { useMotion, useTheme, type SpaceToken } from '@/theme';
+import { useTheme, type SpaceToken } from '@/theme';
+import { Appear } from './Appear';
 import { GradientFill } from './GradientFill';
 
 export type CardVariant = 'default' | 'muted' | 'brand' | 'ink' | 'primary';
@@ -30,7 +30,6 @@ export function Card({
   accessibilityLabel,
 }: CardProps) {
   const theme = useTheme();
-  const { reduceMotion } = useMotion();
   const { hovered, focused, handlers } = useInteractionState();
   const background = {
     default: theme.colors.surface,
@@ -47,10 +46,13 @@ export function Card({
     borderWidth: theme.scheme === 'dark' && variant === 'default' ? 1 : 0,
     borderColor: theme.colors.border,
   };
-  const entering =
-    index === undefined || reduceMotion
-      ? undefined
-      : FadeInDown.duration(380).delay(Math.min(index, 10) * 55);
+  // Cards in a group rise in one after another.
+  const entrance = {
+    rise: 14,
+    duration: 380,
+    delay: Math.min(index ?? 0, 10) * 55,
+    disabled: index === undefined,
+  };
   const content = (
     <>
       {variant === 'brand' ? (
@@ -66,13 +68,13 @@ export function Card({
 
   if (!onPress) {
     return (
-      <Animated.View entering={entering} style={[base, style]}>
+      <Appear {...entrance} style={[base, style]}>
         {content}
-      </Animated.View>
+      </Appear>
     );
   }
   return (
-    <Animated.View entering={entering} style={[{ borderRadius: theme.radius.xl }, style]}>
+    <Appear {...entrance} style={[{ borderRadius: theme.radius.xl }, style]}>
       <Pressable
         role="button"
         accessibilityLabel={accessibilityLabel}
@@ -88,7 +90,7 @@ export function Card({
       >
         {content}
       </Pressable>
-    </Animated.View>
+    </Appear>
   );
 }
 

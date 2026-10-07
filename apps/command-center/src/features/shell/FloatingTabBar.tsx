@@ -1,11 +1,10 @@
 import { Link, usePathname, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus } from '@/components/icons';
-import { Text } from '@/components/ui';
+import { Appear, Text } from '@/components/ui';
 import { useUiStore } from '@/state/ui';
-import { useMotion, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { isActive, mobileMore, mobileTabs } from './navigation';
 
 /**
@@ -16,7 +15,6 @@ export function FloatingTabBar() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const { reduceMotion } = useMotion();
   const openQuickAdd = useUiStore((state) => state.openQuickAdd);
   const moreActive = mobileMore.some((item) => isActive(pathname, item.href));
   return (
@@ -76,11 +74,11 @@ export function FloatingTabBar() {
                   strokeWidth={2}
                 />
                 {active ? (
-                  <Animated.View entering={reduceMotion ? undefined : FadeIn.duration(200)}>
+                  <Appear duration={200}>
                     <Text variant="label" color="onPrimary" numberOfLines={1}>
                       {item.shortLabel ?? item.label}
                     </Text>
-                  </Animated.View>
+                  </Appear>
                 ) : null}
               </Pressable>
             </Link>

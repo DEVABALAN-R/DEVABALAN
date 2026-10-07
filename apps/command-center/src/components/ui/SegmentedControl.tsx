@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Pressable, View, type LayoutRectangle } from 'react-native';
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { Animated, Pressable, View, type LayoutRectangle } from 'react-native';
 import { useInteractionState } from '@/hooks/useInteractionState';
-import { useMotion, useTheme, type ColorRoles } from '@/theme';
+import { useSlidingIndicator } from '@/hooks/useSlidingIndicator';
+import { useTheme, type ColorRoles } from '@/theme';
 import { Text } from './Text';
 
 type SegmentTone = Extract<
@@ -35,14 +35,8 @@ export function SegmentedControl<T extends string>({
   size = 'md',
 }: SegmentedControlProps<T>) {
   const theme = useTheme();
-  const { duration } = useMotion();
   const [layouts, setLayouts] = useState<Record<string, LayoutRectangle>>({});
-  const selected = layouts[value];
-  const thumb = useAnimatedStyle(() => ({
-    opacity: selected ? 1 : 0,
-    transform: [{ translateX: withTiming(selected?.x ?? 0, { duration: duration('base') }) }],
-    width: withTiming(selected?.width ?? 0, { duration: duration('base') }),
-  }));
+  const thumb = useSlidingIndicator(layouts[value]);
 
   return (
     <View
@@ -68,7 +62,11 @@ export function SegmentedControl<T extends string>({
             backgroundColor: theme.colors.surface,
             ...theme.elevation(2),
           },
-          thumb,
+          {
+            opacity: thumb.visible ? 1 : 0,
+            width: thumb.width,
+            transform: [{ translateX: thumb.x }],
+          },
         ]}
       />
       {segments.map((segment) => (

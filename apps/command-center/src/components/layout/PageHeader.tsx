@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import { useMotion, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
+import { Appear } from '../ui/Appear';
 import { Heading, Text } from '../ui/Text';
 
 type PageHeaderProps = {
@@ -26,12 +26,11 @@ export function PageHeader({
 }: PageHeaderProps) {
   const theme = useTheme();
   const { isMobile } = useBreakpoint();
-  const { reduceMotion } = useMotion();
   const titleVariant =
     size === 'hero' ? (isMobile ? 'h1' : 'display') : size === 'compact' ? 'h2' : 'h1';
   return (
-    <Animated.View
-      entering={reduceMotion ? undefined : FadeIn.duration(300)}
+    <Appear
+      duration={300}
       style={{
         flexDirection: isMobile ? 'column' : 'row',
         alignItems: isMobile ? 'stretch' : 'flex-end',
@@ -75,6 +74,6 @@ export function PageHeader({
           {actions}
         </View>
       ) : null}
-    </Animated.View>
+    </Appear>
   );
 }

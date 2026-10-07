@@ -9,10 +9,10 @@ import {
   type ReactNode,
 } from 'react';
 import { Pressable, View } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import { layout, useMotion, useTheme } from '@/theme';
+import { layout, useTheme } from '@/theme';
+import { Appear } from '../ui/Appear';
 import { Text } from '../ui/Text';
 
 export type ToastInput = {
@@ -63,7 +63,6 @@ function ToastViewport({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { isMobile } = useBreakpoint();
-  const { reduceMotion } = useMotion();
   const bottom = insets.bottom + theme.space[4] + (isMobile ? layout.bottomBarHeight : 0);
   return (
     <View
@@ -80,10 +79,10 @@ function ToastViewport({
       }}
     >
       {toast ? (
-        <Animated.View
+        <Appear
           key={toast.id}
-          entering={reduceMotion ? undefined : FadeInDown.duration(200)}
-          exiting={reduceMotion ? undefined : FadeOutDown.duration(150)}
+          rise={12}
+          duration={200}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -113,7 +112,7 @@ function ToastViewport({
               </Text>
             </Pressable>
           ) : null}
-        </Animated.View>
+        </Appear>
       ) : null}
     </View>
   );
