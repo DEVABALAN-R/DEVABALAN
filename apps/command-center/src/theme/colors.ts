@@ -147,11 +147,12 @@ export const lightColors: ColorRoles = {
   hatch: '#D9DCE0',
 };
 
+// Dark mode: pure black cards and tiles on a dark grey page; inner rows sit a step lighter.
 export const darkColors: ColorRoles = {
-  bg: '#0E0F11',
-  surface: '#17181B',
-  surfaceMuted: '#1F2125',
-  surfaceRaised: '#1C1E21',
+  bg: '#1A1B1E',
+  surface: '#000000',
+  surfaceMuted: '#141518',
+  surfaceRaised: '#0B0C0D',
   border: '#2A2D31',
   borderStrong: '#6A6F78',
   textPrimary: '#F3F4F6',
