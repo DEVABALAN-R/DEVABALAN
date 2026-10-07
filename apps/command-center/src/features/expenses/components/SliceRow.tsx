@@ -1,11 +1,10 @@
 import { Pressable, View } from 'react-native';
-import { ArrowLeftRight, ChevronRight } from '@/components/icons';
-import { CategoryIcon, Text } from '@/components/ui';
+import { ChevronRight } from '@/components/icons';
+import { Text } from '@/components/ui';
 import { useInteractionState } from '@/hooks/useInteractionState';
-import { TRANSFER_FEES_ID, type Slice } from '@/lib/domain/expenses';
+import type { Slice } from '@/lib/domain/expenses';
 import { formatMoneyWhole } from '@/lib/formatting/currency';
-import { useTheme } from '@/theme';
-import { iconFor } from '../categoryIcons';
+import { fontFamily, useTheme } from '@/theme';
 
 /** "34%" — shares under 1% read "<1%" rather than a misleading "0%". */
 export function formatShare(share: number): string {
@@ -22,11 +21,10 @@ type SliceRowProps = {
   onHover?: (id: string | null) => void;
 };
 
-/** Ranked category row: colour key, icon, name, share and amount. */
+/** Ranked category row (Money Manager style): share badge in the slice colour, name and amount. */
 export function SliceRow({ slice, color, onPress, active = false, onHover }: SliceRowProps) {
   const theme = useTheme();
   const { hovered, focused, handlers } = useInteractionState();
-  const neutral = !slice.category;
   const highlighted = active || hovered;
   return (
     <Pressable
@@ -58,35 +56,28 @@ export function SliceRow({ slice, color, onPress, active = false, onHover }: Sli
       ]}
     >
       <View
-        aria-hidden
-        style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, backgroundColor: color }}
-      />
-      <CategoryIcon
-        icon={slice.id === TRANSFER_FEES_ID ? ArrowLeftRight : iconFor(slice.category?.icon ?? '')}
-        tint={slice.category?.tint ?? 0}
-        colors={
-          neutral ? { bg: theme.colors.surfaceMuted, fg: theme.colors.textSecondary } : undefined
-        }
-        size={32}
-      />
+        style={{
+          width: 44,
+          alignItems: 'center',
+          paddingVertical: 3,
+          borderRadius: theme.radius.xs,
+          backgroundColor: color,
+        }}
+      >
+        <Text
+          variant="caption"
+          numeric
+          style={{ color: theme.colors.onPie, fontFamily: fontFamily.semibold }}
+        >
+          {formatShare(slice.share)}
+        </Text>
+      </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text variant="label" numberOfLines={1}>
           {slice.name}
         </Text>
         <Text variant="caption" color="textTertiary" numberOfLines={1}>
           {slice.count} {slice.count === 1 ? 'entry' : 'entries'}
-        </Text>
-      </View>
-      <View
-        style={{
-          paddingHorizontal: 8,
-          paddingVertical: 2,
-          borderRadius: theme.radius.pill,
-          backgroundColor: theme.colors.surfaceMuted,
-        }}
-      >
-        <Text variant="caption" color="textSecondary" numeric>
-          {formatShare(slice.share)}
         </Text>
       </View>
       <Text variant="label" numeric style={{ minWidth: 76, textAlign: 'right' }} numberOfLines={1}>

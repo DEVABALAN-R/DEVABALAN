@@ -7,6 +7,8 @@
  * near-black "ink" pills for the active navigation state, and a set of colourful
  * tints for categories. Contrast is enforced by src/theme/__tests__/contrast.test.ts.
  */
+import { pieColors } from './pieColors';
+
 export type Tint = { bg: string; fg: string };
 
 export type ColorRoles = {
@@ -73,6 +75,13 @@ export type ColorRoles = {
    * Light slots 3–5 are < 3:1 on white, so charts ship labels or a table view. */
   chart: readonly string[];
   /** Two-series comparison bars (income vs expense) as in the reference design. */
+  /** Stats pie (Money Manager style): bright slices coloured by rank, largest first.
+   * Every slice is named in a callout and in the ranked list, so colour is never the only key. */
+  pie: readonly string[];
+  /** The folded "Other" slice. */
+  pieOther: string;
+  /** Text on a pie colour (the ranked list's percentage badges). */
+  onPie: string;
   chartPositive: string;
   chartNegative: string;
   chartGrid: string;
@@ -141,6 +150,7 @@ export const lightColors: ColorRoles = {
     { bg: '#E7E9FD', fg: '#4338CA' },
   ],
   chart: ['#2A78D6', '#EB6834', '#1BAF7A', '#EDA100', '#E87BA4', '#008300', '#4A3AA7', '#E34948'],
+  ...pieColors,
   chartPositive: '#121315',
   chartNegative: '#B4B8BE',
   chartGrid: '#ECEDEF',
@@ -210,6 +220,7 @@ export const darkColors: ColorRoles = {
     { bg: '#1E2142', fg: '#A5B0FF' },
   ],
   chart: ['#3987E5', '#D95926', '#199E70', '#C98500', '#D55181', '#008300', '#9085E9', '#E66767'],
+  ...pieColors,
   chartPositive: '#F3F4F6',
   chartNegative: '#6A6F78',
   chartGrid: '#25272B',

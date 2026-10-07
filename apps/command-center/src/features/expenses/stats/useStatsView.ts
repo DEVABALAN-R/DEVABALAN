@@ -15,7 +15,7 @@ import { useLedger } from '../hooks/useLedger';
 import { useExpenseUi } from '../state/expenseUi';
 
 /** Most slices a pie shows; the rest fold into "Other". */
-const PIE_SLICES = 8;
+const PIE_SLICES = 10;
 
 /** Stats for the selected kind (income or expenses), period and account, plus the drill-down. */
 export function useStatsView() {
