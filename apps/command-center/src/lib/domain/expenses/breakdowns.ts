@@ -108,24 +108,31 @@ export function subcategoryBreakdown(
   return toSlices(totals);
 }
 
-/** Income/expense transactions whose leaf category belongs to `parentId`. */
+/**
+ * Income/expense transactions whose leaf category belongs to `parentId`. With
+ * `sliceId`, only one subcategory slice: a subcategory id, or `parentId` itself for
+ * entries filed directly under the parent (the "(general)" slice).
+ */
 export function transactionsInCategory(
   transactions: Transaction[],
   categories: Category[],
   parentId: string,
   range: DateRange,
   accountId?: string | null,
+  sliceId?: string | null,
 ): Transaction[] {
   return transactions
     .filter((transaction) => transaction.kind !== 'transfer' && inRange(transaction, range))
     .filter((transaction) => !accountId || transaction.accountId === accountId)
-    .filter(
-      (transaction) => resolveCategory(categories, transaction.categoryId).parent?.id === parentId,
-    )
+    .filter((transaction) => {
+      const { parent, sub } = resolveCategory(categories, transaction.categoryId);
+      if (parent?.id !== parentId) return false;
+      return !sliceId || (sub?.id ?? parentId) === sliceId;
+    })
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
 }
 
-/** Monthly totals for one top-level category, oldest first. */
+/** Monthly totals for one top-level category (or one of its slices), oldest first. */
 export function categoryTrend(
   transactions: Transaction[],
   categories: Category[],
@@ -133,6 +140,7 @@ export function categoryTrend(
   endMonth: string,
   months = 6,
   accountId?: string | null,
+  sliceId?: string | null,
 ) {
   return Array.from({ length: months }, (_, index) => {
     const month = addMonths(endMonth, index - months + 1);
@@ -142,6 +150,7 @@ export function categoryTrend(
       parentId,
       monthBounds(month),
       accountId,
+      sliceId,
     ).reduce((sum, transaction) => sum + transaction.amount, 0);
     return { month, amount };
   });

@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { TrendLineChart } from '@/components/charts';
 import { ReceiptText } from '@/components/icons';
 import { EmptyState } from '@/components/feedback';
-import { Card, CardHeader, CategoryIcon, Money, Text } from '@/components/ui';
+import { Button, Card, CardHeader, CategoryIcon, Money, Text } from '@/components/ui';
 import { useFitMode } from '@/components/layout/Screen';
 import { monthLabel } from '@/lib/domain/expenses';
 import { formatAxisMoney, formatMoneyWhole } from '@/lib/formatting/currency';
@@ -29,8 +29,12 @@ export function CategoryDetailCard({ view, active, onHover, style }: CategoryDet
   const fit = useFitMode(true);
   const accountId = useExpenseUi((state) => state.accountId);
   const colors = useSliceColors(view.subSlices);
+  const focusSlice = useExpenseUi((state) => state.focusSlice);
   const category = view.drill;
   if (!category) return null;
+  const focus = view.focus;
+  const name = focus ? `${category.name} › ${focus.name}` : category.name;
+  const total = focus ? focus.amount : view.drillTotal;
   const trendLabel =
     view.period === 'year' ? 'Each month of the year' : 'Month by month · press one to open it';
   const selected = view.trend.findIndex((point) => point.month === view.month);
@@ -42,7 +46,20 @@ export function CategoryDetailCard({ view, active, onHover, style }: CategoryDet
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[3] }}>
         <CategoryIcon icon={iconFor(category.icon)} tint={category.tint} size={40} />
         <View style={{ flex: 1 }}>
-          <CardHeader title={category.name} subtitle={trendLabel} />
+          <CardHeader
+            title={name}
+            subtitle={trendLabel}
+            action={
+              focus ? (
+                <Button
+                  label={`All ${category.name}`}
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => focusSlice(null)}
+                />
+              ) : null
+            }
+          />
         </View>
       </View>
       <TrendLineChart
@@ -58,7 +75,7 @@ export function CategoryDetailCard({ view, active, onHover, style }: CategoryDet
           name: monthLabel(point.month),
         }))}
         formatValue={(value) => (value >= 1e7 ? formatAxisMoney(value) : formatMoneyWhole(value))}
-        accessibilityLabel={`${category.name} by month: ${view.trend
+        accessibilityLabel={`${name} by month: ${view.trend
           .map((point) => `${monthLabel(point.month, 'short')} ${formatMoneyWhole(point.amount)}`)
           .join(', ')}.`}
       />
@@ -72,10 +89,10 @@ export function CategoryDetailCard({ view, active, onHover, style }: CategoryDet
           backgroundColor: theme.colors.surfaceMuted,
         }}
       >
-        <Text variant="label" color="textSecondary" style={{ flex: 1 }}>
-          {category.name} · {view.periodLabel}
+        <Text variant="label" color="textSecondary" style={{ flex: 1 }} numberOfLines={1}>
+          {name} · {view.periodLabel}
         </Text>
-        <Money value={view.drillTotal} whole variant="bodyStrong" />
+        <Money value={total} whole variant="bodyStrong" />
       </View>
       {view.entries.length ? (
         <PanelScroll>
@@ -86,8 +103,10 @@ export function CategoryDetailCard({ view, active, onHover, style }: CategoryDet
                   key={slice.id}
                   slice={slice}
                   color={colors[index]}
-                  active={active === slice.name}
+                  active={active === slice.name || focus?.id === slice.id}
+                  selected={focus?.id === slice.id}
                   onHover={onHover}
+                  onPress={() => focusSlice(slice.id)}
                 />
               ))}
             </>
@@ -108,7 +127,7 @@ export function CategoryDetailCard({ view, active, onHover, style }: CategoryDet
         <EmptyState
           icon={ReceiptText}
           title="No entries in this period"
-          body={`Nothing was recorded under ${category.name} in ${view.periodLabel}.`}
+          body={`Nothing was recorded under ${name} in ${view.periodLabel}.`}
         />
       )}
     </Card>

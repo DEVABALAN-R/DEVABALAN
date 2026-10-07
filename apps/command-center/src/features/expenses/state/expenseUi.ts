@@ -14,6 +14,8 @@ type ExpenseUiState = {
   statsKind: CategoryKind;
   statsPeriod: 'month' | 'year';
   drillCategoryId: string | null;
+  /** Inside a drill: the focused subcategory slice (a subcategory id, or the parent's id for "(general)"). */
+  drillSliceId: string | null;
   showSubcategories: boolean;
   setMonth: (month: string) => void;
   shiftMonth: (delta: number) => void;
@@ -24,6 +26,8 @@ type ExpenseUiState = {
   setStatsKind: (kind: CategoryKind) => void;
   setStatsPeriod: (period: 'month' | 'year') => void;
   drillInto: (categoryId: string | null) => void;
+  /** Focus one subcategory slice; choosing the focused one again clears it. */
+  focusSlice: (sliceId: string | null) => void;
   toggleSubcategories: () => void;
 };
 
@@ -35,6 +39,7 @@ export const useExpenseUi = create<ExpenseUiState>((set) => ({
   statsKind: 'expense',
   statsPeriod: 'month',
   drillCategoryId: null,
+  drillSliceId: null,
   showSubcategories: true,
   setMonth: (month) => set({ month, selectedDate: null }),
   shiftMonth: (delta) =>
@@ -44,8 +49,10 @@ export const useExpenseUi = create<ExpenseUiState>((set) => ({
   setAccount: (accountId) => set({ accountId }),
   selectDate: (date) =>
     set(date ? { selectedDate: date, month: monthOf(date) } : { selectedDate: null }),
-  setStatsKind: (statsKind) => set({ statsKind, drillCategoryId: null }),
-  setStatsPeriod: (statsPeriod) => set({ statsPeriod, drillCategoryId: null }),
-  drillInto: (drillCategoryId) => set({ drillCategoryId }),
+  setStatsKind: (statsKind) => set({ statsKind, drillCategoryId: null, drillSliceId: null }),
+  setStatsPeriod: (statsPeriod) => set({ statsPeriod, drillCategoryId: null, drillSliceId: null }),
+  drillInto: (drillCategoryId) => set({ drillCategoryId, drillSliceId: null }),
+  focusSlice: (sliceId) =>
+    set((state) => ({ drillSliceId: sliceId === state.drillSliceId ? null : sliceId })),
   toggleSubcategories: () => set((state) => ({ showSubcategories: !state.showSubcategories })),
 }));

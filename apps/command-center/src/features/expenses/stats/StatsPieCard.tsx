@@ -25,6 +25,7 @@ export function StatsPieCard({ view, active, style }: StatsPieCardProps) {
   // Phones: the pie is width-bound, so a shorter box avoids empty space under it.
   const { isMobile } = useBreakpoint();
   const drillInto = useExpenseUi((state) => state.drillInto);
+  const focusSlice = useExpenseUi((state) => state.focusSlice);
   const slices = view.drill ? view.subSlices : view.pie;
   const colors = useSliceColors(slices);
   const noun = view.kind === 'income' ? 'Income' : 'Expenses';
@@ -68,15 +69,14 @@ export function StatsPieCard({ view, active, style }: StatsPieCardProps) {
             value: slice.amount,
             color: colors[index],
           }))}
-          activeLabel={active}
-          onSelect={
-            view.drill
-              ? undefined
-              : (label) => {
-                  const slice = slices.find((item) => item.name === label);
-                  if (slice?.category) drillInto(slice.id);
-                }
-          }
+          activeLabel={active ?? view.focus?.name ?? null}
+          onSelect={(label) => {
+            const slice = slices.find((item) => item.name === label);
+            if (!slice) return;
+            // In a category, a slice focuses that subcategory; at the top level it opens the category.
+            if (view.drill) focusSlice(slice.id);
+            else if (slice.category) drillInto(slice.id);
+          }}
           accessibilityLabel={`${title}, ${formatMoneyWhole(total)} in ${view.periodLabel}. ${slices
             .slice(0, 4)
             .map((slice) => `${slice.name} ${formatShare(slice.share)}`)
