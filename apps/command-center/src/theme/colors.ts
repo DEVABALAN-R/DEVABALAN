@@ -1,8 +1,13 @@
 /**
- * Semantic colour roles for light and dark. Components must use roles, never hex.
- * Values derive from the existing app's finance-tokens.css (indigo accent, slate
- * neutrals); contrast is enforced by src/theme/__tests__/contrast.test.ts.
+ * Semantic colour roles for light and dark. Components use roles, never hex.
+ *
+ * Visual language (2026 redesign): soft grey canvas, white rounded cards,
+ * a lime "primary" for the main actions, a deep green gradient for hero cards,
+ * near-black "ink" pills for the active navigation state, and a set of colourful
+ * tints for categories. Contrast is enforced by src/theme/__tests__/contrast.test.ts.
  */
+export type Tint = { bg: string; fg: string };
+
 export type ColorRoles = {
   bg: string;
   surface: string;
@@ -14,10 +19,26 @@ export type ColorRoles = {
   textPrimary: string;
   textSecondary: string;
   textTertiary: string;
+  /** Accent for text and icons on surfaces (links, active labels). */
   accent: string;
   accentPressed: string;
   accentSoft: string;
   onAccent: string;
+  /** Lime fill for primary actions; always paired with `onPrimary` text. */
+  primary: string;
+  primaryPressed: string;
+  primarySoft: string;
+  onPrimary: string;
+  /** Near-black pill for the active navigation item and dark bars. */
+  ink: string;
+  inkPressed: string;
+  onInk: string;
+  onInkMuted: string;
+  /** Hero gradient (top-left → bottom-right). Text on it uses `onBrand`. */
+  brandFrom: string;
+  brandTo: string;
+  onBrand: string;
+  onBrandMuted: string;
   focus: string;
   income: string;
   incomeSoft: string;
@@ -44,96 +65,151 @@ export type ColorRoles = {
   inverseSurface: string;
   onInverseSurface: string;
   inverseAccent: string;
-  /** Categorical series, fixed order (never cycled). Validated with the dataviz
-   * palette checker: all adjacent pairs pass CVD ΔE ≥ 8 and normal ΔE ≥ 15 in both
-   * modes. Light slots 3–5 are < 3:1 on white, so charts must ship direct labels
-   * or a table view (relief rule). Beyond 8 series, fold into "Other". */
+  /** Colourful category chips (icon `fg` on `bg`, ≥ 3:1). Fixed order. */
+  tints: readonly Tint[];
+  /** Categorical series, fixed order (never cycled), CVD-validated with the
+   * dataviz palette checker (adjacent CVD ΔE ≥ 8, normal ΔE ≥ 15 in both modes).
+   * Light slots 3–5 are < 3:1 on white, so charts ship labels or a table view. */
   chart: readonly string[];
+  /** Two-series comparison bars (income vs expense) as in the reference design. */
+  chartPositive: string;
+  chartNegative: string;
   chartGrid: string;
+  hatch: string;
 };
 
 export const lightColors: ColorRoles = {
-  bg: '#F6F7FB',
+  bg: '#EDEEF0',
   surface: '#FFFFFF',
-  surfaceMuted: '#F0F2F7',
+  surfaceMuted: '#F4F5F6',
   surfaceRaised: '#FFFFFF',
-  border: '#E3E6EE',
-  borderStrong: '#8A94A6',
-  textPrimary: '#172033',
-  textSecondary: '#4B5567',
-  textTertiary: '#5F697B',
-  accent: '#4F46E5',
-  accentPressed: '#4338CA',
-  accentSoft: '#ECEBFC',
+  border: '#E5E6E9',
+  borderStrong: '#8B9099',
+  textPrimary: '#111214',
+  textSecondary: '#5B6068',
+  textTertiary: '#6B7079',
+  accent: '#286F2E',
+  accentPressed: '#1B5520',
+  accentSoft: '#EEF8DC',
   onAccent: '#FFFFFF',
-  focus: '#4F46E5',
-  income: '#15803D',
-  incomeSoft: '#EDF8F1',
-  expense: '#B42318',
-  expenseSoft: '#FDECEA',
-  transfer: '#475A80',
-  transferSoft: '#E9EDF5',
+  primary: '#B6F03C',
+  primaryPressed: '#A2DC2A',
+  primarySoft: '#F1FBDD',
+  onPrimary: '#111214',
+  ink: '#121315',
+  inkPressed: '#2A2C30',
+  onInk: '#FFFFFF',
+  onInkMuted: '#B4B8BE',
+  brandFrom: '#237A35',
+  brandTo: '#0C3D20',
+  onBrand: '#FFFFFF',
+  onBrandMuted: '#E8F3E9',
+  focus: '#286F2E',
+  income: '#286F2E',
+  incomeSoft: '#EAF6E3',
+  expense: '#C62828',
+  expenseSoft: '#FDECEC',
+  transfer: '#3D5A80',
+  transferSoft: '#E9EEF5',
   investment: '#6D28D9',
   investmentSoft: '#F1EAFD',
-  profit: '#15803D',
-  loss: '#B42318',
-  neutral: '#4B5567',
-  success: '#15803D',
-  successSoft: '#EDF8F1',
-  warning: '#A15C07',
-  warningSoft: '#FDF4DC',
-  danger: '#B42318',
-  dangerSoft: '#FDECEA',
+  profit: '#286F2E',
+  loss: '#C62828',
+  neutral: '#5B6068',
+  success: '#286F2E',
+  successSoft: '#EAF6E3',
+  warning: '#9A5B00',
+  warningSoft: '#FFF4DB',
+  danger: '#C62828',
+  dangerSoft: '#FDECEC',
   onDanger: '#FFFFFF',
-  info: '#1D4ED8',
-  infoSoft: '#E8EEFD',
-  scrim: 'rgba(15, 23, 42, 0.45)',
-  inverseSurface: '#172033',
-  onInverseSurface: '#F1F5F9',
-  inverseAccent: '#A5B4FC',
+  info: '#1D5BD8',
+  infoSoft: '#E8EFFD',
+  scrim: 'rgba(17, 18, 20, 0.45)',
+  inverseSurface: '#121315',
+  onInverseSurface: '#F3F4F6',
+  inverseAccent: '#B6F03C',
+  tints: [
+    { bg: '#EAF8D2', fg: '#3E7A12' },
+    { bg: '#EFE8FE', fg: '#6D28D9' },
+    { bg: '#E3F1FD', fg: '#1D64C4' },
+    { bg: '#FFE9E1', fg: '#C2410C' },
+    { bg: '#FFF3D1', fg: '#946200' },
+    { bg: '#FDE6F1', fg: '#BE185D' },
+    { bg: '#DDF5F0', fg: '#0F766E' },
+    { bg: '#E7E9FD', fg: '#4338CA' },
+  ],
   chart: ['#2A78D6', '#EB6834', '#1BAF7A', '#EDA100', '#E87BA4', '#008300', '#4A3AA7', '#E34948'],
-  chartGrid: '#E3E6EE',
+  chartPositive: '#B6F03C',
+  chartNegative: '#121315',
+  chartGrid: '#ECEDEF',
+  hatch: '#D9DCE0',
 };
 
 export const darkColors: ColorRoles = {
-  bg: '#0B0F17',
-  surface: '#151A24',
-  surfaceMuted: '#1B2130',
-  surfaceRaised: '#1E2532',
-  border: '#262E3D',
-  borderStrong: '#6B7588',
-  textPrimary: '#F1F5F9',
-  textSecondary: '#AAB6C8',
-  textTertiary: '#8D99AB',
-  accent: '#818CF8',
-  accentPressed: '#A5B4FC',
-  accentSoft: '#23264A',
-  onAccent: '#0B0F17',
-  focus: '#A5B4FC',
-  income: '#34D399',
-  incomeSoft: '#0F2A22',
-  expense: '#F87171',
-  expenseSoft: '#341719',
-  transfer: '#93A4C3',
-  transferSoft: '#1D2433',
+  bg: '#0E0F11',
+  surface: '#17181B',
+  surfaceMuted: '#1F2125',
+  surfaceRaised: '#1C1E21',
+  border: '#2A2D31',
+  borderStrong: '#6A6F78',
+  textPrimary: '#F3F4F6',
+  textSecondary: '#A9AEB6',
+  textTertiary: '#8E939B',
+  accent: '#B6F03C',
+  accentPressed: '#C8F76A',
+  accentSoft: '#26331A',
+  onAccent: '#111214',
+  primary: '#B6F03C',
+  primaryPressed: '#C8F76A',
+  primarySoft: '#26331A',
+  onPrimary: '#111214',
+  ink: '#F3F4F6',
+  inkPressed: '#D9DBDF',
+  onInk: '#111214',
+  onInkMuted: '#4B5058',
+  brandFrom: '#237A35',
+  brandTo: '#0C3D20',
+  onBrand: '#FFFFFF',
+  onBrandMuted: '#E8F3E9',
+  focus: '#C8F76A',
+  income: '#8BD86A',
+  incomeSoft: '#1E2D18',
+  expense: '#FF7A7A',
+  expenseSoft: '#3A1A1A',
+  transfer: '#9DB4D6',
+  transferSoft: '#1B2433',
   investment: '#C4B5FD',
   investmentSoft: '#251E3D',
-  profit: '#34D399',
-  loss: '#F87171',
-  neutral: '#AAB6C8',
-  success: '#34D399',
-  successSoft: '#0F2A22',
-  warning: '#FBBF24',
+  profit: '#8BD86A',
+  loss: '#FF7A7A',
+  neutral: '#A9AEB6',
+  success: '#8BD86A',
+  successSoft: '#1E2D18',
+  warning: '#F5C04E',
   warningSoft: '#2E2510',
-  danger: '#F87171',
-  dangerSoft: '#341719',
-  onDanger: '#0B0F17',
-  info: '#60A5FA',
-  infoSoft: '#132339',
+  danger: '#FF7A7A',
+  dangerSoft: '#3A1A1A',
+  onDanger: '#111214',
+  info: '#7FB0FF',
+  infoSoft: '#16243A',
   scrim: 'rgba(0, 0, 0, 0.6)',
-  inverseSurface: '#F1F5F9',
-  onInverseSurface: '#172033',
-  inverseAccent: '#4338CA',
+  inverseSurface: '#F3F4F6',
+  onInverseSurface: '#111214',
+  inverseAccent: '#286F2E',
+  tints: [
+    { bg: '#26331A', fg: '#B6F03C' },
+    { bg: '#2A2140', fg: '#C4B5FD' },
+    { bg: '#16283A', fg: '#7FB6FF' },
+    { bg: '#3A2219', fg: '#FF9F7A' },
+    { bg: '#332A12', fg: '#F5C04E' },
+    { bg: '#3A1A2B', fg: '#F48FC0' },
+    { bg: '#123029', fg: '#5EDBC4' },
+    { bg: '#1E2142', fg: '#A5B0FF' },
+  ],
   chart: ['#3987E5', '#D95926', '#199E70', '#C98500', '#D55181', '#008300', '#9085E9', '#E66767'],
-  chartGrid: '#262E3D',
+  chartPositive: '#B6F03C',
+  chartNegative: '#F3F4F6',
+  chartGrid: '#25272B',
+  hatch: '#3A3D42',
 };

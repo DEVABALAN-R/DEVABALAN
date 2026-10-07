@@ -23,6 +23,11 @@ describe('Delta', () => {
     expect(screen.getByText('+18.4%')).toBeTruthy();
   });
 
+  it('treats changes that round to 0.0% as no change', async () => {
+    await renderWithProviders(<Delta value={-0.04} />);
+    expect(screen.getByLabelText('No change')).toBeTruthy();
+  });
+
   it('handles no change', async () => {
     await renderWithProviders(<Delta value={0} />);
     expect(screen.getByLabelText('No change')).toBeTruthy();

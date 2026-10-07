@@ -1,6 +1,3 @@
-import { PlannedScreen } from '@/features/shell/PlannedScreen';
-import { plannedScreens } from '@/features/shell/plannedScreens';
+import { OverviewScreen } from '@/features/overview/OverviewScreen';
 
-export default function Route() {
-  return <PlannedScreen {...plannedScreens['index']} />;
-}
+export default OverviewScreen;

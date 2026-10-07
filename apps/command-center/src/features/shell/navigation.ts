@@ -1,14 +1,14 @@
 import {
+  ChartCandlestick,
   ChartPie,
-  Flag,
   FileChartColumn,
-  House,
+  Flag,
   Landmark,
+  LayoutGrid,
   Lightbulb,
   Menu,
-  ReceiptText,
   Settings,
-  TrendingUp,
+  Wallet,
   type LucideIcon,
 } from '@/components/icons';
 
@@ -17,81 +17,98 @@ export type Destination = {
   name: string;
   href: string;
   label: string;
+  /** Short label for compact navigation. */
+  shortLabel?: string;
   icon: LucideIcon;
-  /** Where the destination appears. */
-  placement: { sidebar: 'main' | 'footer' | 'hidden'; mobile: 'tab' | 'more' | 'hidden' };
+  placement: {
+    desktop: 'top' | 'rail' | 'railFooter' | 'hidden';
+    mobile: 'tab' | 'more' | 'hidden';
+  };
 };
 
 export const destinations: readonly Destination[] = [
   {
     name: 'index',
     href: '/dashboard',
-    label: 'Dashboard',
-    icon: House,
-    placement: { sidebar: 'main', mobile: 'tab' },
+    label: 'Overview',
+    icon: LayoutGrid,
+    placement: { desktop: 'top', mobile: 'tab' },
   },
   {
-    name: 'transactions',
-    href: '/dashboard/transactions',
-    label: 'Transactions',
-    icon: ReceiptText,
-    placement: { sidebar: 'main', mobile: 'tab' },
+    name: 'expenses',
+    href: '/dashboard/expenses',
+    label: 'Expenses',
+    icon: Wallet,
+    placement: { desktop: 'top', mobile: 'tab' },
   },
   {
-    name: 'accounts',
-    href: '/dashboard/accounts',
-    label: 'Accounts',
-    icon: Landmark,
-    placement: { sidebar: 'main', mobile: 'more' },
+    name: 'mutual-funds',
+    href: '/dashboard/mutual-funds',
+    label: 'Mutual funds',
+    shortLabel: 'Funds',
+    icon: ChartPie,
+    placement: { desktop: 'top', mobile: 'tab' },
   },
   {
-    name: 'investments',
-    href: '/dashboard/investments',
-    label: 'Investments',
-    icon: TrendingUp,
-    placement: { sidebar: 'main', mobile: 'tab' },
-  },
-  {
-    name: 'goals',
-    href: '/dashboard/goals',
-    label: 'Goals',
-    icon: Flag,
-    placement: { sidebar: 'main', mobile: 'more' },
-  },
-  {
-    name: 'insights',
-    href: '/dashboard/insights',
-    label: 'Insights',
-    icon: Lightbulb,
-    placement: { sidebar: 'main', mobile: 'more' },
+    name: 'stocks',
+    href: '/dashboard/stocks',
+    label: 'Stocks',
+    icon: ChartCandlestick,
+    placement: { desktop: 'top', mobile: 'tab' },
   },
   {
     name: 'reports',
     href: '/dashboard/reports',
     label: 'Reports',
     icon: FileChartColumn,
-    placement: { sidebar: 'main', mobile: 'more' },
+    placement: { desktop: 'top', mobile: 'more' },
+  },
+  {
+    name: 'accounts',
+    href: '/dashboard/accounts',
+    label: 'Accounts',
+    icon: Landmark,
+    placement: { desktop: 'rail', mobile: 'more' },
+  },
+  {
+    name: 'goals',
+    href: '/dashboard/goals',
+    label: 'Goals',
+    icon: Flag,
+    placement: { desktop: 'rail', mobile: 'more' },
+  },
+  {
+    name: 'insights',
+    href: '/dashboard/insights',
+    label: 'Insights',
+    icon: Lightbulb,
+    placement: { desktop: 'rail', mobile: 'more' },
   },
   {
     name: 'settings',
     href: '/dashboard/settings',
     label: 'Settings',
     icon: Settings,
-    placement: { sidebar: 'footer', mobile: 'more' },
+    placement: { desktop: 'railFooter', mobile: 'more' },
   },
   {
     name: 'more',
     href: '/dashboard/more',
     label: 'More',
     icon: Menu,
-    placement: { sidebar: 'hidden', mobile: 'tab' },
+    placement: { desktop: 'hidden', mobile: 'tab' },
   },
 ];
 
-export const sidebarMain = destinations.filter((item) => item.placement.sidebar === 'main');
-export const sidebarFooter = destinations.filter((item) => item.placement.sidebar === 'footer');
-export const mobileTabs = destinations.filter((item) => item.placement.mobile === 'tab');
-export const mobileMore = destinations.filter((item) => item.placement.mobile === 'more');
+const by = (predicate: (item: Destination) => boolean) => destinations.filter(predicate);
+export const topNav = by((item) => item.placement.desktop === 'top');
+export const railNav = by((item) => item.placement.desktop === 'rail');
+export const railFooterNav = by((item) => item.placement.desktop === 'railFooter');
+export const mobileTabs = by((item) => item.placement.mobile === 'tab');
+export const mobileMore = by((item) => item.placement.mobile === 'more');
 
-/** Brand mark icon used by sidebar and mobile header. */
-export const BrandIcon: LucideIcon = ChartPie;
+/** Whether `href` is the current page (the dashboard root matches exactly). */
+export function isActive(pathname: string, href: string): boolean {
+  if (href === '/dashboard') return pathname === '/dashboard' || pathname === '/dashboard/index';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}

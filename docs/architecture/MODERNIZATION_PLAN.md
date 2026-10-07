@@ -1083,6 +1083,15 @@ Each phase is one or more PRs. Each must pass CI and its acceptance criteria bef
 - **Verified so far:** web only (headless Chromium at 390/820/1366 widths, light and dark; Escape closes sheets; focus is trapped in dialogs). Native rendering on iOS/Android simulators has **not** been verified in the authoring environment.
 - **Tooling-only audit findings:** `npm audit` reports high/moderate advisories in transitive Expo CLI/config dependencies (`braces`, `node-forge`, `sprintf-js`, `decode-uri-component`, `uuid`). Patched versions do not exist yet for the first three. They are not part of the shipped bundle; re-check in Phase 10.
 
+**UI redesign (owner request, Oct 2026).** Visual language from the owner's reference: grey canvas, white rounded bento cards, lime primary actions, a green gradient hero card per screen, ink pills for active navigation, and colourful category tints.
+
+- **Navigation:** a floating header with an animated pill nav (Overview · Expenses · Mutual funds · Stocks · Reports) plus a floating left rail (theme capsule · Accounts · Goals · Insights · Settings) on tablet/desktop. Phones get a floating tab bar and a quick-add button.
+- **Routes** now follow that information architecture: `/dashboard/expenses`, `/dashboard/mutual-funds`, `/dashboard/stocks` replace the earlier `/dashboard/transactions` and `/dashboard/investments` placeholders. §6's nested routes (`[id]`, `new`, etc.) still apply beneath these.
+- **Single-screen pages:** Expenses, Mutual funds and Stocks are designed to fit one desktop screen (`Screen fit`). They have a dense variant for 700–819 px windows and fall back to scrolling below 700 px.
+- **Chart kit** in `src/components/charts` is SVG-based, as planned in §13. It provides draw-in animation, hover/press tooltips and text summaries.
+- **Sample data:** these screens are driven by clearly labelled sample data in `src/features/preview`, with fictional names, until Phases 3–6 connect real repositories.
+- **Bundle ceiling** raised 500 → 520 KiB gzip for the added UI code (current ~502 KiB); the Phase 11 target is unchanged.
+
 ### PHASE 2: Authentication + security foundation
 
 | Item | Detail |

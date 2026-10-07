@@ -1,0 +1,31 @@
+import { View } from 'react-native';
+import { Sparkles } from '@/components/icons';
+import { Text } from '@/components/ui';
+import { useTheme } from '@/theme';
+import { SAMPLE_DATA_DESCRIPTION, SAMPLE_DATA_LABEL } from './notice';
+
+/** Shown on every screen that renders preview data, so it is never mistaken for real data. */
+export function SampleDataBadge() {
+  const theme = useTheme();
+  return (
+    <View
+      accessible
+      accessibilityLabel={SAMPLE_DATA_DESCRIPTION}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        alignSelf: 'flex-start',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: theme.radius.pill,
+        backgroundColor: theme.colors.warningSoft,
+      }}
+    >
+      <Sparkles size={13} color={theme.colors.warning} strokeWidth={2.2} />
+      <Text variant="caption" color="warning">
+        {SAMPLE_DATA_LABEL} · design preview
+      </Text>
+    </View>
+  );
+}

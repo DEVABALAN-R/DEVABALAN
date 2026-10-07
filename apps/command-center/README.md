@@ -4,10 +4,12 @@ The new cross-platform app (iOS, Android, web) that will replace the Vite app at
 repository root. It is being built in phases — see
 [`docs/architecture/MODERNIZATION_PLAN.md`](../../docs/architecture/MODERNIZATION_PLAN.md).
 
-**Status: Phase 1 (architecture + design system).** The app contains the adaptive shell,
-design tokens and components. Every destination is a clearly labelled placeholder: it reads
-and writes **no** user data, and there is no sign-in yet (Phase 2). Keep using the existing
-app for real finances.
+**Status: Phase 1 (architecture + design system) with the 2026 UI redesign.** Overview,
+Expenses, Mutual funds and Stocks are full designs driven by **labelled sample data**
+(`src/features/preview`, fictional fund and company names, a "Sample data · design preview"
+badge on every such screen). Accounts, Goals, Insights and Reports are labelled placeholders.
+Nothing reads or writes your real data and there is no sign-in yet (Phase 2). Keep using the
+existing app for real finances.
 
 ## Run
 
@@ -40,7 +42,10 @@ src/
     dashboard/         adaptive shell + destinations
     dev/components     design-system gallery (dev only)
   components/          ui · layout · navigation · feedback · overlays · icons.ts
-  features/            shell (sidebar, bottom bar, top bar), settings, dev-gallery
+  components/charts/   BarChart, AreaChart, DonutChart, Sparkline (react-native-svg, no extra deps)
+  features/            shell (header, nav, rail, tab bar), overview, expenses, mutual-funds,
+                       stocks, settings, dev-gallery
+  features/preview/    SAMPLE DATA for the design preview — delete when real data lands
   hooks/               useBreakpoint, useInteractionState
   lib/formatting/      display-only money/percent formatting (integer paise in)
   state/               small Zustand UI store (no financial data)
@@ -56,4 +61,7 @@ src/
 - **Money** is passed to UI as integer minor units (paise); formatting happens only at display.
 - **Motion** timings come from `useMotion()`, which honours the OS reduced-motion setting.
 - **Responsive layouts** are chosen per breakpoint (`useBreakpoint`), not shrunk from desktop.
+- **Single-screen pages** (Expenses, Mutual funds, Stocks) use `<Screen fit>`: on desktop the
+  page never scrolls and panels scroll internally; windows 700–819 px tall get a denser layout,
+  and below 700 px the page scrolls rather than clipping. Tablets and phones always scroll.
 - Web output is a single-page app; Vercel must rewrite unknown paths to `index.html`.

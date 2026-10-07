@@ -1,14 +1,12 @@
-import type { LucideIcon } from '@/components/icons';
 import { View } from 'react-native';
-import { EmptyState } from '@/components/feedback';
+import type { LucideIcon } from '@/components/icons';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Screen } from '@/components/layout/Screen';
-import { Badge, Card, Text } from '@/components/ui';
+import { Badge, Card, CategoryIcon, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
 
 type PlannedScreenProps = {
   title: string;
-  eyebrow?: string;
   description: string;
   icon: LucideIcon;
   phase: number;
@@ -16,42 +14,63 @@ type PlannedScreenProps = {
   upcoming: readonly string[];
 };
 
-/**
- * Clearly marked placeholder for a destination whose feature ships in a later
- * phase. It renders no data and performs no actions.
- */
-export function PlannedScreen({
-  title,
-  eyebrow,
-  description,
-  icon,
-  phase,
-  upcoming,
-}: PlannedScreenProps) {
+/** Clearly marked placeholder for a destination whose module ships later. Reads no data. */
+export function PlannedScreen({ title, description, icon, phase, upcoming }: PlannedScreenProps) {
   const theme = useTheme();
   return (
     <Screen>
       <PageHeader
-        eyebrow={eyebrow}
         title={title}
         description={description}
-        actions={<Badge label={`Planned · Phase ${phase}`} tone="warning" />}
+        meta={<Badge label={`Planned · Phase ${phase}`} tone="warning" />}
       />
-      <Card>
-        <EmptyState
-          icon={icon}
-          title={`${title} is coming in Phase ${phase}`}
-          body="This page is a placeholder in the new app shell. No data is shown or changed here."
-        />
-        <View style={{ gap: theme.space[2], paddingHorizontal: theme.space[2] }}>
-          <Text variant="label" color="textSecondary" uppercase>
-            What will be here
-          </Text>
-          {upcoming.map((item) => (
-            <Text key={item} color="textSecondary">
-              • {item}
+      <Card index={0} padding={8}>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: theme.space[8],
+            alignItems: 'center',
+          }}
+        >
+          <View style={{ flex: 1, minWidth: 260, gap: theme.space[3] }}>
+            <CategoryIcon icon={icon} tint={phase} size={64} />
+            <Text variant="h2">Coming in Phase {phase}</Text>
+            <Text color="textSecondary">
+              This page is a placeholder in the new design. No data is shown or changed here.
             </Text>
-          ))}
+          </View>
+          <View style={{ flex: 1, minWidth: 260, gap: theme.space[2] }}>
+            {upcoming.map((item, index) => (
+              <View
+                key={item}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: theme.space[3],
+                  padding: theme.space[3],
+                  borderRadius: theme.radius.lg,
+                  backgroundColor: theme.colors.surfaceMuted,
+                }}
+              >
+                <View
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 13,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: theme.colors.primary,
+                  }}
+                >
+                  <Text variant="caption" color="onPrimary">
+                    {index + 1}
+                  </Text>
+                </View>
+                <Text style={{ flex: 1 }}>{item}</Text>
+              </View>
+            ))}
+          </View>
         </View>
       </Card>
     </Screen>

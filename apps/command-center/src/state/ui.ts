@@ -4,12 +4,13 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 
 type UiState = {
   themePreference: ThemePreference;
-  sidebarCollapsed: boolean;
   quickAddOpen: boolean;
+  searchOpen: boolean;
   setThemePreference: (preference: ThemePreference) => void;
-  toggleSidebar: () => void;
   openQuickAdd: () => void;
   closeQuickAdd: () => void;
+  openSearch: () => void;
+  closeSearch: () => void;
 };
 
 /**
@@ -18,10 +19,11 @@ type UiState = {
  */
 export const useUiStore = create<UiState>((set) => ({
   themePreference: 'system',
-  sidebarCollapsed: false,
   quickAddOpen: false,
+  searchOpen: false,
   setThemePreference: (themePreference) => set({ themePreference }),
-  toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   openQuickAdd: () => set({ quickAddOpen: true }),
   closeQuickAdd: () => set({ quickAddOpen: false }),
+  openSearch: () => set({ searchOpen: true }),
+  closeSearch: () => set({ searchOpen: false }),
 }));

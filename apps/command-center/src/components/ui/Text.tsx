@@ -20,6 +20,11 @@ type TextColor = Extract<
   | 'transfer'
   | 'onDanger'
   | 'onInverseSurface'
+  | 'onPrimary'
+  | 'onInk'
+  | 'onInkMuted'
+  | 'onBrand'
+  | 'onBrandMuted'
   | 'inverseAccent'
 >;
 
@@ -64,13 +69,15 @@ export function Text({
   );
 }
 
-type HeadingProps = Omit<TextProps, 'variant'> & {
+type HeadingProps = TextProps & {
   level?: 1 | 2 | 3;
 };
 
 const variantForLevel = { 1: 'h1', 2: 'h2', 3: 'title' } as const;
 
 /** Semantic heading: announced as a heading natively, rendered as <h1>-<h3> on web. */
-export function Heading({ level = 2, ...rest }: HeadingProps) {
-  return <Text role="heading" aria-level={level} variant={variantForLevel[level]} {...rest} />;
+export function Heading({ level = 2, variant, ...rest }: HeadingProps) {
+  return (
+    <Text role="heading" aria-level={level} variant={variant ?? variantForLevel[level]} {...rest} />
+  );
 }

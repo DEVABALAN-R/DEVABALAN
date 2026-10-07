@@ -1,48 +1,48 @@
-import { TabList, Tabs, TabSlot, TabTrigger } from 'expo-router/ui';
 import type { Href } from 'expo-router';
+import { TabList, Tabs, TabSlot, TabTrigger } from 'expo-router/ui';
 import { View } from 'react-native';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
-import { useUiStore } from '@/state/ui';
-import { useTheme } from '@/theme';
-import { BottomBar } from './BottomBar';
+import { layout, useTheme } from '@/theme';
+import { DesktopHeader } from './DesktopHeader';
+import { FloatingTabBar } from './FloatingTabBar';
+import { LeftRail } from './LeftRail';
+import { MobileHeader } from './MobileHeader';
 import { destinations } from './navigation';
-import { QuickAddSheet } from './QuickAddSheet';
-import { Sidebar } from './Sidebar';
-import { TopBar } from './TopBar';
+import { PlaceholderSheets } from './PlaceholderSheets';
 
 /**
- * Adaptive application frame built on Expo Router's headless tabs.
- * The hidden TabList declares every destination once; the visible chrome
- * (sidebar, rail or bottom bar) is chosen by breakpoint, so desktop and mobile
- * share one route tree and one URL scheme.
+ * Adaptive frame on Expo Router's headless tabs. The hidden TabList declares
+ * every destination once; the visible chrome is chosen per breakpoint:
+ * floating header + rail (tablet/desktop) or header + floating tab bar (phone).
  */
 export function AppShell() {
   const theme = useTheme();
-  const { mode } = useBreakpoint();
-  const collapsed = useUiStore((state) => state.sidebarCollapsed);
-  const toggleSidebar = useUiStore((state) => state.toggleSidebar);
-
+  const { isMobile } = useBreakpoint();
   return (
-    <Tabs
-      style={{
-        flex: 1,
-        flexDirection: mode === 'mobile' ? 'column' : 'row',
-        backgroundColor: theme.colors.bg,
-      }}
-    >
+    <Tabs style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <TabList style={{ display: 'none' }}>
         {destinations.map((item) => (
           <TabTrigger key={item.name} name={item.name} href={item.href as Href} />
         ))}
       </TabList>
-      {mode === 'desktop' ? <Sidebar collapsed={collapsed} onToggle={toggleSidebar} /> : null}
-      {mode === 'tablet' ? <Sidebar collapsed /> : null}
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <TopBar />
-        <TabSlot style={{ flex: 1 }} />
-      </View>
-      {mode === 'mobile' ? <BottomBar /> : null}
-      <QuickAddSheet />
+      {isMobile ? (
+        <View style={{ flex: 1 }}>
+          <MobileHeader />
+          <TabSlot style={{ flex: 1 }} />
+          <FloatingTabBar />
+        </View>
+      ) : (
+        <View style={{ flex: 1, padding: layout.canvasPadding, gap: layout.canvasPadding }}>
+          <DesktopHeader />
+          <View style={{ flex: 1, flexDirection: 'row', gap: layout.canvasPadding, minHeight: 0 }}>
+            <LeftRail />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <TabSlot style={{ flex: 1 }} />
+            </View>
+          </View>
+        </View>
+      )}
+      <PlaceholderSheets />
     </Tabs>
   );
 }

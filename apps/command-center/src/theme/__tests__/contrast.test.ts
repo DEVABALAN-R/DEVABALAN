@@ -24,9 +24,18 @@ const pairs: Pair[] = [
   ['textSecondary', 'bg', 4.5],
   ['textSecondary', 'surfaceMuted', 4.5],
   ['textTertiary', 'surface', 4.5],
+  ['textTertiary', 'surfaceMuted', 4.5],
   ['accent', 'surface', 4.5],
+  ['accent', 'bg', 4.5],
   ['accent', 'accentSoft', 4.5],
-  ['onAccent', 'accent', 4.5],
+  ['onPrimary', 'primary', 4.5],
+  ['onPrimary', 'primaryPressed', 4.5],
+  ['onInk', 'ink', 4.5],
+  ['onInkMuted', 'ink', 4.5],
+  ['onBrand', 'brandFrom', 4.5],
+  ['onBrand', 'brandTo', 4.5],
+  ['onBrandMuted', 'brandFrom', 4.5],
+  ['primary', 'brandTo', 4.5],
   ['onDanger', 'danger', 4.5],
   ['income', 'surface', 4.5],
   ['expense', 'surface', 4.5],
@@ -41,6 +50,7 @@ const pairs: Pair[] = [
   ['inverseAccent', 'inverseSurface', 4.5],
   ['borderStrong', 'surface', 3],
   ['focus', 'surface', 3],
+  ['focus', 'bg', 3],
 ];
 
 describe.each([
@@ -52,6 +62,13 @@ describe.each([
       contrast(colors[foreground] as string, colors[background] as string),
     ).toBeGreaterThanOrEqual(minimum);
   });
+
+  it.each(colors.tints.map((tint, index) => [index, tint] as const))(
+    'category tint %i icon ≥ 3:1 on its background',
+    (_index, tint) => {
+      expect(contrast(tint.fg, tint.bg)).toBeGreaterThanOrEqual(3);
+    },
+  );
 
   it('keeps the categorical chart palette at 8 fixed slots', () => {
     expect(colors.chart).toHaveLength(8);

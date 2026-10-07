@@ -17,10 +17,34 @@ export function layoutModeForWidth(width: number): LayoutMode {
   return 'desktop';
 }
 
+export type Density = 'roomy' | 'dense' | 'short';
+
+/**
+ * Vertical density for single-screen (fit) pages. Laptop browsers often leave
+ * only ~650–750 px for the page, so layouts tighten below 820 px and fall back
+ * to normal scrolling below 700 px rather than clipping content.
+ */
+export function densityForHeight(height: number): Density {
+  if (height >= 820) return 'roomy';
+  if (height >= 700) return 'dense';
+  return 'short';
+}
+
 /** Responsive state derived from the window (not the device type). */
 export function useBreakpoint() {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const breakpoint = breakpointForWidth(width);
   const mode = layoutModeForWidth(width);
-  return { width, breakpoint, mode, isMobile: mode === 'mobile', isDesktop: mode === 'desktop' };
+  const density = densityForHeight(height);
+  return {
+    width,
+    height,
+    breakpoint,
+    mode,
+    density,
+    isMobile: mode === 'mobile',
+    isDesktop: mode === 'desktop',
+    /** Desktop with limited height: use compact cards on fit pages. */
+    isDense: mode === 'desktop' && density === 'dense',
+  };
 }

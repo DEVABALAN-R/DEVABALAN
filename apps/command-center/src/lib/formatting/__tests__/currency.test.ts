@@ -1,4 +1,11 @@
-import { assertMinorUnits, formatMoney, formatPercent, moneyAccessibilityLabel } from '../currency';
+import {
+  assertMinorUnits,
+  formatAxisMoney,
+  formatMoney,
+  formatMoneyWhole,
+  formatPercent,
+  moneyAccessibilityLabel,
+} from '../currency';
 
 describe('formatMoney', () => {
   it('formats paise as rupees with Indian grouping', () => {
@@ -41,5 +48,25 @@ describe('formatPercent', () => {
     expect(formatPercent(-6.06)).toBe('−6.1%');
     expect(formatPercent(0)).toBe('0.0%');
     expect(formatPercent(Number.POSITIVE_INFINITY)).toBe('—');
+  });
+});
+
+describe('formatAxisMoney', () => {
+  it.each([
+    [95_000, '₹950'],
+    [4_500_000, '₹45K'],
+    [150_000, '₹1.5K'],
+    [12_000_000, '₹1.2L'],
+    [3_000_000_000, '₹3Cr'],
+    [-4_500_000, '−₹45K'],
+  ])('%d paise → %s', (minor, label) => {
+    expect(formatAxisMoney(minor)).toBe(label);
+  });
+});
+
+describe('formatMoneyWhole', () => {
+  it('drops paise for dense tables', () => {
+    expect(formatMoneyWhole(18_642_049)).toBe('₹1,86,420');
+    expect(formatMoneyWhole(-50_000, 'always')).toBe('−₹500');
   });
 });

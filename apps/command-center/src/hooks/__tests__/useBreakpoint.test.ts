@@ -1,5 +1,5 @@
 import { columnsFor } from '@/components/layout/ResponsiveGrid';
-import { breakpointForWidth, layoutModeForWidth } from '../useBreakpoint';
+import { breakpointForWidth, densityForHeight, layoutModeForWidth } from '../useBreakpoint';
 
 describe('breakpoints', () => {
   it.each([
@@ -26,5 +26,17 @@ describe('columnsFor', () => {
 
   it('never returns fewer than one column', () => {
     expect(columnsFor('md', { sm: 0 })).toBe(1);
+  });
+});
+
+describe('densityForHeight', () => {
+  it.each([
+    [900, 'roomy'],
+    [820, 'roomy'],
+    [768, 'dense'],
+    [700, 'dense'],
+    [660, 'short'],
+  ])('%i px → %s', (height, density) => {
+    expect(densityForHeight(height)).toBe(density);
   });
 });

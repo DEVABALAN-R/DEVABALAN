@@ -28,19 +28,17 @@ export function Chip({ label, selected = false, onPress, disabled }: ChipProps) 
           justifyContent: 'center',
           paddingHorizontal: theme.space[3],
           borderRadius: theme.radius.pill,
-          borderWidth: 1,
-          borderColor: selected ? theme.colors.accent : theme.colors.border,
           backgroundColor: selected
-            ? theme.colors.accentSoft
+            ? theme.colors.ink
             : hovered
-              ? theme.colors.surfaceMuted
-              : theme.colors.surface,
+              ? theme.colors.border
+              : theme.colors.surfaceMuted,
           opacity: disabled ? 0.5 : 1,
         },
         focused && { outlineColor: theme.colors.focus, outlineWidth: 2, outlineStyle: 'solid' },
       ]}
     >
-      <Text variant="label" color={selected ? 'accent' : 'textSecondary'}>
+      <Text variant="label" color={selected ? 'onInk' : 'textSecondary'}>
         {label}
       </Text>
     </Pressable>

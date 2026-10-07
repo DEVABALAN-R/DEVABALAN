@@ -1,36 +1,70 @@
 /**
  * The only module allowed to import lucide-react-native. Icons are imported one
  * file at a time: Metro does not tree-shake the package barrel, which would ship
- * every icon (~4 MB) to the web bundle. Add new icons here.
+ * every icon (~2 MB) to the web bundle. Add new icons here.
  */
 export type { LucideIcon } from 'lucide-react-native';
 
+export { default as ArrowDownLeft } from 'lucide-react-native/icons/arrow-down-left';
 export { default as ArrowDownRight } from 'lucide-react-native/icons/arrow-down-right';
+export { default as ArrowLeftRight } from 'lucide-react-native/icons/arrow-left-right';
 export { default as ArrowUpRight } from 'lucide-react-native/icons/arrow-up-right';
+export { default as Bell } from 'lucide-react-native/icons/bell';
+export { default as Briefcase } from 'lucide-react-native/icons/briefcase';
+export { default as Bus } from 'lucide-react-native/icons/bus';
+export { default as CalendarDays } from 'lucide-react-native/icons/calendar-days';
+export { default as ChartCandlestick } from 'lucide-react-native/icons/chart-candlestick';
 export { default as ChartPie } from 'lucide-react-native/icons/chart-pie';
+export { default as ChevronDown } from 'lucide-react-native/icons/chevron-down';
+export { default as ChevronLeft } from 'lucide-react-native/icons/chevron-left';
 export { default as ChevronRight } from 'lucide-react-native/icons/chevron-right';
 export { default as CircleAlert } from 'lucide-react-native/icons/circle-alert';
 export { default as Compass } from 'lucide-react-native/icons/compass';
+export { default as CreditCard } from 'lucide-react-native/icons/credit-card';
 export { default as Download } from 'lucide-react-native/icons/download';
+export { default as Ellipsis } from 'lucide-react-native/icons/ellipsis';
 export { default as FileChartColumn } from 'lucide-react-native/icons/file-chart-column';
 export { default as Flag } from 'lucide-react-native/icons/flag';
+export { default as Gem } from 'lucide-react-native/icons/gem';
+export { default as Globe } from 'lucide-react-native/icons/globe';
+export { default as Heart } from 'lucide-react-native/icons/heart';
 export { default as House } from 'lucide-react-native/icons/house';
 export { default as Inbox } from 'lucide-react-native/icons/inbox';
 export { default as Landmark } from 'lucide-react-native/icons/landmark';
+export { default as Laptop } from 'lucide-react-native/icons/laptop';
+export { default as LayoutGrid } from 'lucide-react-native/icons/layout-grid';
+export { default as Layers } from 'lucide-react-native/icons/layers';
+export { default as Leaf } from 'lucide-react-native/icons/leaf';
 export { default as Lightbulb } from 'lucide-react-native/icons/lightbulb';
 export { default as Menu } from 'lucide-react-native/icons/menu';
 export { default as Minus } from 'lucide-react-native/icons/minus';
 export { default as Monitor } from 'lucide-react-native/icons/monitor';
 export { default as Moon } from 'lucide-react-native/icons/moon';
-export { default as PanelLeftClose } from 'lucide-react-native/icons/panel-left-close';
-export { default as PanelLeftOpen } from 'lucide-react-native/icons/panel-left-open';
+export { default as Mountain } from 'lucide-react-native/icons/mountain';
+export { default as PartyPopper } from 'lucide-react-native/icons/party-popper';
+export { default as Percent } from 'lucide-react-native/icons/percent';
 export { default as Pencil } from 'lucide-react-native/icons/pencil';
+export { default as PiggyBank } from 'lucide-react-native/icons/piggy-bank';
+export { default as Pill } from 'lucide-react-native/icons/pill';
 export { default as Plus } from 'lucide-react-native/icons/plus';
 export { default as ReceiptText } from 'lucide-react-native/icons/receipt-text';
+export { default as Repeat } from 'lucide-react-native/icons/repeat';
 export { default as RotateCw } from 'lucide-react-native/icons/rotate-cw';
+export { default as Scissors } from 'lucide-react-native/icons/scissors';
+export { default as Search } from 'lucide-react-native/icons/search';
 export { default as Settings } from 'lucide-react-native/icons/settings';
+export { default as Shield } from 'lucide-react-native/icons/shield';
+export { default as ShoppingBag } from 'lucide-react-native/icons/shopping-bag';
+export { default as SlidersHorizontal } from 'lucide-react-native/icons/sliders-horizontal';
+export { default as Smartphone } from 'lucide-react-native/icons/smartphone';
+export { default as Sofa } from 'lucide-react-native/icons/sofa';
+export { default as Sparkles } from 'lucide-react-native/icons/sparkles';
 export { default as Sun } from 'lucide-react-native/icons/sun';
+export { default as Target } from 'lucide-react-native/icons/target';
 export { default as Trash2 } from 'lucide-react-native/icons/trash';
+export { default as TrendingDown } from 'lucide-react-native/icons/trending-down';
 export { default as TrendingUp } from 'lucide-react-native/icons/trending-up';
+export { default as Utensils } from 'lucide-react-native/icons/utensils';
+export { default as Wallet } from 'lucide-react-native/icons/wallet';
 export { default as X } from 'lucide-react-native/icons/x';
 export { default as Zap } from 'lucide-react-native/icons/zap';

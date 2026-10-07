@@ -2,14 +2,17 @@
 /**
  * Fails CI when the gzipped web JavaScript grows past the regression ceiling.
  * Phase 1 baseline: ~476 KiB gzip (framework-dominated: expo-router, reanimated,
- * react-native-web, react-dom). Phase 11 target from the plan: ≤ 350 KiB.
+ * react-native-web, react-dom). The 2026 UI redesign added ~25 KiB of app code
+ * (chart kit, bento layout, Overview/Expenses/Mutual funds/Stocks screens), so the
+ * ceiling moved 500 → 520 KiB. Phase 11 target from the plan: ≤ 350 KiB
+ * (route-level code splitting, Reanimated layout-animation weight).
  * Raise the ceiling only deliberately, in the same PR that explains why.
  */
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const CEILING_KIB = 500;
+const CEILING_KIB = 520;
 const TARGET_KIB = 350;
 // npm scripts run from the package root.
 const dir = path.join(process.cwd(), 'dist', '_expo', 'static', 'js', 'web');

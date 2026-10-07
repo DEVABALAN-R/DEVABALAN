@@ -1,6 +1,8 @@
-import { Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, View, type LayoutRectangle } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useInteractionState } from '@/hooks/useInteractionState';
-import { useTheme, type ColorRoles } from '@/theme';
+import { useMotion, useTheme, type ColorRoles } from '@/theme';
 import { Text } from './Text';
 
 type SegmentTone = Extract<
@@ -15,32 +17,69 @@ type SegmentedControlProps<T extends string> = {
   value: T;
   onChange: (value: T) => void;
   accessibilityLabel: string;
+  /** Stretch segments to fill the width (forms) or size to content (toolbars). */
+  fill?: boolean;
+  size?: 'sm' | 'md';
 };
 
 /**
- * Mutually exclusive choice (e.g. Income · Expense · Transfer). The selected
- * segment is outlined and tinted with its semantic colour and also exposed as
- * `checked` to assistive tech.
+ * Pill-shaped single choice with a thumb that slides to the selection.
+ * Exposed as a radio group; the selected segment is `checked`.
  */
 export function SegmentedControl<T extends string>({
   segments,
   value,
   onChange,
   accessibilityLabel,
+  fill = true,
+  size = 'md',
 }: SegmentedControlProps<T>) {
   const theme = useTheme();
+  const { duration } = useMotion();
+  const [layouts, setLayouts] = useState<Record<string, LayoutRectangle>>({});
+  const selected = layouts[value];
+  const thumb = useAnimatedStyle(() => ({
+    opacity: selected ? 1 : 0,
+    transform: [{ translateX: withTiming(selected?.x ?? 0, { duration: duration('base') }) }],
+    width: withTiming(selected?.width ?? 0, { duration: duration('base') }),
+  }));
+
   return (
     <View
       role="radiogroup"
       accessibilityLabel={accessibilityLabel}
-      style={{ flexDirection: 'row', gap: theme.space[2] }}
+      style={{
+        flexDirection: 'row',
+        alignSelf: fill ? 'stretch' : 'flex-start',
+        padding: 4,
+        borderRadius: theme.radius.pill,
+        backgroundColor: theme.colors.surfaceMuted,
+      }}
     >
+      <Animated.View
+        aria-hidden
+        style={[
+          {
+            position: 'absolute',
+            top: 4,
+            bottom: 4,
+            left: 0,
+            borderRadius: theme.radius.pill,
+            backgroundColor: theme.colors.surface,
+            ...theme.elevation(2),
+          },
+          thumb,
+        ]}
+      />
       {segments.map((segment) => (
         <SegmentButton
           key={segment.value}
           segment={segment}
+          fill={fill}
+          size={size}
           selected={segment.value === value}
           onPress={() => onChange(segment.value)}
+          onLayout={(layout) => setLayouts((current) => ({ ...current, [segment.value]: layout }))}
         />
       ))}
     </View>
@@ -50,37 +89,47 @@ export function SegmentedControl<T extends string>({
 function SegmentButton<T extends string>({
   segment,
   selected,
+  fill,
+  size,
   onPress,
+  onLayout,
 }: {
   segment: Segment<T>;
   selected: boolean;
+  fill: boolean;
+  size: 'sm' | 'md';
   onPress: () => void;
+  onLayout: (layout: LayoutRectangle) => void;
 }) {
   const theme = useTheme();
-  const { hovered, focused, handlers } = useInteractionState();
-  const tone = segment.tone ?? 'accent';
+  const { focused, handlers } = useInteractionState();
+  const tone = segment.tone;
   return (
     <Pressable
       role="radio"
       accessibilityState={{ checked: selected }}
       onPress={onPress}
+      onLayout={(event) => onLayout(event.nativeEvent.layout)}
       {...handlers}
       style={[
         {
-          flex: 1,
-          minHeight: 44,
+          flex: fill ? 1 : undefined,
+          minHeight: size === 'sm' ? 32 : 40,
           alignItems: 'center',
           justifyContent: 'center',
-          paddingHorizontal: theme.space[3],
-          borderRadius: theme.radius.md,
-          borderWidth: selected ? 1.5 : 1,
-          borderColor: selected ? theme.colors[tone] : theme.colors.border,
-          backgroundColor: hovered && !selected ? theme.colors.surfaceMuted : theme.colors.surface,
+          paddingHorizontal: theme.space[size === 'sm' ? 3 : 4],
+          borderRadius: theme.radius.pill,
         },
         focused && { outlineColor: theme.colors.focus, outlineWidth: 2, outlineStyle: 'solid' },
       ]}
     >
-      <Text variant={selected ? 'bodyStrong' : 'body'} color={selected ? tone : 'textSecondary'}>
+      <Text
+        variant={
+          selected ? (size === 'sm' ? 'label' : 'bodyStrong') : size === 'sm' ? 'label' : 'body'
+        }
+        color={selected ? (tone ?? 'textPrimary') : 'textSecondary'}
+        numberOfLines={1}
+      >
         {segment.label}
       </Text>
     </Pressable>

@@ -1,39 +1,49 @@
 import type { ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, type ViewStyle } from 'react-native';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { layout, useTheme } from '@/theme';
 
-type ScreenProps = { children: ReactNode; scroll?: boolean };
+type ScreenProps = {
+  children: ReactNode;
+  /**
+   * Desktop only: the page fills the viewport without page scrolling; panels
+   * scroll internally. Tablet and phone always scroll (stacked layout).
+   */
+  fit?: boolean;
+};
 
-/** Page canvas: responsive gutters, a max content width, and room for the bottom bar. */
-export function Screen({ children, scroll = true }: ScreenProps) {
+/** Fit (no page scroll) only on desktop windows tall enough to show everything. */
+export function useFitMode(fit: boolean) {
+  const { mode, density } = useBreakpoint();
+  return fit && mode === 'desktop' && density !== 'short';
+}
+
+/** Page canvas inside the app shell. */
+export function Screen({ children, fit = false }: ScreenProps) {
   const theme = useTheme();
   const { mode } = useBreakpoint();
-  const gutter =
-    mode === 'mobile' ? theme.space[4] : mode === 'tablet' ? theme.space[6] : theme.space[8];
-  const content = (
-    <View
-      style={{
-        width: '100%',
-        maxWidth: layout.contentMaxWidth,
-        alignSelf: 'center',
-        paddingHorizontal: gutter,
-        paddingTop: theme.space[mode === 'mobile' ? 4 : 6],
-        paddingBottom:
-          mode === 'mobile' ? layout.bottomBarHeight + theme.space[10] : theme.space[10],
-        gap: theme.space[6],
-      }}
-    >
-      {children}
-    </View>
-  );
-  if (!scroll) return <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>{content}</View>;
+  const fitActive = useFitMode(fit);
+  const inner: ViewStyle = {
+    width: '100%',
+    maxWidth: layout.contentMaxWidth,
+    alignSelf: 'center',
+    gap: theme.space[4],
+    paddingHorizontal: mode === 'mobile' ? theme.space[4] : 0,
+    paddingRight: mode === 'mobile' ? theme.space[4] : layout.canvasPadding,
+    paddingTop: mode === 'mobile' ? theme.space[3] : 0,
+    paddingBottom:
+      mode === 'mobile' ? layout.bottomBarHeight + theme.space[10] : layout.canvasPadding,
+  };
+  if (fitActive) {
+    return <View style={[inner, { flex: 1, minHeight: 0 }]}>{children}</View>;
+  }
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: theme.colors.bg }}
+      style={{ flex: 1 }}
+      contentContainerStyle={inner}
       keyboardShouldPersistTaps="handled"
     >
-      {content}
+      {children}
     </ScrollView>
   );
 }

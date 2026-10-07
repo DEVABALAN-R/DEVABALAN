@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { useTween } from '@/hooks/useTween';
 import { useTheme, type ColorRoles } from '@/theme';
 
 type RingTone = Extract<
   keyof ColorRoles,
-  'accent' | 'success' | 'warning' | 'danger' | 'investment'
+  'accent' | 'primary' | 'brandFrom' | 'success' | 'warning' | 'danger' | 'investment'
 >;
 
 type ProgressRingProps = {
@@ -23,7 +24,7 @@ export function ProgressRing({
   accessibilityLabel,
   size = 88,
   strokeWidth = 8,
-  tone = 'accent',
+  tone = 'brandFrom',
   children,
 }: ProgressRingProps) {
   const theme = useTheme();
@@ -31,6 +32,7 @@ export function ProgressRing({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const percent = Math.round(clamped * 100);
+  const progress = useTween(percent, 900);
   return (
     <View
       role="progressbar"
@@ -55,7 +57,7 @@ export function ProgressRing({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           fill="none"
-          strokeDasharray={`${circumference * clamped} ${circumference}`}
+          strokeDasharray={`${circumference * clamped * progress} ${circumference}`}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>

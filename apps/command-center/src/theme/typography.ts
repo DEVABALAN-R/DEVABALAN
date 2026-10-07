@@ -23,8 +23,11 @@ export const typeScale = {
   bodyLg: { fontSize: 17, lineHeight: 24, weight: 'regular' },
   title: { fontSize: 20, lineHeight: 28, weight: 'semibold', letterSpacing: -0.2 },
   h2: { fontSize: 24, lineHeight: 32, weight: 'semibold', letterSpacing: -0.3 },
-  h1: { fontSize: 30, lineHeight: 38, weight: 'bold', letterSpacing: -0.5 },
-  display: { fontSize: 40, lineHeight: 48, weight: 'bold', letterSpacing: -0.8 },
+  h1: { fontSize: 30, lineHeight: 36, weight: 'semibold', letterSpacing: -0.8 },
+  display: { fontSize: 40, lineHeight: 46, weight: 'semibold', letterSpacing: -1.2 },
+  /** Large money figures in hero/KPI cards. */
+  figure: { fontSize: 32, lineHeight: 38, weight: 'semibold', letterSpacing: -0.8 },
+  figureSm: { fontSize: 24, lineHeight: 30, weight: 'semibold', letterSpacing: -0.5 },
   eyebrow: { fontSize: 12, lineHeight: 16, weight: 'semibold', letterSpacing: 0.8 },
 } as const satisfies Record<string, TypeStyle>;
 export type TypeVariant = keyof typeof typeScale;

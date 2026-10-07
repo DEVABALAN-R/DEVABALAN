@@ -10,12 +10,19 @@ type FormatOptions = {
   compact?: boolean;
   signDisplay?: SignDisplay;
   locale?: string;
+  /** Round to whole rupees (headline KPI tiles); details keep paise. */
+  whole?: boolean;
 };
 
 const formatterCache = new Map<string, Intl.NumberFormat>();
 
-function formatter(locale: string, currency: string, compact: boolean): Intl.NumberFormat {
-  const key = `${locale}|${currency}|${compact}`;
+function formatter(
+  locale: string,
+  currency: string,
+  compact: boolean,
+  whole = false,
+): Intl.NumberFormat {
+  const key = `${locale}|${currency}|${compact}|${whole}`;
   let cached = formatterCache.get(key);
   if (!cached) {
     cached = new Intl.NumberFormat(locale, {
@@ -23,7 +30,9 @@ function formatter(locale: string, currency: string, compact: boolean): Intl.Num
       currency,
       ...(compact
         ? { notation: 'compact', maximumFractionDigits: 1 }
-        : { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        : whole
+          ? { minimumFractionDigits: 0, maximumFractionDigits: 0 }
+          : { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     });
     formatterCache.set(key, cached);
   }
@@ -39,8 +48,14 @@ export function assertMinorUnits(value: number): void {
 /** Formats e.g. 125050 → "₹1,250.50"; negative values use a true minus sign. */
 export function formatMoney(minor: number, options: FormatOptions = {}): string {
   assertMinorUnits(minor);
-  const { currency = 'INR', compact = false, signDisplay = 'auto', locale = 'en-IN' } = options;
-  const magnitude = formatter(locale, currency, compact).format(Math.abs(minor) / 100);
+  const {
+    currency = 'INR',
+    compact = false,
+    signDisplay = 'auto',
+    locale = 'en-IN',
+    whole = false,
+  } = options;
+  const magnitude = formatter(locale, currency, compact, whole).format(Math.abs(minor) / 100);
   if (minor === 0 || signDisplay === 'never') return magnitude;
   if (minor < 0) return `−${magnitude}`;
   return signDisplay === 'always' ? `+${magnitude}` : magnitude;
@@ -60,4 +75,22 @@ export function formatPercent(value: number, fractionDigits = 1): string {
   if (value > 0) return `+${magnitude}`;
   if (value < 0) return `−${magnitude}`;
   return magnitude;
+}
+
+/** Compact rupee label for chart axes in Indian units: ₹950 · ₹45K · ₹1.2L · ₹3Cr. */
+export function formatAxisMoney(minor: number): string {
+  const rupees = Math.abs(minor) / 100;
+  const sign = minor < 0 ? '−' : '';
+  const trim = (value: number) =>
+    value >= 10 ? Math.round(value).toString() : value.toFixed(1).replace(/\.0$/, '');
+  if (rupees >= 1e7) return `${sign}₹${trim(rupees / 1e7)}Cr`;
+  if (rupees >= 1e5) return `${sign}₹${trim(rupees / 1e5)}L`;
+  if (rupees >= 1e3) return `${sign}₹${trim(rupees / 1e3)}K`;
+  return `${sign}₹${Math.round(rupees)}`;
+}
+
+/** Rounds to whole rupees for display in dense tables. */
+export function formatMoneyWhole(minor: number, signDisplay: SignDisplay = 'auto'): string {
+  assertMinorUnits(Math.round(minor));
+  return formatMoney(Math.round(minor / 100) * 100, { signDisplay }).replace(/\.00$/, '');
 }

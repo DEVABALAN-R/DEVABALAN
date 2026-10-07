@@ -19,7 +19,7 @@ export const space = {
 } as const;
 export type SpaceToken = keyof typeof space;
 
-export const radius = { xs: 6, sm: 8, md: 12, lg: 16, xl: 24, pill: 999 } as const;
+export const radius = { xs: 6, sm: 10, md: 14, lg: 20, xl: 26, pill: 999 } as const;
 export type RadiusToken = keyof typeof radius;
 
 export const breakpoints = { sm: 0, md: 768, lg: 1024, xl: 1440 } as const;
@@ -29,11 +29,14 @@ export type Breakpoint = keyof typeof breakpoints;
 export const minHitSize = 44;
 
 export const layout = {
-  sidebarExpanded: 248,
-  sidebarCollapsed: 72,
-  bottomBarHeight: 64,
-  contentMaxWidth: 1280,
-  topBarHeight: 60,
+  /** Floating icon rail on tablet/desktop. */
+  railWidth: 64,
+  /** Floating pill tab bar on phones (excluding safe-area inset). */
+  bottomBarHeight: 72,
+  contentMaxWidth: 1480,
+  headerHeight: 60,
+  /** Outer canvas padding around the floating chrome on desktop. */
+  canvasPadding: 16,
 } as const;
 
 export const duration = { instant: 0, fast: 120, base: 200, slow: 320 } as const;
