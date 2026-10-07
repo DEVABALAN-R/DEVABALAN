@@ -80,4 +80,6 @@ src/
 - **Single-screen pages** (all Expenses pages, Accounts, Mutual funds, Stocks) use `<Screen fit>`: on desktop the
   page never scrolls and panels scroll internally; windows 700–819 px tall get a denser layout,
   and below 700 px the page scrolls rather than clipping. Tablets and phones always scroll.
-- Web output is a single-page app; Vercel must rewrite unknown paths to `index.html`.
+- Web output is a single-page app; `vercel.json` rewrites unknown paths to `index.html`. To
+  deploy, create a Vercel project from this repo with **Root Directory** `apps/command-center`;
+  `vercel.json` supplies the install, build (`npm run build:web`) and output (`dist`) settings.
