@@ -2,6 +2,11 @@
 
 A responsive React + TypeScript dashboard with a public portfolio and a private, Supabase-authenticated personal workspace. The workspace includes an expense tracker, accounts, configurable categories, and mutual-fund holdings and purchase history. Finance amounts use Indian rupees (INR).
 
+> **Redesign in progress.** A new cross-platform app (Expo: iOS, Android and web) is being built in
+> [`apps/command-center/`](apps/command-center/README.md) following
+> [`docs/architecture/MODERNIZATION_PLAN.md`](docs/architecture/MODERNIZATION_PLAN.md). Until it
+> reaches parity, this Vite app remains the production app.
+
 ## Run locally
 
 Requirements: Node.js 22.19.0 (see `.nvmrc`) and npm.

@@ -28,7 +28,7 @@ What blocks a premium, long-lived product:
 
 **Recommendation:** an incremental, **parallel-run migration**.
 
-1. **Phases 1–3:** Build the new Expo app in `apps/mobile-web/` (or replace the root once at parity) and normalize the database **while the current Vite app keeps working** against the same Supabase project. A read-compatible JSONB-to-tables migration and a `data_model_version` flag make this possible.
+1. **Phases 1–3:** Build the new Expo app in `apps/command-center/` (it replaces the root once at parity) and normalize the database **while the current Vite app keeps working** against the same Supabase project. A read-compatible JSONB-to-tables migration and a `data_model_version` flag make this possible.
 2. **Phases 4–9:** Ship the new experience feature by feature.
 3. **Phases 10–12:** Harden, optimize, cut over the Vercel domain, and retire the Vite app and JSONB columns only after verified parity and a backup.
 
@@ -868,7 +868,9 @@ interface MarketDataProvider { mutualFunds: MutualFundDataProvider; prices?: Pri
 
 ## 14. 3D / ANIMATION STRATEGY
 
-### 14.1 Animation (Reanimated)
+### 14.1 Animation
+
+> **Status (Oct 2026):** shipped on React Native's built-in `Animated`, which react-native-web already includes, instead of Reanimated. On web Reanimated cost ~140 KiB gzip (a quarter of the bundle) for what the app uses: entrance fades, sliding selection indicators and a skeleton pulse. Bring Reanimated back deliberately, together with Gesture Handler, when swipe actions or gesture-driven sheets land, and re-measure the bundle then. Layout transitions for list insert/delete wait for that too.
 
 | Pattern | Spec |
 |---|---|
@@ -879,7 +881,7 @@ interface MarketDataProvider { mutualFunds: MutualFundDataProvider; prices?: Pri
 | Success | Check animation on save (≤ 600 ms) plus a toast with **Undo** (5 s) |
 | Skeletons | Shimmer; static under reduced motion |
 
-Animations never block input. Durations are capped by tokens. `useReducedMotion()` from Reanimated, plus the OS setting, zeroes all non-essential motion. Loops (shimmer) stop when off-screen and when the app is backgrounded.
+Animations never block input. Durations are capped by tokens. `useReducedMotion()` (`src/theme/motion.ts`: one shared subscription to the OS or browser setting) zeroes all non-essential motion. Loops (shimmer) stop when off-screen and when the app is backgrounded.
 
 ### 14.2 3D evaluation
 
@@ -1022,7 +1024,7 @@ Likelihood (L) and impact (I) are rated High, Medium or Low. Calibration: this i
 
 ## 21. MIGRATION STRATEGY FROM EXISTING APP
 
-1. **Parallel run.** The new Expo app is developed in the same repo (`apps/expo/` during transition, or a `next` branch path). The Vite app stays deployable until cutover. Both talk to the same Supabase project. The new tables are **additive**.
+1. **Parallel run.** The new Expo app is developed in the same repo (`apps/command-center/` during transition). The Vite app stays deployable until cutover. Both talk to the same Supabase project. The new tables are **additive**.
 2. **Data migration** (per user, explicit, reversible):
    - The RPC `migrate_workspace_v1_to_v2()` is `security invoker` and acts on the caller's own row. It runs in **one transaction**:
      1. Reads `user_workspaces` and creates accounts (keeping `legacy_id`).
@@ -1070,6 +1072,35 @@ Each phase is one or more PRs. Each must pass CI and its acceptance criteria bef
 | Security | ESLint rule: no `supabase` import outside `lib/data`; no `dangerouslySetInnerHTML` |
 | Rollback | Separate app directory; nothing deployed to production |
 | Acceptance | Gallery renders on iOS, Android, and web at 360/768/1280 widths in both themes; CI green; reduced motion respected |
+
+**Phase 1 status (implemented in `apps/command-center/`).** Decisions that differ from the table above:
+
+- **SDK 57** (RN 0.86, React 19.2). It was the `latest` npm tag when Phase 1 started; SDK 58 was still tagged `next`.
+- The directory is `apps/command-center/`, because `create-expo-app` refuses the name `expo`.
+- **Web output is `single` (SPA), not `static`.** The dashboard's layout depends on window width, which a build-time render cannot know, so every responsive style hydrated with mismatches. Revisit when porting the public portfolio, which can be made responsive in an SSR-safe way.
+- **`react-native-gesture-handler` is deferred to Phase 5**, since nothing in Phase 1 uses gestures. This saves ~44 KiB gzip.
+- **Icons use per-file imports** via `src/components/icons.ts`. Metro does not tree-shake the lucide barrel, which shipped ~2 MB extra. ESLint blocks the barrel import.
+- **`eas.json` is deferred to Phase 2**, when the first native build profile is needed.
+- **Web bundle baseline:** 476 KiB gzip, framework-dominated (expo-router, Reanimated, RN Web, react-dom). CI fails above a 500 KiB ceiling; the ≤ 350 KiB target stays with Phase 11.
+- **Verified so far:** web only (headless Chromium at 390/820/1366 widths, light and dark; Escape closes sheets; focus is trapped in dialogs). Native rendering on iOS/Android simulators has **not** been verified in the authoring environment.
+- **Tooling-only audit findings:** `npm audit` reports high/moderate advisories in transitive Expo CLI/config dependencies (`braces`, `node-forge`, `sprintf-js`, `decode-uri-component`, `uuid`). Patched versions do not exist yet for the first three. They are not part of the shipped bundle; re-check in Phase 10.
+
+**UI redesign (owner request, Oct 2026).** Visual language from the owner's reference: grey canvas, white rounded bento cards, lime primary actions, a green gradient hero card per screen, ink pills for active navigation, and colourful category tints.
+
+- **Navigation:** a floating header with an animated pill nav (Overview · Expenses · Mutual funds · Stocks · Reports) plus a floating left rail (theme capsule · Accounts · Goals · Insights · Settings) on tablet/desktop. Phones get a floating tab bar and a quick-add button.
+- **Routes** now follow that information architecture: `/dashboard/expenses`, `/dashboard/mutual-funds`, `/dashboard/stocks` replace the earlier `/dashboard/transactions` and `/dashboard/investments` placeholders. §6's nested routes (`[id]`, `new`, etc.) still apply beneath these.
+- **Single-screen pages:** Expenses, Mutual funds and Stocks are designed to fit one desktop screen (`Screen fit`). They have a dense variant for 700–819 px windows and fall back to scrolling below 700 px.
+- **Chart kit** in `src/components/charts` is SVG-based, as planned in §13. It provides draw-in animation, hover/press tooltips and text summaries.
+- **Sample data:** these screens are driven by clearly labelled sample data in `src/features/preview`, with fictional names, until Phases 3–6 connect real repositories.
+- **Bundle ceiling** raised 500 → 520 KiB gzip for the added UI code (current ~502 KiB); the Phase 11 target is unchanged.
+- **Motion without Reanimated (expense manager work):** replacing Reanimated with React Native's `Animated` (see §14.1) cut the web bundle from ~523 to ~380 KiB gzip, so the CI ceiling dropped to 430 KiB.
+
+**Expense manager (owner request, Oct 2026).** The expense module was built ahead of its phase, following the Money Manager (Realbyte) reference and the owner's tracker. Flows, rules and the file map are in [`EXPENSE_MANAGER_FLOW.md`](EXPENSE_MANAGER_FLOW.md).
+
+- It runs on an in-memory preview store ("Preview · not saved") until Phases 2–3 connect Supabase. The store's actions map one-to-one to the planned repositories and RPCs (that doc, §9).
+- Money rules live in `src/lib/domain/expenses`. Defect F1 is fixed: paying a card bill from the bank reduces the bank balance. Transfers are excluded from income and expense totals, while their fees count as spending.
+- The Accounts placeholder is replaced by a working page. Overview reads the same ledger.
+- Web bundle ~397 KiB gzip after Reanimated was removed (see §14.1); CI ceiling 430 KiB.
 
 ### PHASE 2: Authentication + security foundation
 
