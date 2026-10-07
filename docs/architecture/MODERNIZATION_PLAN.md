@@ -1095,6 +1095,13 @@ Each phase is one or more PRs. Each must pass CI and its acceptance criteria bef
 - **Bundle ceiling** raised 500 → 520 KiB gzip for the added UI code (current ~502 KiB); the Phase 11 target is unchanged.
 - **Motion without Reanimated (expense manager work):** replacing Reanimated with React Native's `Animated` (see §14.1) cut the web bundle from ~523 to ~380 KiB gzip, so the CI ceiling dropped to 430 KiB.
 
+**Expense manager (owner request, Oct 2026).** The expense module was built ahead of its phase, following the Money Manager (Realbyte) reference and the owner's tracker. Flows, rules and the file map are in [`EXPENSE_MANAGER_FLOW.md`](EXPENSE_MANAGER_FLOW.md).
+
+- It runs on an in-memory preview store ("Preview · not saved") until Phases 2–3 connect Supabase. The store's actions map one-to-one to the planned repositories and RPCs (that doc, §9).
+- Money rules live in `src/lib/domain/expenses`. Defect F1 is fixed: paying a card bill from the bank reduces the bank balance. Transfers are excluded from income and expense totals, while their fees count as spending.
+- The Accounts placeholder is replaced by a working page. Overview reads the same ledger.
+- Web bundle ~397 KiB gzip after Reanimated was removed (see §14.1); CI ceiling 430 KiB.
+
 ### PHASE 2: Authentication + security foundation
 
 | Item | Detail |

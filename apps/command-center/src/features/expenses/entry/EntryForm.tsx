@@ -15,8 +15,11 @@ const kinds: readonly Segment<TransactionKind>[] = [
   { value: 'transfer', label: 'Transfer', tone: 'transfer' },
 ];
 
-/** The entry fields in Money Manager's order. Pressing a row opens its picker. */
-export function EntryForm() {
+/**
+ * The entry fields in Money Manager's order. Pressing a row opens its picker;
+ * Enter in the note calls `onSubmit` (the sheet's Save, with its Undo toast).
+ */
+export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
   const theme = useTheme();
   const lookup = useLookup();
   const draft = useTransactionForm((state) => state.draft);
@@ -26,7 +29,6 @@ export function EntryForm() {
   const update = useTransactionForm((state) => state.update);
   const setActive = useTransactionForm((state) => state.setActive);
   const advance = useTransactionForm((state) => state.advance);
-  const submit = useTransactionForm((state) => state.submit);
   const amountRef = useRef<TextInput>(null);
   const feeRef = useRef<TextInput>(null);
   const noteRef = useRef<TextInput>(null);
@@ -146,7 +148,7 @@ export function EntryForm() {
           value={draft.note}
           onChangeText={(note) => update({ note })}
           onFocus={() => setActive('note')}
-          onSubmitEditing={() => submit('save')}
+          onSubmitEditing={onSubmit}
           returnKeyType="done"
           maxLength={MAX_NOTE_LENGTH}
           placeholder="What was it for?"

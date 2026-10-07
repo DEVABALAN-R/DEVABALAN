@@ -2,7 +2,7 @@
 
 > Scope: the Expenses module of `apps/command-center`.
 > References: the owner's current Vite expense tracker (calendar view) and the Money Manager app by Realbyte Inc. (transaction entry, category grid with subcategories, stats pie, category management).
-> Status: implemented against an **in-memory preview store** seeded with labelled sample data. The flows, rules and calculations are final. Persistence moves to Supabase in Phases 2–3 (§9).
+> Status (Oct 2026): **implemented** in `apps/command-center` against an **in-memory preview store** seeded with labelled sample data ("Preview · not saved"; changes are lost on reload). The flows, rules and calculations are final. Persistence moves to Supabase in Phases 2–3 (§9). Where things live: §10.
 
 ---
 
@@ -161,3 +161,23 @@ Errors appear under the field and are announced to screen readers. On save, focu
 | calculations | unchanged pure functions, plus SQL read models (`f_monthly_cashflow`, `v_account_balances`) tested against the same fixtures |
 
 The seed data and the preview banner go away once the repositories are connected.
+
+---
+
+## 10. Implementation map
+
+| Area | Route | Code |
+|---|---|---|
+| Rules and calculations | — | `src/lib/domain/expenses/` (balances, periods, categories, breakdowns, budgets, dates, validation), unit-tested against a hand-checked fixture |
+| Preview store and seed | — | `src/features/expenses/state/` (`expenseStore`, `expenseUi`, `transactionForm`, seed files) |
+| Transactions | `/dashboard/expenses` | `screens/TransactionsScreen` + `components/` (header, summary, Calendar / Daily / Monthly, panels) |
+| Add / edit sheet | global | `entry/` (`TransactionSheet`, fields, category / account / date pickers), opened by Quick add, the phone **+**, Add buttons and any row |
+| Stats | `/dashboard/expenses/stats` | `stats/` + `components/charts/PieChart` (callout layout in `pieLayout.ts`) |
+| Budget | `/dashboard/expenses/budget` | `budget/` |
+| Categories | `/dashboard/expenses/categories` | `categories/` |
+| Accounts | `/dashboard/accounts` | `accounts/` |
+| Overview | `/dashboard` | `features/overview/useOverviewData` reads the same ledger; fund and stock values are still samples |
+
+**Verified (web, headless Chromium):** every page at 1440×900, 1366×768, 1366×705, 820×1180 and 390×844 in light and dark. Fit pages do not scroll at desktop sizes, nothing overflows horizontally, and there are no console errors. An end-to-end run covered Quick add from the Overview through Transport › Bus, Cash, a note and Enter to save, the toast with Undo, the Overview total rising by exactly ₹250, the entry appearing under today, and Escape closing the sheet. Native (iOS/Android) rendering has not been verified in the authoring environment.
+
+**Known limits of the preview:** nothing is persisted. Search is still a placeholder. Mutual fund purchases and stock trades open clearly labelled "planned" sheets. Recurring entries, CSV import/export and attachments are not part of this step (plan §21–22).

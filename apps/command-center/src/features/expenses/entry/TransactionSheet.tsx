@@ -63,13 +63,13 @@ export function TransactionSheet() {
       {notice ? <SavedBanner notice={notice} /> : null}
       {isMobile ? (
         <View style={{ gap: theme.space[5] }}>
-          <EntryForm />
+          <EntryForm onSubmit={() => save('save')} />
           <EntryPanel columns={3} />
         </View>
       ) : (
         <View style={{ flexDirection: 'row', gap: theme.space[5], height: BODY_HEIGHT }}>
           <View style={{ flex: 1 }}>
-            <EntryForm />
+            <EntryForm onSubmit={() => save('save')} />
           </View>
           <View
             style={{

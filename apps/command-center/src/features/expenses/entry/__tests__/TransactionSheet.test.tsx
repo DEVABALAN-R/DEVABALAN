@@ -66,7 +66,8 @@ describe('TransactionSheet', () => {
     await fireEvent.press(screen.getByRole('button', { name: /^Cash, balance/ }));
     expect(useTransactionForm.getState().active).toBe('note');
     await fireEvent.changeText(screen.getByLabelText('Note'), 'Chai');
-    await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
+    // Enter in the note saves exactly like the Save button (toast with Undo included).
+    await fireEvent(screen.getByLabelText('Note'), 'submitEditing');
 
     const saved = useExpenseStore.getState().transactions.find((item) => item.note === 'Chai');
     expect(saved).toMatchObject({
