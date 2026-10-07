@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { Card, CardHeader, Text } from '@/components/ui';
 import { sectorAllocation } from '@/features/preview/sampleStocks';
 import { useTween } from '@/hooks/useTween';
@@ -17,11 +18,7 @@ export function SectorCard({ style }: { style?: object }) {
         title="Sectors"
         subtitle={`${sectors.length} sectors · ${formatMoneyWhole(total)}`}
       />
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ gap: theme.space[3] }}
-        nestedScrollEnabled
-      >
+      <PanelScroll gap={theme.space[3]}>
         {sectors.map((item, index) => {
           const share = total ? item.value / total : 0;
           return (
@@ -57,7 +54,7 @@ export function SectorCard({ style }: { style?: object }) {
             </View>
           );
         })}
-      </ScrollView>
+      </PanelScroll>
     </Card>
   );
 }

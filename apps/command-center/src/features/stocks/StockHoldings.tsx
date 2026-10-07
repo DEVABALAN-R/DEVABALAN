@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { Card, CardHeader, Delta, Money, Text } from '@/components/ui';
 import { sampleStocks, stockTotals } from '@/features/preview/sampleStocks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -57,7 +58,7 @@ export function StockHoldings({
           ))}
         </View>
       )}
-      <ScrollView style={{ flex: 1 }} nestedScrollEnabled>
+      <PanelScroll gap={0}>
         {sampleStocks.map((stock, index) => {
           const totals = stockTotals(stock);
           const active = stock.ticker === selected;
@@ -124,7 +125,7 @@ export function StockHoldings({
             </HoverRow>
           );
         })}
-      </ScrollView>
+      </PanelScroll>
     </Card>
   );
 }

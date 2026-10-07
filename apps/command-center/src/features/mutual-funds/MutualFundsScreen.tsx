@@ -96,23 +96,23 @@ export function MutualFundsScreen() {
       </StatStrip>
       <BentoRow stackBelow="desktop" fill={fit ? 1 : undefined}>
         <BentoCell flex={8}>
-          <GrowthCard style={fit ? { flex: 1 } : { height: 300 }} />
+          <GrowthCard style={fit ? { flex: 1 } : { height: 240 }} />
         </BentoCell>
         <BentoCell flex={4}>
           <AllocationCard
             title="Allocation"
             subtitle="By fund category"
             items={allocation}
-            style={fit ? { flex: 1 } : { height: 260 }}
+            style={fit ? { flex: 1 } : undefined}
           />
         </BentoCell>
       </BentoRow>
       <BentoRow stackBelow="desktop" fill={fit ? 1.15 : undefined}>
         <BentoCell flex={8}>
-          <HoldingsTable style={fit ? { flex: 1 } : { height: 400 }} />
+          <HoldingsTable style={fit ? { flex: 1 } : undefined} />
         </BentoCell>
         <BentoCell flex={4}>
-          <UpcomingSips style={fit ? { flex: 1 } : { height: 360 }} />
+          <UpcomingSips style={fit ? { flex: 1 } : undefined} />
         </BentoCell>
       </BentoRow>
       <PlannedSheet

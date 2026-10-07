@@ -3,6 +3,7 @@ import { CalendarDays } from '@/components/icons';
 import { BentoCell, BentoRow } from '@/components/layout/Bento';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Screen } from '@/components/layout/Screen';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { Text } from '@/components/ui';
 import { previewProfile } from '@/features/preview/notice';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
@@ -20,6 +21,8 @@ import { useOverviewData } from './useOverviewData';
 export function OverviewScreen() {
   const theme = useTheme();
   const data = useOverviewData();
+  // Phones: the header already greets; the date chip and description are dropped.
+  const { isMobile } = useBreakpoint();
   const today = new Intl.DateTimeFormat('en-IN', {
     weekday: 'short',
     day: 'numeric',
@@ -34,20 +37,22 @@ export function OverviewScreen() {
         description="Your money at a glance: balances, cash flow, spending and investments."
         meta={<SampleDataBadge editable />}
         actions={
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              height: 36,
-              paddingHorizontal: theme.space[4],
-              borderRadius: theme.radius.pill,
-              backgroundColor: theme.colors.surface,
-            }}
-          >
-            <CalendarDays size={16} color={theme.colors.textSecondary} />
-            <Text variant="label">{today}</Text>
-          </View>
+          isMobile ? undefined : (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                height: 36,
+                paddingHorizontal: theme.space[4],
+                borderRadius: theme.radius.pill,
+                backgroundColor: theme.colors.surface,
+              }}
+            >
+              <CalendarDays size={16} color={theme.colors.textSecondary} />
+              <Text variant="label">{today}</Text>
+            </View>
+          )
         }
       />
       <BentoRow stackBelow="desktop">
@@ -58,7 +63,7 @@ export function OverviewScreen() {
           <KpiQuad data={data} />
         </BentoCell>
         <BentoCell flex={4}>
-          <CashflowCard flow={data.flow} height={250} />
+          <CashflowCard flow={data.flow} height={isMobile ? 180 : 250} />
         </BentoCell>
       </BentoRow>
       <BentoRow stackBelow="desktop">

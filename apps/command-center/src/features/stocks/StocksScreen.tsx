@@ -99,11 +99,11 @@ export function StocksScreen() {
           <PriceChartCard
             selected={selected}
             onSelect={setTicker}
-            style={fit ? { flex: 1 } : { height: 380 }}
+            style={fit ? { flex: 1 } : { height: 280 }}
           />
         </BentoCell>
         <BentoCell flex={4}>
-          <SectorCard style={fit ? { flex: 1 } : { height: 300 }} />
+          <SectorCard style={fit ? { flex: 1 } : undefined} />
         </BentoCell>
       </BentoRow>
       <BentoRow stackBelow="desktop" fill={fit ? 1 : undefined}>
@@ -111,11 +111,11 @@ export function StocksScreen() {
           <StockHoldings
             selected={ticker}
             onSelect={setTicker}
-            style={fit ? { flex: 1 } : { height: 420 }}
+            style={fit ? { flex: 1 } : undefined}
           />
         </BentoCell>
         <BentoCell flex={4}>
-          <TopMovers style={fit ? { flex: 1 } : { height: 380 }} />
+          <TopMovers style={fit ? { flex: 1 } : undefined} />
         </BentoCell>
       </BentoRow>
       <PlannedSheet

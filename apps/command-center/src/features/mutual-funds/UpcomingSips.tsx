@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { Repeat } from '@/components/icons';
 import { Badge, Card, CardHeader, CategoryIcon, Money, Text } from '@/components/ui';
 import { upcomingSips } from '@/features/preview/sampleInvestments';
@@ -17,11 +18,7 @@ export function UpcomingSips({ style }: { style?: object }) {
           action={<Repeat size={18} color={theme.colors.textSecondary} />}
         />
       </View>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ gap: theme.space[2] }}
-        nestedScrollEnabled
-      >
+      <PanelScroll gap={theme.space[2]}>
         {sips.map(({ fund, date }) => {
           const days = Math.ceil(
             (date.getTime() -
@@ -61,7 +58,7 @@ export function UpcomingSips({ style }: { style?: object }) {
             </View>
           );
         })}
-      </ScrollView>
+      </PanelScroll>
     </Card>
   );
 }

@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { Sparkline } from '@/components/charts';
 import { Card, CardHeader, Delta, Text } from '@/components/ui';
 import { sampleStocks, stockTotals } from '@/features/preview/sampleStocks';
@@ -15,11 +16,7 @@ export function TopMovers({ style }: { style?: object }) {
       <View style={{ paddingHorizontal: theme.space[1] }}>
         <CardHeader title="Today’s movers" subtitle="Largest moves first" />
       </View>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ gap: theme.space[2] }}
-        nestedScrollEnabled
-      >
+      <PanelScroll gap={theme.space[2]}>
         {movers.map(({ stock, index, change }) => (
           <View
             key={stock.ticker}
@@ -47,7 +44,7 @@ export function TopMovers({ style }: { style?: object }) {
             </View>
           </View>
         ))}
-      </ScrollView>
+      </PanelScroll>
     </Card>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { DonutChart } from '@/components/charts';
 import { Card, CardHeader, Text } from '@/components/ui';
 import { formatMoneyWhole } from '@/lib/formatting/currency';
@@ -55,10 +56,7 @@ export function AllocationCard({
             {items.length} groups
           </Text>
         </DonutChart>
-        <ScrollView
-          style={{ flex: 1, alignSelf: 'stretch' }}
-          contentContainerStyle={{ justifyContent: 'center', flexGrow: 1, gap: 2 }}
-        >
+        <PanelScroll gap={2}>
           {colored.map((item) => (
             <View
               key={item.label}
@@ -92,7 +90,7 @@ export function AllocationCard({
           >
             Total {formatMoneyWhole(total)}
           </Text>
-        </ScrollView>
+        </PanelScroll>
       </View>
     </Card>
   );

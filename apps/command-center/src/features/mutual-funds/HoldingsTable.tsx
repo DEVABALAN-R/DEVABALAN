@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { Card, CardHeader, CategoryIcon, Delta, Money, Text } from '@/components/ui';
 import { fundTotals, sampleFunds } from '@/features/preview/sampleInvestments';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -49,7 +50,7 @@ export function HoldingsTable({ style }: { style?: object }) {
           ))}
         </View>
       )}
-      <ScrollView style={{ flex: 1 }} nestedScrollEnabled>
+      <PanelScroll gap={0}>
         {sampleFunds.map((fund) => {
           const totals = fundTotals(fund);
           const identity = (
@@ -124,7 +125,7 @@ export function HoldingsTable({ style }: { style?: object }) {
             </View>
           );
         })}
-      </ScrollView>
+      </PanelScroll>
     </Card>
   );
 }
