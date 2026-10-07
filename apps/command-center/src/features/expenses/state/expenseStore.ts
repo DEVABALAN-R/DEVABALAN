@@ -4,11 +4,13 @@ import type {
   AccountGroup,
   Category,
   CategoryKind,
+  Person,
   Transaction,
   ValidTransaction,
 } from '@/lib/domain/expenses';
 import { newId } from '@/lib/ids';
 import { seedAccounts, seedCategories } from './seedCatalog';
+import { seedPeople, withSampleSplits } from './seedPeople';
 import { seedTransactions } from './seedTransactions';
 
 /**
@@ -16,7 +18,12 @@ import { seedTransactions } from './seedTransactions';
  * future repository/RPC call (EXPENSE_MANAGER_FLOW.md §9); calculations live
  * in src/lib/domain/expenses and never in this store.
  */
-export type Ledger = { accounts: Account[]; categories: Category[]; transactions: Transaction[] };
+export type Ledger = {
+  accounts: Account[];
+  categories: Category[];
+  transactions: Transaction[];
+  people: Person[];
+};
 
 export type CategoryInput = {
   kind: CategoryKind;
@@ -47,7 +54,8 @@ type ExpenseStore = Ledger & {
 const seed = (): Ledger => ({
   accounts: seedAccounts(),
   categories: seedCategories(),
-  transactions: seedTransactions(),
+  transactions: withSampleSplits(seedTransactions()),
+  people: seedPeople(),
 });
 
 const nextOrder = (items: { order: number }[]) =>
@@ -113,11 +121,7 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   },
 
   deleteCategory: (id, reassignTo) => {
-    const previous: Ledger = {
-      accounts: get().accounts,
-      categories: get().categories,
-      transactions: get().transactions,
-    };
+    const previous = getLedger();
     const target = previous.categories.find((item) => item.id === id);
     if (!target) return previous;
     const removed = new Set([
@@ -200,6 +204,6 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
 
 /** Reads the current ledger outside React (e.g. inside other stores). */
 export const getLedger = (): Ledger => {
-  const { accounts, categories, transactions } = useExpenseStore.getState();
-  return { accounts, categories, transactions };
+  const { accounts, categories, transactions, people } = useExpenseStore.getState();
+  return { accounts, categories, transactions, people };
 };

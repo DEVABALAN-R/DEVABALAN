@@ -9,8 +9,10 @@ import { AccountPicker } from './AccountPicker';
 import { CategoryPicker } from './CategoryPicker';
 import { DatePicker } from './DatePicker';
 import { PickChip } from './PickChip';
+import { SplitPanel } from './SplitField';
 
-export type EntryPanelKind = 'date' | 'category' | 'account' | 'toAccount' | 'fee' | 'note';
+export type EntryPanelKind =
+  'date' | 'category' | 'account' | 'toAccount' | 'fee' | 'split' | 'note';
 
 /** Which picker accompanies the active field. While typing the amount it previews the next step. */
 export function panelFor(active: DraftField | null, kind: TransactionKind): EntryPanelKind {
@@ -24,6 +26,7 @@ const titles: Record<EntryPanelKind, string> = {
   account: 'Account',
   toAccount: 'To account',
   fee: 'Transfer fee',
+  split: 'Split with',
   note: 'Suggestions',
 };
 
@@ -83,6 +86,8 @@ export function EntryPanel({ columns }: { columns: number }) {
           }
           onChoose={(id) => choose(panel, id)}
         />
+      ) : panel === 'split' ? (
+        <SplitPanel />
       ) : panel === 'note' ? (
         notes.length ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>

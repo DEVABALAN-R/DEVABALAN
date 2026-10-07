@@ -1,5 +1,6 @@
 import { OTHER_ID, TRANSFER_FEES_ID, UNCATEGORIZED_ID, resolveCategory } from './categories';
 import { addMonths, monthBounds } from './dates';
+import { isRepayment, ownShare } from './people';
 import { inRange } from './periods';
 import type { Category, CategoryKind, DateRange, Transaction } from './types';
 
@@ -43,9 +44,12 @@ export function categoryBreakdown(
     if (!inRange(transaction, range) || (accountId && transaction.accountId !== accountId))
       continue;
     if (transaction.kind === kind) {
+      // Repayments are not income; a split expense counts only your share.
+      if (isRepayment(transaction)) continue;
       const { parent } = resolveCategory(categories, transaction.categoryId);
-      if (parent) add(parent.id, parent.name, parent, transaction.amount);
-      else add(UNCATEGORIZED_ID, 'Uncategorized', null, transaction.amount);
+      const share = ownShare(transaction);
+      if (parent) add(parent.id, parent.name, parent, share);
+      else add(UNCATEGORIZED_ID, 'Uncategorized', null, share);
     } else if (kind === 'expense' && transaction.kind === 'transfer' && transaction.fee > 0) {
       add(TRANSFER_FEES_ID, 'Transfer fees', null, transaction.fee);
     }
@@ -101,7 +105,7 @@ export function subcategoryBreakdown(
     };
     totals.set(id, {
       ...current,
-      amount: current.amount + transaction.amount,
+      amount: current.amount + ownShare(transaction),
       count: current.count + 1,
     });
   }
@@ -122,7 +126,10 @@ export function transactionsInCategory(
   sliceId?: string | null,
 ): Transaction[] {
   return transactions
-    .filter((transaction) => transaction.kind !== 'transfer' && inRange(transaction, range))
+    .filter(
+      (transaction) =>
+        transaction.kind !== 'transfer' && !isRepayment(transaction) && inRange(transaction, range),
+    )
     .filter((transaction) => !accountId || transaction.accountId === accountId)
     .filter((transaction) => {
       const { parent, sub } = resolveCategory(categories, transaction.categoryId);
@@ -151,7 +158,7 @@ export function categoryTrend(
       monthBounds(month),
       accountId,
       sliceId,
-    ).reduce((sum, transaction) => sum + transaction.amount, 0);
+    ).reduce((sum, transaction) => sum + ownShare(transaction), 0);
     return { month, amount };
   });
 }

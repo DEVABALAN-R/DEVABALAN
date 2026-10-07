@@ -38,6 +38,8 @@ const draft = (patch: Partial<TransactionDraft>): TransactionDraft => ({
   accountId: 'cash',
   toAccountId: null,
   feeText: '',
+  splits: [],
+  personId: null,
   note: '  Masala tea  ',
   ...patch,
 });
@@ -56,7 +58,38 @@ describe('validateDraft', () => {
       fee: 0,
       categoryId: 'tea',
       note: 'Masala tea',
+      splits: [],
+      personId: null,
     });
+  });
+
+  it('keeps valid splits on expenses and rejects shares above the amount', () => {
+    const people = [{ id: 'ravi', name: 'Ravi', order: 0 }];
+    const ok = validateDraft(draft({ splits: [{ personId: 'ravi', amountText: '100' }] }), {
+      ...context,
+      people,
+    });
+    expect(ok.value?.splits).toEqual([{ personId: 'ravi', amount: 10_000 }]);
+    const tooMuch = validateDraft(draft({ splits: [{ personId: 'ravi', amountText: '300' }] }), {
+      ...context,
+      people,
+    });
+    expect(tooMuch.errors.split).toBe('Shares add up to more than the expense.');
+    const unknown = validateDraft(draft({ splits: [{ personId: 'gone', amountText: '10' }] }), {
+      ...context,
+      people,
+    });
+    expect(unknown.errors.split).toBe('Someone in the split no longer exists.');
+  });
+
+  it('accepts a repayment without a category', () => {
+    const people = [{ id: 'ravi', name: 'Ravi', order: 0 }];
+    const { errors, value } = validateDraft(
+      draft({ kind: 'income', categoryId: null, personId: 'ravi' }),
+      { ...context, people },
+    );
+    expect(errors).toEqual({});
+    expect(value).toMatchObject({ kind: 'income', categoryId: null, personId: 'ravi' });
   });
 
   it('reports every problem with a field-specific message', () => {

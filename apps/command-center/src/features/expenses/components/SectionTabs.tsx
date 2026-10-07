@@ -1,21 +1,23 @@
 import { Link, usePathname, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { ChartPie, List, Tag, Target, type LucideIcon } from '@/components/icons';
+import { ChartPie, List, Tag, Target, Users, type LucideIcon } from '@/components/icons';
 import { Text } from '@/components/ui';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useInteractionState } from '@/hooks/useInteractionState';
 import { useTheme } from '@/theme';
 
-const sections: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: '/dashboard/expenses', label: 'Transactions', icon: List },
+const sections: { href: string; label: string; short?: string; icon: LucideIcon }[] = [
+  // Five tabs share a phone's width, so the longest label gets a short form there.
+  { href: '/dashboard/expenses', label: 'Transactions', short: 'Entries', icon: List },
   { href: '/dashboard/expenses/stats', label: 'Stats', icon: ChartPie },
   { href: '/dashboard/expenses/budget', label: 'Budget', icon: Target },
+  { href: '/dashboard/expenses/people', label: 'People', icon: Users },
   { href: '/dashboard/expenses/categories', label: 'Categories', icon: Tag },
 ];
 
 /**
  * Sub-navigation shared by every Expenses page (Money Manager: Trans. · Stats ·
- * Budget · Settings). Pills on wide screens; four equal tabs on phones.
+ * Budget · Settings). Pills on wide screens; five equal tabs on phones.
  */
 export function SectionTabs() {
   const theme = useTheme();
@@ -49,13 +51,15 @@ export function SectionTabs() {
 type SectionLinkProps = {
   href: string;
   label: string;
+  /** Visible label on phones; screen readers still hear `label`. */
+  short?: string;
   icon: LucideIcon;
   active: boolean;
   /** Icon above the label, sharing the row equally (phones). */
   stacked: boolean;
 };
 
-function SectionLink({ href, label, icon: Icon, active, stacked }: SectionLinkProps) {
+function SectionLink({ href, label, short, icon: Icon, active, stacked }: SectionLinkProps) {
   const theme = useTheme();
   const { hovered, focused, handlers } = useInteractionState();
   return (
@@ -94,7 +98,7 @@ function SectionLink({ href, label, icon: Icon, active, stacked }: SectionLinkPr
           color={active ? 'onInk' : 'textSecondary'}
           numberOfLines={1}
         >
-          {label}
+          {stacked && short ? short : label}
         </Text>
       </Pressable>
     </Link>

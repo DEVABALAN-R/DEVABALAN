@@ -5,7 +5,7 @@ import { nextField, useTransactionForm } from '../transactionForm';
 const form = () => useTransactionForm.getState();
 
 beforeEach(() => {
-  useExpenseStore.getState().restoreLedger({ accounts, categories, transactions });
+  useExpenseStore.getState().restoreLedger({ accounts, categories, transactions, people: [] });
   useTransactionForm.setState({
     open: false,
     editingId: null,
@@ -48,6 +48,8 @@ describe('fast entry flow', () => {
       toAccountId: null,
       feeText: '',
       note: '',
+      splits: [],
+      personId: null,
     };
     expect(nextField(draft, 'amount')).toBe('note');
     expect(nextField({ ...draft, kind: 'transfer', accountId: null }, 'amount')).toBe('account');

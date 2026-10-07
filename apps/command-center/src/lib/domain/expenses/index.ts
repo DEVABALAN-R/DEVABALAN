@@ -7,3 +7,4 @@ export * from './periods';
 export * from './types';
 export * from './validation';
 export * from './notes';
+export * from './people';

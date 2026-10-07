@@ -1,3 +1,4 @@
+import { ownShare } from './people';
 import {
   addMonths,
   calendarWeeks,
@@ -37,8 +38,8 @@ export function periodTotals(
     if (!inRange(transaction, range)) continue;
     const own = !accountId || transaction.accountId === accountId;
     if (!own) continue;
-    if (transaction.kind === 'income') income += transaction.amount;
-    else if (transaction.kind === 'expense') expense += transaction.amount;
+    if (transaction.kind === 'income') income += ownShare(transaction);
+    else if (transaction.kind === 'expense') expense += ownShare(transaction);
     else expense += transaction.fee;
   }
   return { income, expense, net: income - expense };

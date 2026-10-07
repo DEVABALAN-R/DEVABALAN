@@ -1,11 +1,12 @@
 import { accountBalance, balanceSummary, periodTotals } from '@/lib/domain/expenses';
 import { accounts, categories, transactions } from '@/lib/domain/expenses/__fixtures__/ledger';
 import { useExpenseStore } from '../expenseStore';
+import { deletePerson, recordRepayment, savePerson } from '../peopleActions';
 
 const store = () => useExpenseStore.getState();
 
 beforeEach(() => {
-  store().restoreLedger({ accounts, categories, transactions });
+  store().restoreLedger({ accounts, categories, transactions, people: [] });
 });
 
 describe('seed', () => {
@@ -88,7 +89,7 @@ describe('categories', () => {
   it('refuses to reassign to the wrong kind or to a deleted category', () => {
     store().deleteCategory('food', 'salary');
     expect(store().transactions.find((item) => item.id === 't4')?.categoryId).toBeNull();
-    store().restoreLedger({ accounts, categories, transactions });
+    store().restoreLedger({ accounts, categories, transactions, people: [] });
     store().deleteCategory('food', 'tea');
     expect(store().transactions.find((item) => item.id === 't4')?.categoryId).toBeNull();
   });
@@ -134,5 +135,28 @@ describe('accounts', () => {
     expect(store().deleteAccount('bank')).toBe(false);
     const fresh = store().saveAccount({ name: 'Wallet', group: 'wallet', openingBalance: 0 });
     expect(store().deleteAccount(fresh.id)).toBe(true);
+  });
+});
+
+describe('people', () => {
+  it('adds people, refuses duplicates, and records repayments as non-income', () => {
+    const ravi = savePerson('Ravi') as { id: string; name: string };
+    expect(ravi).toMatchObject({ name: 'Ravi' });
+    expect(savePerson(' ravi ')).toBe('That name is already used here.');
+    const before = periodTotals(store().transactions, { start: '2026-10-01', end: '2026-10-31' });
+    const repayment = recordRepayment({
+      personId: ravi.id,
+      amount: 5_000,
+      accountId: 'cash',
+      date: '2026-10-08',
+    });
+    expect(repayment).toMatchObject({ kind: 'income', personId: ravi.id, categoryId: null });
+    // Money arrives in the account but income stays the same.
+    expect(periodTotals(store().transactions, { start: '2026-10-01', end: '2026-10-31' })).toEqual(
+      before,
+    );
+    expect(deletePerson(ravi.id)).toBe(false);
+    store().deleteTransaction(repayment.id);
+    expect(deletePerson(ravi.id)).toBe(true);
   });
 });
