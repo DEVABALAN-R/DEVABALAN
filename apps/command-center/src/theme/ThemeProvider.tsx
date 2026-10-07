@@ -1,29 +1,30 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, useWindowDimensions } from 'react-native';
 import { useUiStore } from '@/state/ui';
 import { darkColors, lightColors, type ColorRoles } from './colors';
 import { elevation, type ElevationLevel } from './elevation';
-import { radius, space } from './tokens';
-import { typeScale } from './typography';
+import { breakpoints, phoneSpace, radius, space, type SpaceScale } from './tokens';
+import { phoneTypeScale, typeScale, type TypeScale } from './typography';
 
 export type ColorScheme = 'light' | 'dark';
 
 export type Theme = {
   scheme: ColorScheme;
   colors: ColorRoles;
-  space: typeof space;
+  space: SpaceScale;
   radius: typeof radius;
-  type: typeof typeScale;
+  type: TypeScale;
   elevation: (level: ElevationLevel) => ReturnType<typeof elevation>;
 };
 
-export function createTheme(scheme: ColorScheme): Theme {
+/** `phone` uses the denser type scale and spacing for narrow windows. */
+export function createTheme(scheme: ColorScheme, phone = false): Theme {
   return {
     scheme,
     colors: scheme === 'dark' ? darkColors : lightColors,
-    space,
+    space: phone ? phoneSpace : space,
     radius,
-    type: typeScale,
+    type: phone ? phoneTypeScale : typeScale,
     elevation: (level) => elevation(level, scheme),
   };
 }
@@ -35,7 +36,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const preference = useUiStore((state) => state.themePreference);
   const scheme: ColorScheme =
     preference === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : preference;
-  const theme = useMemo(() => createTheme(scheme), [scheme]);
+  const phone = useWindowDimensions().width < breakpoints.md;
+  const theme = useMemo(() => createTheme(scheme, phone), [scheme, phone]);
   return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
 }
 

@@ -25,7 +25,7 @@ export function MobileHeader() {
         backgroundColor: theme.colors.bg,
       }}
     >
-      <BrandMark size={40} wordmark={false} />
+      <BrandMark size={34} wordmark={false} />
       <View style={{ flex: 1 }}>
         <Text variant="caption" color="textSecondary">
           {greeting()}

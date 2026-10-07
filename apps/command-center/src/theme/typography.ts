@@ -9,7 +9,7 @@ export const fontFamily = {
 } as const;
 export type FontWeightToken = keyof typeof fontFamily;
 
-type TypeStyle = Required<Pick<TextStyle, 'fontSize' | 'lineHeight'>> & {
+export type TypeStyle = Required<Pick<TextStyle, 'fontSize' | 'lineHeight'>> & {
   weight: FontWeightToken;
   letterSpacing?: number;
 };
@@ -34,3 +34,20 @@ export const typeScale = {
   eyebrow: { fontSize: 11, lineHeight: 15, weight: 'semibold', letterSpacing: 0.7 },
 } as const satisfies Record<string, TypeStyle>;
 export type TypeVariant = keyof typeof typeScale;
+
+/**
+ * Phones (< 768 px wide): headings and figures step down again so cards stay
+ * short; body text keeps its compact size.
+ */
+export type TypeScale = Record<TypeVariant, TypeStyle>;
+
+export const phoneTypeScale: TypeScale = {
+  ...typeScale,
+  bodyLg: { fontSize: 14, lineHeight: 20, weight: 'regular' },
+  title: { fontSize: 15, lineHeight: 20, weight: 'semibold', letterSpacing: -0.2 },
+  h2: { fontSize: 17, lineHeight: 22, weight: 'semibold', letterSpacing: -0.3 },
+  h1: { fontSize: 20, lineHeight: 26, weight: 'semibold', letterSpacing: -0.5 },
+  display: { fontSize: 22, lineHeight: 28, weight: 'semibold', letterSpacing: -0.6 },
+  figure: { fontSize: 22, lineHeight: 28, weight: 'semibold', letterSpacing: -0.5 },
+  figureSm: { fontSize: 17, lineHeight: 22, weight: 'semibold', letterSpacing: -0.3 },
+};

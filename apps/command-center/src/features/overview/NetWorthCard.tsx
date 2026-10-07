@@ -22,7 +22,6 @@ export function NetWorthCard({ data }: { data: OverviewData }) {
           value={data.netWorth}
           animate
           variant="figure"
-          style={{ fontSize: 36, lineHeight: 42 }}
           numberOfLines={1}
           adjustsFontSizeToFit
         />

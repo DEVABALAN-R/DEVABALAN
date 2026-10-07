@@ -27,7 +27,7 @@ export function PageHeader({
   const theme = useTheme();
   const { isMobile } = useBreakpoint();
   const titleVariant =
-    size === 'hero' ? (isMobile ? 'h1' : 'display') : size === 'compact' ? 'h2' : 'h1';
+    size === 'hero' ? (isMobile ? 'h2' : 'display') : size === 'compact' ? 'h2' : 'h1';
   return (
     <Appear
       duration={300}
@@ -57,7 +57,7 @@ export function PageHeader({
           </Heading>
           {size === 'compact' ? meta : null}
         </View>
-        {description ? <Text color="textSecondary">{description}</Text> : null}
+        {description && !isMobile ? <Text color="textSecondary">{description}</Text> : null}
         {size !== 'compact' && meta ? (
           <View style={{ marginTop: theme.space[1] }}>{meta}</View>
         ) : null}

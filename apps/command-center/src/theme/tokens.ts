@@ -19,6 +19,23 @@ export const space = {
   18: 56,
 } as const;
 export type SpaceToken = keyof typeof space;
+export type SpaceScale = Record<SpaceToken, number>;
+
+/** Phones: tighter padding and gaps (same tokens, smaller values). */
+export const phoneSpace: SpaceScale = {
+  0: 0,
+  0.5: 2,
+  1: 4,
+  2: 6,
+  3: 8,
+  4: 10,
+  5: 12,
+  6: 16,
+  8: 20,
+  10: 24,
+  14: 32,
+  18: 40,
+};
 
 export const radius = { xs: 5, sm: 8, md: 11, lg: 16, xl: 20, pill: 999 } as const;
 export type RadiusToken = keyof typeof radius;
