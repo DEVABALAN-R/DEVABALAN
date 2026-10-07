@@ -43,6 +43,8 @@ export type RepaymentInput = {
   amount: number;
   accountId: string;
   date?: string;
+  /** The expenses this payment was for; omit for a general repayment. */
+  settles?: string[];
 };
 
 /**
@@ -54,6 +56,7 @@ export function recordRepayment({
   amount,
   accountId,
   date,
+  settles = [],
 }: RepaymentInput): Transaction {
   const person = useExpenseStore.getState().people.find((item) => item.id === personId);
   return useExpenseStore.getState().saveTransaction({
@@ -67,5 +70,6 @@ export function recordRepayment({
     note: person ? `Paid back by ${person.name}` : 'Paid back',
     splits: [],
     personId,
+    settles,
   });
 }

@@ -145,6 +145,7 @@ export const useTransactionForm = create<FormState>((set, get) => ({
         })),
         ...editSplitMode(transaction),
         personId: transaction.personId ?? null,
+        settles: transaction.settles ?? [],
         photo: transaction.photo ?? null,
       },
     }),

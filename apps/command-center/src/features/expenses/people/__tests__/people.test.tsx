@@ -93,19 +93,40 @@ describe('SettleSheet', () => {
     expect(before.outstanding).toBeGreaterThan(0);
     await renderWithProviders(<SettleSheet balance={before} visible onClose={jest.fn()} />);
     await fireEvent.press(screen.getByRole('button', { name: /^Main bank, balance/ }));
-    await fireEvent.press(screen.getByRole('button', { name: 'Mark as paid' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Record payment' }));
     const after = personBalances(store().people, store().transactions)[0];
     expect(after.outstanding).toBe(0);
     expect(after.repayments[0]).toMatchObject({ accountId: 'acc-main', personId: 'person-arun' });
   });
 
+  it('pays for one shared expense and leaves the others open', async () => {
+    const arun = personBalances(store().people, store().transactions)[0];
+    const newest = arun.splits[0];
+    const older = arun.splits[1];
+    await renderWithProviders(
+      <SettleSheet
+        balance={arun}
+        target={{ split: newest, title: 'Outing' }}
+        visible
+        onClose={jest.fn()}
+      />,
+    );
+    expect(screen.getByText('Arun paid for Outing')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: /^Cash, balance/ }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Mark paid' }));
+    const after = personBalances(store().people, store().transactions)[0];
+    expect(after.splits[0]).toMatchObject({ remaining: 0, paid: newest.amount });
+    expect(after.splits[1]).toMatchObject({ remaining: older.amount, paid: 0 });
+    expect(after.repayments[0].settles).toEqual([newest.transaction.id]);
+  });
+
   it('refuses more than they owe and asks for an account', async () => {
     const balance = personBalances(store().people, store().transactions)[0];
     await renderWithProviders(<SettleSheet balance={balance} visible onClose={jest.fn()} />);
-    await fireEvent.press(screen.getByRole('button', { name: 'Mark as paid' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Record payment' }));
     expect(screen.getByText('Choose the account the money went to.')).toBeTruthy();
     await fireEvent.changeText(screen.getByLabelText('Amount paid'), '999999');
-    await fireEvent.press(screen.getByRole('button', { name: 'Mark as paid' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Record payment' }));
     expect(screen.getByText(/Arun owes/)).toBeTruthy();
   });
 });

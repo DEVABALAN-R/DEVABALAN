@@ -105,6 +105,28 @@ describe('splits', () => {
     expect(priya).toMatchObject({ lent: 50_000, repaid: 0, outstanding: 50_000 });
   });
 
+  it('settles the chosen expense first when a payment names it', () => {
+    // Ravi pays exactly his movie share; the older dinner share stays open.
+    const forMovie: Transaction = {
+      ...raviPays,
+      id: 'movie-pay',
+      amount: 30_000,
+      settles: ['movie'],
+    };
+    const [ravi] = personBalances(people, [dinner, movie, forMovie]);
+    expect(ravi.splits.map((split) => [split.transaction.id, split.paid, split.remaining])).toEqual(
+      [
+        ['movie', 30_000, 0],
+        ['dinner', 0, 50_000],
+      ],
+    );
+    // Paying more than the named share spills over to the oldest open share.
+    const extra: Transaction = { ...forMovie, amount: 40_000 };
+    const [again] = personBalances(people, [dinner, movie, extra]);
+    expect(again.splits.map((split) => split.paid)).toEqual([30_000, 10_000]);
+    expect(again.outstanding).toBe(40_000);
+  });
+
   it('splits equally: odd paise stay with you, or spread so the others pay it all', () => {
     expect(equalShares(100_000, 2, true)).toEqual([33_333, 33_333]);
     expect(equalShares(100_000, 2, false)).toEqual([50_000, 50_000]);

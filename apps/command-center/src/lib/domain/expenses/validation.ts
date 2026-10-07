@@ -49,6 +49,8 @@ export type TransactionDraft = {
   myShareText: string;
   /** Set when editing a repayment (income from a person, no category). */
   personId: string | null;
+  /** Editing a repayment: the expenses it was for (kept as they were). */
+  settles?: string[];
   /** Receipt photo, checked when it was picked. */
   photo: Photo | null;
 };
@@ -149,6 +151,7 @@ export function validateDraft(
       note,
       splits: draft.kind === 'expense' ? splits : [],
       personId: draft.kind === 'income' ? draft.personId : null,
+      settles: draft.kind === 'income' && draft.personId ? (draft.settles ?? []) : [],
       photo: draft.photo,
     },
   };

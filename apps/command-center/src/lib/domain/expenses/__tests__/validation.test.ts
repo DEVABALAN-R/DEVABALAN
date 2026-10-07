@@ -63,6 +63,7 @@ describe('validateDraft', () => {
       note: 'Masala tea',
       splits: [],
       personId: null,
+      settles: [],
       photo: null,
     });
   });
