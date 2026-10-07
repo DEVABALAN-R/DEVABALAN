@@ -25,7 +25,6 @@ export function InvestmentsSnapshot({ data, index = 7 }: { data: OverviewData; i
         value={data.funds.value}
         delta={fundGain}
         series={data.funds.series}
-        color={theme.colors.chart[6]}
       />
       <Snapshot
         index={index + 1}
@@ -36,7 +35,6 @@ export function InvestmentsSnapshot({ data, index = 7 }: { data: OverviewData; i
         value={data.stocks.value}
         delta={stockGain}
         series={data.stocks.series}
-        color={theme.colors.chart[0]}
       />
     </View>
   );
@@ -50,11 +48,10 @@ type SnapshotProps = {
   value: number;
   delta: number;
   series: number[];
-  color: string;
   index: number;
 };
 
-function Snapshot({ title, href, icon, tint, value, delta, series, color, index }: SnapshotProps) {
+function Snapshot({ title, href, icon, tint, value, delta, series, index }: SnapshotProps) {
   const theme = useTheme();
   return (
     <Card
@@ -74,7 +71,7 @@ function Snapshot({ title, href, icon, tint, value, delta, series, color, index 
         </View>
         <Money value={value} variant="title" numeric numberOfLines={1} adjustsFontSizeToFit />
         <Delta value={delta} variant="pill" comparison="total return" />
-        <Sparkline values={series} color={color} height={34} />
+        <Sparkline values={series} height={34} />
       </View>
     </Card>
   );

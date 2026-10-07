@@ -37,9 +37,8 @@ export function TopMovers({ style }: { style?: object }) {
             <View style={{ flex: 1 }}>
               <Sparkline
                 values={stock.history.slice(-15)}
-                color={change >= 0 ? theme.colors.brandFrom : theme.colors.expense}
+                color={change >= 0 ? undefined : theme.colors.expense}
                 height={30}
-                filled={false}
               />
             </View>
           </View>

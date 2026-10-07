@@ -1,38 +1,52 @@
-import { useId } from 'react';
 import { View } from 'react-native';
-import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg';
-import { smoothPath } from './scales';
+import Svg, { Circle, Polyline } from 'react-native-svg';
+import { useTheme } from '@/theme';
 import { useChartSize } from './useChartSize';
 
-type SparklineProps = { values: number[]; color: string; height?: number; filled?: boolean };
+type SparklineProps = {
+  values: number[];
+  /** Line colour; defaults to the app's trend orange (as in the full line chart). */
+  color?: string;
+  height?: number;
+};
 
-/** Tiny decorative trend line; the surrounding text states the numbers. */
-export function Sparkline({ values, color, height = 36, filled = true }: SparklineProps) {
+/**
+ * Tiny decorative trend in the app's line style: straight segments and the
+ * latest point ringed. The surrounding text states the numbers.
+ */
+export function Sparkline({ values, color, height = 36 }: SparklineProps) {
+  const theme = useTheme();
   const { width, onLayout } = useChartSize();
-  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const line = color ?? theme.colors.pie[1];
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || 1;
-  const step = values.length > 1 ? width / (values.length - 1) : 0;
+  const inner = Math.max(0, width - 10);
+  const step = values.length > 1 ? inner / (values.length - 1) : 0;
   const points = values.map((value, index) => ({
-    x: index * step,
-    y: 3 + (height - 6) * (1 - (value - min) / span),
+    x: 4 + index * step,
+    y: 5 + (height - 10) * (1 - (value - min) / span),
   }));
-  const line = smoothPath(points);
+  const last = points[points.length - 1];
   return (
     <View aria-hidden onLayout={onLayout} style={{ height, alignSelf: 'stretch' }}>
       {width > 0 && values.length > 1 ? (
         <Svg width={width} height={height}>
-          <Defs>
-            <LinearGradient id={`s${id}`} x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={color} stopOpacity={0.28} />
-              <Stop offset="1" stopColor={color} stopOpacity={0} />
-            </LinearGradient>
-          </Defs>
-          {filled ? (
-            <Path d={`${line} L ${width} ${height} L 0 ${height} Z`} fill={`url(#s${id})`} />
-          ) : null}
-          <Path d={line} stroke={color} strokeWidth={2} fill="none" strokeLinecap="round" />
+          <Polyline
+            points={points.map((point) => `${point.x},${point.y}`).join(' ')}
+            stroke={line}
+            strokeWidth={2}
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <Circle
+            cx={last.x}
+            cy={last.y}
+            r={3.5}
+            fill={theme.colors.surface}
+            stroke={line}
+            strokeWidth={2}
+          />
         </Svg>
       ) : null}
     </View>
