@@ -49,6 +49,8 @@ describe('fast entry flow', () => {
       feeText: '',
       note: '',
       splits: [],
+      splitMode: 'equal' as const,
+      myShareText: '',
       personId: null,
       photo: null,
     };

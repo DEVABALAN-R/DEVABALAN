@@ -1,17 +1,14 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { UserPlus, X } from '@/components/icons';
-import { Button, Text } from '@/components/ui';
-import { amountToInput, equalShares, parseAmount, type SplitDraft } from '@/lib/domain/expenses';
+import { UserPlus } from '@/components/icons';
+import { SegmentedControl, Text } from '@/components/ui';
+import { amountToInput, parseAmount, type SplitMode } from '@/lib/domain/expenses';
 import { useTheme } from '@/theme';
-import { TextField } from '../components/TextField';
-import { formatEntry } from '../format';
 import { useLookup } from '../hooks/useLedger';
 import { useExpenseStore } from '../state/expenseStore';
-import { savePerson } from '../state/peopleActions';
 import { useTransactionForm } from '../state/transactionForm';
-import { EntryInput } from './EntryInput';
 import { FieldRow } from './FieldRow';
+import { NewPersonForm, ShareInput, SplitStatus } from './SplitParts';
 import { PickChip } from './PickChip';
 
 /** "Split" line of the entry form (expenses): who shares it and your own share. */
@@ -50,38 +47,47 @@ export function RepaymentRow() {
   );
 }
 
-/** Picker for the Split field: people chips, each person's share, and equal splitting. */
+const modes = [
+  { value: 'equal', label: 'Equally' },
+  { value: 'others', label: 'They pay all' },
+  { value: 'custom', label: 'Custom' },
+] as const satisfies readonly { value: SplitMode; label: string }[];
+
+/**
+ * Picker for the Split field. Equal modes work the shares out from the amount (and
+ * follow it when it changes); typing a share switches to Custom, where everyone's
+ * share, yours included, must add up to the amount.
+ */
 export function SplitPanel() {
   const theme = useTheme();
   const people = useExpenseStore((state) => state.people);
   const draft = useTransactionForm((state) => state.draft);
   const update = useTransactionForm((state) => state.update);
   const [adding, setAdding] = useState(false);
-  const [name, setName] = useState('');
-  const [nameError, setNameError] = useState<string | null>(null);
   const amount = parseAmount(draft.amountText) ?? 0;
-  const setSplits = (splits: SplitDraft[]) => update({ splits });
+  const others = draft.splits.reduce((sum, split) => sum + (parseAmount(split.amountText) ?? 0), 0);
   const toggle = (personId: string) =>
-    setSplits(
-      draft.splits.some((split) => split.personId === personId)
+    update({
+      splits: draft.splits.some((split) => split.personId === personId)
         ? draft.splits.filter((split) => split.personId !== personId)
         : [...draft.splits, { personId, amountText: '' }],
+    });
+  const setShare = (personId: string, amountText: string) => {
+    const splits = draft.splits.map((item) =>
+      item.personId === personId ? { ...item, amountText } : item,
     );
-  const equal = (includeMe: boolean) => {
-    const shares = equalShares(amount, draft.splits.length, includeMe);
-    setSplits(
-      draft.splits.map((split, index) => ({ ...split, amountText: amountToInput(shares[index]) })),
+    if (draft.splitMode === 'custom') return update({ splits });
+    // Typing a share means a custom split; your share starts as what is left.
+    const rest =
+      amount - splits.reduce((sum, item) => sum + (parseAmount(item.amountText) ?? 0), 0);
+    update({ splits, splitMode: 'custom', myShareText: amountToInput(Math.max(0, rest)) || '0' });
+  };
+  const chooseMode = (splitMode: SplitMode) =>
+    update(
+      splitMode === 'custom'
+        ? { splitMode, myShareText: amountToInput(Math.max(0, amount - others)) || '0' }
+        : { splitMode },
     );
-  };
-  const addPerson = () => {
-    const result = savePerson(name);
-    if (typeof result === 'string') return setNameError(result);
-    setSplits([...draft.splits, { personId: result.id, amountText: '' }]);
-    setName('');
-    setNameError(null);
-    setAdding(false);
-  };
-  const others = draft.splits.reduce((sum, split) => sum + (parseAmount(split.amountText) ?? 0), 0);
   return (
     <View style={{ gap: theme.space[3] }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
@@ -107,76 +113,49 @@ export function SplitPanel() {
         </Pressable>
       </View>
       {adding ? (
-        <View style={{ gap: theme.space[2] }}>
-          <TextField
-            label="New person's name"
-            value={name}
-            onChangeText={setName}
-            error={nameError}
-            maxLength={30}
-            autoFocus
-            onSubmitEditing={addPerson}
-          />
-          <Button label="Add and split" size="sm" onPress={addPerson} />
-        </View>
+        <NewPersonForm
+          onAdded={(personId) => {
+            update({ splits: [...draft.splits, { personId, amountText: '' }] });
+            setAdding(false);
+          }}
+        />
       ) : null}
-      {draft.splits.map((split) => {
-        const person = people.find((item) => item.id === split.personId);
-        return (
-          <View
-            key={split.personId}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}
-          >
-            <Text variant="label" style={{ width: 84 }} numberOfLines={1}>
-              {person?.name ?? 'Someone'}
-            </Text>
-            <View style={{ flex: 1 }}>
-              <EntryInput
-                money
-                value={split.amountText}
-                placeholder="0"
-                accessibilityLabel={`${person?.name ?? 'Their'} share in rupees`}
-                onChangeText={(amountText) =>
-                  setSplits(
-                    draft.splits.map((item) =>
-                      item.personId === split.personId ? { ...item, amountText } : item,
-                    ),
-                  )
-                }
-              />
-            </View>
-            <Pressable
-              role="button"
-              accessibilityLabel={`Remove ${person?.name ?? 'person'} from the split`}
-              onPress={() => toggle(split.personId)}
-              hitSlop={8}
-            >
-              <X size={16} color={theme.colors.textTertiary} />
-            </Pressable>
-          </View>
-        );
-      })}
       {draft.splits.length ? (
         <>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-            <Button
-              label="Equally, with me"
-              size="sm"
-              variant="secondary"
-              onPress={() => equal(true)}
+          <SegmentedControl
+            size="sm"
+            segments={modes}
+            value={draft.splitMode}
+            onChange={chooseMode}
+            accessibilityLabel="How to split"
+          />
+          {draft.splits.map((split) => {
+            const person = people.find((item) => item.id === split.personId);
+            return (
+              <ShareInput
+                key={split.personId}
+                name={person?.name ?? 'Someone'}
+                value={split.amountText}
+                onChange={(text) => setShare(split.personId, text)}
+                onRemove={() => toggle(split.personId)}
+              />
+            );
+          })}
+          {draft.splitMode === 'custom' ? (
+            <ShareInput
+              name="You"
+              value={draft.myShareText}
+              onChange={(myShareText) => update({ myShareText })}
             />
-            <Button
-              label="They pay all"
-              size="sm"
-              variant="secondary"
-              onPress={() => equal(false)}
-            />
-          </View>
-          <Text variant="label" color={others > amount ? 'danger' : 'textSecondary'}>
-            {others > amount
-              ? 'Shares add up to more than the expense.'
-              : `Your share ${formatEntry(amount - others)} · they owe you ${formatEntry(others)}`}
-          </Text>
+          ) : null}
+          <SplitStatus
+            amount={amount}
+            others={others}
+            mine={draft.splitMode === 'custom' ? parseAmount(draft.myShareText) : null}
+            onRestToMe={() =>
+              update({ myShareText: amountToInput(Math.max(0, amount - others)) || '0' })
+            }
+          />
         </>
       ) : (
         <Text color="textSecondary">

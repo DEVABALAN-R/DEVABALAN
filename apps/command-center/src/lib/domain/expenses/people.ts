@@ -19,15 +19,30 @@ export function ownShare(transaction: Transaction): number {
   return transaction.amount;
 }
 
+/** How an expense is shared: equally with you, equally among the others only, or by hand. */
+export type SplitMode = 'equal' | 'others' | 'custom';
+
 /**
  * Equal shares of `amount` for `people` others, with you taking a share too when
- * `includeMe`. Paise that do not divide evenly stay with you, so the shares never
- * add up to more than the amount.
+ * `includeMe`. With you included, paise that do not divide evenly stay with you; when
+ * the others pay all, they are spread over the first people so the shares add up to
+ * exactly the amount.
  */
 export function equalShares(amount: number, people: number, includeMe: boolean): number[] {
   if (people <= 0 || amount <= 0) return [];
   const each = Math.floor(amount / (people + (includeMe ? 1 : 0)));
-  return Array.from({ length: people }, () => each);
+  const extra = includeMe ? 0 : amount - each * people;
+  return Array.from({ length: people }, (_, index) => each + (index < extra ? 1 : 0));
+}
+
+/** The mode an existing split matches (used when an expense is opened for editing). */
+export function inferSplitMode(amount: number, shares: number[]): SplitMode {
+  if (!shares.length) return 'equal';
+  const same = (expected: number[]) =>
+    expected.length === shares.length && expected.every((value, index) => value === shares[index]);
+  if (same(equalShares(amount, shares.length, true))) return 'equal';
+  if (same(equalShares(amount, shares.length, false))) return 'others';
+  return 'custom';
 }
 
 /** Problem with a set of splits for an expense of `amount`, or null. */
