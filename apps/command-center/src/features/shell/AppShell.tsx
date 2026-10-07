@@ -1,6 +1,7 @@
 import type { Href } from 'expo-router';
 import { TabList, Tabs, TabSlot, TabTrigger } from 'expo-router/ui';
 import { View } from 'react-native';
+import { TransactionSheet } from '@/features/expenses/entry/TransactionSheet';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { layout, useTheme } from '@/theme';
 import { DesktopHeader } from './DesktopHeader';
@@ -43,6 +44,7 @@ export function AppShell() {
         </View>
       )}
       <PlaceholderSheets />
+      <TransactionSheet />
     </Tabs>
   );
 }

@@ -4,12 +4,12 @@ import { Button, Card, CategoryIcon, Delta, Money, Text, Tile } from '@/componen
 import { sampleAccounts } from '@/features/preview/sampleExpenses';
 import type { OverviewData } from '@/features/preview/useOverviewData';
 import { formatMoneyWhole } from '@/lib/formatting/currency';
-import { useUiStore } from '@/state/ui';
+import { useTransactionForm } from '@/features/expenses/state/transactionForm';
 import { useTheme } from '@/theme';
 
 export function NetWorthCard({ data }: { data: OverviewData }) {
   const theme = useTheme();
-  const openQuickAdd = useUiStore((state) => state.openQuickAdd);
+  const openNew = useTransactionForm((state) => state.openNew);
   return (
     <Card index={0} style={{ gap: theme.space[4], flex: 1 }}>
       <View style={{ gap: theme.space[1] }}>
@@ -26,7 +26,12 @@ export function NetWorthCard({ data }: { data: OverviewData }) {
       </View>
       <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
         <View style={{ flex: 1 }}>
-          <Button label="Add expense" icon={Plus} fullWidth onPress={openQuickAdd} />
+          <Button
+            label="Add expense"
+            icon={Plus}
+            fullWidth
+            onPress={() => openNew({ kind: 'expense' })}
+          />
         </View>
         <View style={{ flex: 1 }}>
           <Button
@@ -34,7 +39,7 @@ export function NetWorthCard({ data }: { data: OverviewData }) {
             icon={ArrowLeftRight}
             variant="secondary"
             fullWidth
-            onPress={openQuickAdd}
+            onPress={() => openNew({ kind: 'transfer' })}
           />
         </View>
       </View>

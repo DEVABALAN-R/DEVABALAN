@@ -1,4 +1,4 @@
-import type { Account, Transaction } from './types';
+import { ACCOUNT_GROUP_ORDER, type Account, type Transaction } from './types';
 
 /**
  * Signed effect of one transaction on one account (paise).
@@ -56,4 +56,10 @@ export function balanceSummary(accounts: Account[], transactions: Transaction[],
     else liabilities += value;
   }
   return { assets, liabilities, total: assets + liabilities, balances };
+}
+
+/** Display order: by group (cash, bank, card, …), then each account's own order. */
+export function sortAccounts(accounts: Account[]): Account[] {
+  const rank = (account: Account) => ACCOUNT_GROUP_ORDER.indexOf(account.group);
+  return [...accounts].sort((a, b) => rank(a) - rank(b) || a.order - b.order);
 }

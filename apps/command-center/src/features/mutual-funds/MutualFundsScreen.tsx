@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CalendarDays, ChartPie, Percent, PiggyBank, Plus, TrendingUp } from '@/components/icons';
 import { BentoCell, BentoRow } from '@/components/layout/Bento';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -5,13 +6,13 @@ import { Screen, useFitMode } from '@/components/layout/Screen';
 import { StatStrip } from '@/components/layout/StatStrip';
 import { Button, StatCard } from '@/components/ui';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
+import { PlannedSheet } from '@/features/shell/PlaceholderSheets';
 import {
   fundTotals,
   portfolioTotals,
   sampleFunds,
   sampleXirr,
 } from '@/features/preview/sampleInvestments';
-import { useUiStore } from '@/state/ui';
 import { AllocationCard } from './AllocationCard';
 import { GrowthCard } from './GrowthCard';
 import { HoldingsTable } from './HoldingsTable';
@@ -20,7 +21,7 @@ import { UpcomingSips } from './UpcomingSips';
 /** Mutual fund tracker: one screen on desktop (panels scroll internally). */
 export function MutualFundsScreen() {
   const fit = useFitMode(true);
-  const openQuickAdd = useUiStore((state) => state.openQuickAdd);
+  const [recording, setRecording] = useState(false);
   const totals = portfolioTotals();
   const gain = totals.value - totals.invested;
   const gainPct = totals.invested ? (gain / totals.invested) * 100 : 0;
@@ -39,7 +40,7 @@ export function MutualFundsScreen() {
         size="compact"
         title="Mutual funds"
         meta={<SampleDataBadge />}
-        actions={<Button label="Record purchase" icon={Plus} onPress={openQuickAdd} />}
+        actions={<Button label="Record purchase" icon={Plus} onPress={() => setRecording(true)} />}
       />
       <StatStrip
         hero={
@@ -114,6 +115,15 @@ export function MutualFundsScreen() {
           <UpcomingSips style={fit ? { flex: 1 } : { height: 360 }} />
         </BentoCell>
       </BentoRow>
+      <PlannedSheet
+        visible={recording}
+        onClose={() => setRecording(false)}
+        title="Record purchase"
+        description="Log a lump sum or SIP instalment with units and NAV."
+        icon={ChartPie}
+        phase="Phase 6"
+        body="Fund holdings arrive with the investments phase. A SIP can already be recorded as a transfer to your investment account in Expenses."
+      />
     </Screen>
   );
 }

@@ -1,18 +1,14 @@
 import { View } from 'react-native';
 import { ChevronLeft, ChevronRight } from '@/components/icons';
-import { Chip, IconButton, Text } from '@/components/ui';
+import { Button, IconButton, Text } from '@/components/ui';
 import { monthLabel, monthOf, todayIso, yearOfMonth } from '@/lib/domain/expenses';
 import { useTheme } from '@/theme';
 import { useExpenseUi } from '../state/expenseUi';
 
-/** ‹ October 2026 › — shared month (or year) selector for all Expenses pages. */
-export function MonthNavigator({
-  mode = 'month',
-  stretch = false,
-}: {
-  mode?: 'month' | 'year';
-  stretch?: boolean;
-}) {
+type MonthNavigatorProps = { mode?: 'month' | 'year'; stretch?: boolean };
+
+/** ‹ October 2026 › — the one period selector shared by every Expenses page. */
+export function MonthNavigator({ mode = 'month', stretch = false }: MonthNavigatorProps) {
   const theme = useTheme();
   const month = useExpenseUi((state) => state.month);
   const shiftMonth = useExpenseUi((state) => state.shiftMonth);
@@ -27,7 +23,7 @@ export function MonthNavigator({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: theme.space[2],
+        gap: theme.space[1],
         alignSelf: stretch ? 'stretch' : 'auto',
       }}
     >
@@ -37,7 +33,7 @@ export function MonthNavigator({
           flexDirection: 'row',
           alignItems: 'center',
           height: 44,
-          paddingHorizontal: 2,
+          paddingHorizontal: 4,
           borderRadius: theme.radius.pill,
           backgroundColor: theme.colors.surface,
         }}
@@ -45,26 +41,27 @@ export function MonthNavigator({
         <IconButton
           icon={ChevronLeft}
           size="sm"
-          accessibilityLabel={`Previous ${mode}`}
+          accessibilityLabel={mode === 'year' ? 'Previous year' : 'Previous month'}
           onPress={() => shiftMonth(-step)}
         />
         <Text
           variant="bodyStrong"
           align="center"
-          style={{ minWidth: mode === 'year' ? 64 : 136, flex: stretch ? 1 : undefined }}
+          numeric
           accessibilityLiveRegion="polite"
+          style={{ minWidth: mode === 'year' ? 64 : 140, flex: stretch ? 1 : undefined }}
         >
           {label}
         </Text>
         <IconButton
           icon={ChevronRight}
           size="sm"
-          accessibilityLabel={`Next ${mode}`}
+          accessibilityLabel={mode === 'year' ? 'Next year' : 'Next month'}
           onPress={() => shiftMonth(step)}
         />
       </View>
       {isCurrent ? null : (
-        <Chip label={mode === 'year' ? 'This year' : 'This month'} onPress={goToCurrentMonth} />
+        <Button label="Today" variant="ghost" size="sm" onPress={goToCurrentMonth} />
       )}
     </View>
   );

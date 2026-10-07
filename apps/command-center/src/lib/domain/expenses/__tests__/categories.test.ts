@@ -9,6 +9,7 @@ import {
   limitSlices,
   recentNotes,
   resolveCategory,
+  searchCategories,
   subcategoryBreakdown,
 } from '../categories';
 import { periodTotals } from '../periods';
@@ -48,6 +49,15 @@ describe('category breakdowns', () => {
       { month: '2026-09', amount: 4_000 },
       { month: '2026-10', amount: 35_000 },
     ]);
+  });
+
+  it('searches categories and subcategories of one kind', () => {
+    const ids = (query: string) =>
+      searchCategories(categories, 'expense', query).map((category) => category.id);
+    expect(ids('t')).toEqual(['rent', 'gift', 'tea']);
+    expect(ids('  TEA ')).toEqual(['tea']);
+    expect(ids('salary')).toEqual([]);
+    expect(ids('')).toEqual([]);
   });
 
   it('folds the smallest slices into Other', () => {

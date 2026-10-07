@@ -1,7 +1,8 @@
 import { Link, usePathname, type Href } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { ChartPie, List, Tag, Target, type LucideIcon } from '@/components/icons';
 import { Text } from '@/components/ui';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useInteractionState } from '@/hooks/useInteractionState';
 import { useTheme } from '@/theme';
 
@@ -12,40 +13,49 @@ const sections: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/dashboard/expenses/categories', label: 'Categories', icon: Tag },
 ];
 
-/** Sub-navigation shared by every Expenses page (Money Manager: Trans. · Stats · Budget · Settings). */
+/**
+ * Sub-navigation shared by every Expenses page (Money Manager: Trans. · Stats ·
+ * Budget · Settings). Pills on wide screens; four equal tabs on phones.
+ */
 export function SectionTabs() {
   const theme = useTheme();
   const pathname = usePathname();
+  const { isMobile } = useBreakpoint();
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={{ flexGrow: 0 }}
-      contentContainerStyle={{
+    <View
+      role="navigation"
+      aria-label="Expenses sections"
+      style={{
+        flexDirection: 'row',
+        alignSelf: isMobile ? 'stretch' : 'flex-start',
         padding: 4,
         gap: 4,
-        borderRadius: theme.radius.pill,
+        borderRadius: isMobile ? theme.radius.lg : theme.radius.pill,
         backgroundColor: theme.colors.surface,
       }}
     >
       {sections.map((section) => (
-        <SectionLink key={section.href} {...section} active={pathname === section.href} />
+        <SectionLink
+          key={section.href}
+          {...section}
+          stacked={isMobile}
+          active={pathname === section.href}
+        />
       ))}
-    </ScrollView>
+    </View>
   );
 }
 
-function SectionLink({
-  href,
-  label,
-  icon: Icon,
-  active,
-}: {
+type SectionLinkProps = {
   href: string;
   label: string;
   icon: LucideIcon;
   active: boolean;
-}) {
+  /** Icon above the label, sharing the row equally (phones). */
+  stacked: boolean;
+};
+
+function SectionLink({ href, label, icon: Icon, active, stacked }: SectionLinkProps) {
   const theme = useTheme();
   const { hovered, focused, handlers } = useInteractionState();
   return (
@@ -57,12 +67,14 @@ function SectionLink({
         {...handlers}
         style={StyleSheet.flatten([
           {
-            height: 36,
-            flexDirection: 'row',
+            flexDirection: stacked ? 'column' : 'row',
+            flex: stacked ? 1 : undefined,
             alignItems: 'center',
-            gap: 6,
-            paddingHorizontal: theme.space[4],
-            borderRadius: theme.radius.pill,
+            justifyContent: 'center',
+            gap: stacked ? 2 : 6,
+            height: stacked ? 52 : 36,
+            paddingHorizontal: stacked ? 2 : theme.space[4],
+            borderRadius: stacked ? theme.radius.md : theme.radius.pill,
             backgroundColor: active
               ? theme.colors.ink
               : hovered
@@ -73,11 +85,15 @@ function SectionLink({
         ])}
       >
         <Icon
-          size={16}
+          size={stacked ? 18 : 16}
           color={active ? theme.colors.onInk : theme.colors.textSecondary}
           strokeWidth={2}
         />
-        <Text variant="label" color={active ? 'onInk' : 'textSecondary'} numberOfLines={1}>
+        <Text
+          variant={stacked ? 'caption' : 'label'}
+          color={active ? 'onInk' : 'textSecondary'}
+          numberOfLines={1}
+        >
           {label}
         </Text>
       </Pressable>

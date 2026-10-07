@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus } from '@/components/icons';
 import { Appear, Text } from '@/components/ui';
-import { useUiStore } from '@/state/ui';
+import { useTransactionForm } from '@/features/expenses/state/transactionForm';
 import { useTheme } from '@/theme';
 import { isActive, mobileMore, mobileTabs } from './navigation';
 
@@ -15,7 +15,7 @@ export function FloatingTabBar() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const openQuickAdd = useUiStore((state) => state.openQuickAdd);
+  const openNew = useTransactionForm((state) => state.openNew);
   const moreActive = mobileMore.some((item) => isActive(pathname, item.href));
   return (
     <View
@@ -88,7 +88,7 @@ export function FloatingTabBar() {
       <Pressable
         role="button"
         accessibilityLabel="Quick add"
-        onPress={openQuickAdd}
+        onPress={() => openNew()}
         style={({ pressed }) => ({
           width: 60,
           height: 60,

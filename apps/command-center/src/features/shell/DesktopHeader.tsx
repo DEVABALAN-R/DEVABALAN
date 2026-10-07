@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import { ChevronDown, Plus, Search } from '@/components/icons';
 import { Avatar, Button, IconButton, Text } from '@/components/ui';
+import { useTransactionForm } from '@/features/expenses/state/transactionForm';
 import { previewProfile } from '@/features/preview/notice';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useUiStore } from '@/state/ui';
@@ -12,7 +13,7 @@ import { TopNav } from './TopNav';
 export function DesktopHeader() {
   const theme = useTheme();
   const { isDesktop } = useBreakpoint();
-  const openQuickAdd = useUiStore((state) => state.openQuickAdd);
+  const openNew = useTransactionForm((state) => state.openNew);
   const openSearch = useUiStore((state) => state.openSearch);
   const pill = {
     height: 50,
@@ -58,13 +59,13 @@ export function DesktopHeader() {
             onPress={openSearch}
           />
           {isDesktop ? (
-            <Button label="Quick add" icon={Plus} size="sm" onPress={openQuickAdd} />
+            <Button label="Quick add" icon={Plus} size="sm" onPress={() => openNew()} />
           ) : (
             <IconButton
               icon={Plus}
               variant="primary"
               accessibilityLabel="Quick add"
-              onPress={openQuickAdd}
+              onPress={() => openNew()}
             />
           )}
         </View>

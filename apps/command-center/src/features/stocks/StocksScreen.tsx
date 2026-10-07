@@ -13,8 +13,8 @@ import { Screen, useFitMode } from '@/components/layout/Screen';
 import { StatStrip } from '@/components/layout/StatStrip';
 import { Button, StatCard } from '@/components/ui';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
+import { PlannedSheet } from '@/features/shell/PlaceholderSheets';
 import { sampleStocks, stockPortfolio } from '@/features/preview/sampleStocks';
-import { useUiStore } from '@/state/ui';
 import { PriceChartCard } from './PriceChartCard';
 import { SectorCard } from './SectorCard';
 import { StockHoldings } from './StockHoldings';
@@ -23,7 +23,7 @@ import { TopMovers } from './TopMovers';
 /** Stock portfolio: one screen on desktop (panels scroll internally). */
 export function StocksScreen() {
   const fit = useFitMode(true);
-  const openQuickAdd = useUiStore((state) => state.openQuickAdd);
+  const [trading, setTrading] = useState(false);
   const [ticker, setTicker] = useState(sampleStocks[0].ticker);
   const selected = sampleStocks.find((stock) => stock.ticker === ticker) ?? sampleStocks[0];
   const totals = stockPortfolio();
@@ -39,7 +39,7 @@ export function StocksScreen() {
         size="compact"
         title="Stocks"
         meta={<SampleDataBadge />}
-        actions={<Button label="Add trade" icon={Plus} onPress={openQuickAdd} />}
+        actions={<Button label="Add trade" icon={Plus} onPress={() => setTrading(true)} />}
       />
       <StatStrip
         hero={
@@ -118,6 +118,15 @@ export function StocksScreen() {
           <TopMovers style={fit ? { flex: 1 } : { height: 380 }} />
         </BentoCell>
       </BentoRow>
+      <PlannedSheet
+        visible={trading}
+        onClose={() => setTrading(false)}
+        title="Add trade"
+        description="Record a buy or sell with quantity, price and charges."
+        icon={ChartCandlestick}
+        phase="Phase 6"
+        body="Stock holdings arrive with the investments phase. Prices will come from a server-side quote service, never from the browser."
+      />
     </Screen>
   );
 }

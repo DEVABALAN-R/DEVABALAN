@@ -12,6 +12,7 @@ export * from './IconButton';
 export * from './Money';
 export * from './ProgressBar';
 export * from './ProgressRing';
+export * from './ScrollRow';
 export * from './SegmentedControl';
 export * from './StatCard';
 export * from './Skeleton';

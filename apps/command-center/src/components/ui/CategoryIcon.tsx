@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import type { LucideIcon } from '../icons';
-import { useTheme } from '@/theme';
+import { useTheme, type Tint } from '@/theme';
 import { Text } from './Text';
 
 type CategoryIconProps = {
@@ -8,12 +8,15 @@ type CategoryIconProps = {
   /** Index into the theme's fixed tint list (wraps; categories keep their tint). */
   tint: number;
   size?: number;
+  /** Explicit colours instead of a tint (e.g. transfers, neutral buckets). */
+  colors?: Tint;
 };
 
 /** Colourful tinted circle with an icon. Decorative: the row names the category. */
-export function CategoryIcon({ icon: Icon, tint, size = 40 }: CategoryIconProps) {
+export function CategoryIcon({ icon: Icon, tint, size = 40, colors: override }: CategoryIconProps) {
   const theme = useTheme();
   const colors =
+    override ??
     theme.colors.tints[
       ((tint % theme.colors.tints.length) + theme.colors.tints.length) % theme.colors.tints.length
     ];

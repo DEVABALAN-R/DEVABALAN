@@ -1,4 +1,4 @@
-import { accountBalance, balanceSummary, transactionEffect } from '../balances';
+import { accountBalance, balanceSummary, sortAccounts, transactionEffect } from '../balances';
 import { accounts, transactions } from '../__fixtures__/ledger';
 
 describe('balances', () => {
@@ -28,5 +28,22 @@ describe('balances', () => {
     expect(summary.assets).toBe(11_789_000 + 70_000);
     expect(summary.liabilities).toBe(-9_000);
     expect(summary.total).toBe(11_850_000);
+  });
+});
+
+describe('sortAccounts', () => {
+  it('orders by group, then by the account order', () => {
+    const shuffled = [
+      { ...accounts[0], id: 'bank-2', order: 5 },
+      accounts[1],
+      accounts[0],
+      accounts[2],
+    ];
+    expect(sortAccounts(shuffled).map((account) => account.id)).toEqual([
+      'cash',
+      'bank',
+      'bank-2',
+      'card',
+    ]);
   });
 });

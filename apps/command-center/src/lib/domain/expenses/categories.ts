@@ -85,6 +85,22 @@ export function categoryBreakdown(
   return toSlices(totals);
 }
 
+/**
+ * Categories of one kind whose name contains `query` (case-insensitive):
+ * matching top-level categories first, then matching subcategories, each in
+ * their saved order. An empty query matches nothing.
+ */
+export function searchCategories(categories: Category[], kind: CategoryKind, query: string) {
+  const needle = query.trim().toLocaleLowerCase();
+  if (!needle) return [];
+  const parents = topLevelCategories(categories, kind);
+  const matches = (category: Category) => category.name.toLocaleLowerCase().includes(needle);
+  return [
+    ...parents.filter(matches),
+    ...parents.flatMap((parent) => subcategoriesOf(categories, parent.id).filter(matches)),
+  ];
+}
+
 /** Keeps the largest `limit - 1` slices and folds the rest into one "Other" slice. */
 export function limitSlices(slices: Slice[], limit: number): Slice[] {
   if (slices.length <= limit) return slices;

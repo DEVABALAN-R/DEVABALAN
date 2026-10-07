@@ -38,10 +38,15 @@ describe('describeTransaction', () => {
       title: 'Transfer',
       caption: 'Bank → Card · fee ₹10',
       amount: 200_000,
+      signed: false,
       tone: 'transfer',
     });
     expect(describeTransaction(transfer, lookup, 'bank').amount).toBe(-201_000);
-    expect(describeTransaction(transfer, lookup, 'card').amount).toBe(200_000);
+    expect(describeTransaction(transfer, lookup, 'card')).toMatchObject({
+      amount: 200_000,
+      signed: true,
+    });
+    expect(describeTransaction(transfer, lookup, 'cash').signed).toBe(false);
   });
 });
 

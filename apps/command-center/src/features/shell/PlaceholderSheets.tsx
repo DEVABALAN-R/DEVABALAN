@@ -1,59 +1,56 @@
 import { View } from 'react-native';
-import { Search, Zap, type LucideIcon } from '@/components/icons';
+import { Search, type LucideIcon } from '@/components/icons';
 import { EmptyState } from '@/components/feedback';
 import { Sheet } from '@/components/overlays';
 import { Badge } from '@/components/ui';
 import { useUiStore } from '@/state/ui';
 
 /**
- * PLACEHOLDERS. Quick add (type switch, amount, category grid, smart defaults)
- * and global search / command palette ship in Phase 5. Nothing is saved here.
+ * PLACEHOLDER. Global search / command palette ships in Phase 5. Quick add is
+ * real: it opens the expense manager's entry sheet.
  */
 export function PlaceholderSheets() {
-  const quickAddOpen = useUiStore((state) => state.quickAddOpen);
-  const closeQuickAdd = useUiStore((state) => state.closeQuickAdd);
   const searchOpen = useUiStore((state) => state.searchOpen);
   const closeSearch = useUiStore((state) => state.closeSearch);
   return (
-    <>
-      <Planned
-        visible={quickAddOpen}
-        onClose={closeQuickAdd}
-        title="Quick add"
-        description="Add an expense, income or transfer in a few taps."
-        icon={Zap}
-        body="Quick add arrives with the expense manager. Keep using the current app to record transactions until then."
-      />
-      <Planned
-        visible={searchOpen}
-        onClose={closeSearch}
-        title="Search"
-        description="Find transactions, funds, stocks and pages — or type a command."
-        icon={Search}
-        body="Global search and the ⌘K command palette arrive with the expense manager."
-      />
-    </>
+    <PlannedSheet
+      visible={searchOpen}
+      onClose={closeSearch}
+      title="Search"
+      description="Find transactions, funds, stocks and pages — or type a command."
+      icon={Search}
+      phase="Phase 5"
+      body="Global search and the ⌘K command palette are not built yet."
+    />
   );
 }
 
-function Planned(props: {
+type PlannedSheetProps = {
   visible: boolean;
   onClose: () => void;
   title: string;
   description: string;
   icon: LucideIcon;
+  /** Plan phase that delivers the feature, e.g. "Phase 6". */
+  phase: string;
   body: string;
-}) {
+};
+
+/** Clearly labelled stand-in for an action that is planned but not built. Saves nothing. */
+export function PlannedSheet({
+  visible,
+  onClose,
+  title,
+  description,
+  icon,
+  phase,
+  body,
+}: PlannedSheetProps) {
   return (
-    <Sheet
-      visible={props.visible}
-      onClose={props.onClose}
-      title={props.title}
-      description={props.description}
-    >
+    <Sheet visible={visible} onClose={onClose} title={title} description={description}>
       <View style={{ alignItems: 'center' }}>
-        <Badge label="Planned · Phase 5" tone="warning" />
-        <EmptyState icon={props.icon} title="Not available yet" body={props.body} />
+        <Badge label={`Planned · ${phase}`} tone="warning" />
+        <EmptyState icon={icon} title="Not available yet" body={body} />
       </View>
     </Sheet>
   );

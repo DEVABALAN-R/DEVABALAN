@@ -14,6 +14,8 @@ export type EntryDescription = {
   caption: string;
   /** Signed amount to display: income +, expense −, transfers signed only for a filtered account. */
   amount: number;
+  /** False for transfers seen from no particular account (shown unsigned). */
+  signed: boolean;
   tone: EntryTone;
 };
 
@@ -32,7 +34,8 @@ export function describeTransaction(
   if (transaction.kind === 'transfer') {
     const to = lookup.account(transaction.toAccountId)?.name ?? MISSING_ACCOUNT;
     const fee = transaction.fee ? ` · fee ${formatEntry(transaction.fee)}` : '';
-    const filtered = accountId === transaction.accountId || accountId === transaction.toAccountId;
+    const filtered =
+      !!accountId && (accountId === transaction.accountId || accountId === transaction.toAccountId);
     return {
       icon: ArrowLeftRight,
       tint: 'transfer',
@@ -40,6 +43,7 @@ export function describeTransaction(
       caption: `${account} → ${to}${fee}`,
       amount:
         filtered && accountId ? transactionEffect(transaction, accountId) : transaction.amount,
+      signed: filtered,
       tone: 'transfer',
     };
   }
@@ -57,6 +61,7 @@ export function describeTransaction(
     title: transaction.note || leaf?.name || 'Uncategorized',
     caption,
     amount: transaction.kind === 'income' ? transaction.amount : -transaction.amount,
+    signed: true,
     tone: transaction.kind,
   };
 }
