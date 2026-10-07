@@ -7,6 +7,7 @@ import { iconFor } from '../categoryIcons';
 import { useLookup } from '../hooks/useLedger';
 import { useTransactionForm } from '../state/transactionForm';
 import { EntryInput } from './EntryInput';
+import { InlinePanel } from './EntryPanel';
 import { FieldRow } from './FieldRow';
 import { PhotoField } from '../photos/PhotoField';
 import { RepaymentRow, SplitRow } from './SplitField';
@@ -78,6 +79,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
       >
         <Text numberOfLines={1}>{dayLabel(draft.date, 'short')}</Text>
       </FieldRow>
+      <InlinePanel field="date" />
       <FieldRow label="Amount" active={active === 'amount'} error={errors.amount}>
         <EntryInput
           ref={amountRef}
@@ -113,6 +115,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
           )}
         </FieldRow>
       )}
+      <InlinePanel field="category" />
       <FieldRow
         label={transfer ? 'From' : 'Account'}
         active={active === 'account'}
@@ -122,6 +125,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
       >
         {account ? <Text numberOfLines={1}>{account.name}</Text> : placeholder('Choose an account')}
       </FieldRow>
+      <InlinePanel field="account" />
       {transfer ? (
         <>
           <FieldRow
@@ -137,6 +141,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
               placeholder('Choose an account')
             )}
           </FieldRow>
+          <InlinePanel field="toAccount" />
           <FieldRow label="Fee" active={active === 'fee'} error={errors.fee}>
             <EntryInput
               ref={feeRef}
@@ -150,9 +155,11 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
               accessibilityLabel="Transfer fee in rupees, optional"
             />
           </FieldRow>
+          <InlinePanel field="fee" />
         </>
       ) : null}
       {draft.kind === 'expense' ? <SplitRow /> : null}
+      <InlinePanel field="split" />
       <FieldRow label="Note" active={active === 'note'} error={errors.note}>
         <EntryInput
           ref={noteRef}
@@ -166,6 +173,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
           accessibilityLabel="Note"
         />
       </FieldRow>
+      <InlinePanel field="note" />
       {draft.personId ? null : <PhotoField />}
     </View>
   );
