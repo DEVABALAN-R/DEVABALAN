@@ -28,7 +28,7 @@ What blocks a premium, long-lived product:
 
 **Recommendation:** an incremental, **parallel-run migration**.
 
-1. **Phases 1–3:** Build the new Expo app in `apps/mobile-web/` (or replace the root once at parity) and normalize the database **while the current Vite app keeps working** against the same Supabase project. A read-compatible JSONB-to-tables migration and a `data_model_version` flag make this possible.
+1. **Phases 1–3:** Build the new Expo app in `apps/command-center/` (it replaces the root once at parity) and normalize the database **while the current Vite app keeps working** against the same Supabase project. A read-compatible JSONB-to-tables migration and a `data_model_version` flag make this possible.
 2. **Phases 4–9:** Ship the new experience feature by feature.
 3. **Phases 10–12:** Harden, optimize, cut over the Vercel domain, and retire the Vite app and JSONB columns only after verified parity and a backup.
 
@@ -1022,7 +1022,7 @@ Likelihood (L) and impact (I) are rated High, Medium or Low. Calibration: this i
 
 ## 21. MIGRATION STRATEGY FROM EXISTING APP
 
-1. **Parallel run.** The new Expo app is developed in the same repo (`apps/expo/` during transition, or a `next` branch path). The Vite app stays deployable until cutover. Both talk to the same Supabase project. The new tables are **additive**.
+1. **Parallel run.** The new Expo app is developed in the same repo (`apps/command-center/` during transition). The Vite app stays deployable until cutover. Both talk to the same Supabase project. The new tables are **additive**.
 2. **Data migration** (per user, explicit, reversible):
    - The RPC `migrate_workspace_v1_to_v2()` is `security invoker` and acts on the caller's own row. It runs in **one transaction**:
      1. Reads `user_workspaces` and creates accounts (keeping `legacy_id`).
@@ -1070,6 +1070,18 @@ Each phase is one or more PRs. Each must pass CI and its acceptance criteria bef
 | Security | ESLint rule: no `supabase` import outside `lib/data`; no `dangerouslySetInnerHTML` |
 | Rollback | Separate app directory; nothing deployed to production |
 | Acceptance | Gallery renders on iOS, Android, and web at 360/768/1280 widths in both themes; CI green; reduced motion respected |
+
+**Phase 1 status (implemented in `apps/command-center/`).** Decisions that differ from the table above:
+
+- **SDK 57** (RN 0.86, React 19.2). It was the `latest` npm tag when Phase 1 started; SDK 58 was still tagged `next`.
+- The directory is `apps/command-center/`, because `create-expo-app` refuses the name `expo`.
+- **Web output is `single` (SPA), not `static`.** The dashboard's layout depends on window width, which a build-time render cannot know, so every responsive style hydrated with mismatches. Revisit when porting the public portfolio, which can be made responsive in an SSR-safe way.
+- **`react-native-gesture-handler` is deferred to Phase 5**, since nothing in Phase 1 uses gestures. This saves ~44 KiB gzip.
+- **Icons use per-file imports** via `src/components/icons.ts`. Metro does not tree-shake the lucide barrel, which shipped ~2 MB extra. ESLint blocks the barrel import.
+- **`eas.json` is deferred to Phase 2**, when the first native build profile is needed.
+- **Web bundle baseline:** 476 KiB gzip, framework-dominated (expo-router, Reanimated, RN Web, react-dom). CI fails above a 500 KiB ceiling; the ≤ 350 KiB target stays with Phase 11.
+- **Verified so far:** web only (headless Chromium at 390/820/1366 widths, light and dark; Escape closes sheets; focus is trapped in dialogs). Native rendering on iOS/Android simulators has **not** been verified in the authoring environment.
+- **Tooling-only audit findings:** `npm audit` reports high/moderate advisories in transitive Expo CLI/config dependencies (`braces`, `node-forge`, `sprintf-js`, `decode-uri-component`, `uuid`). Patched versions do not exist yet for the first three. They are not part of the shipped bundle; re-check in Phase 10.
 
 ### PHASE 2: Authentication + security foundation
 
