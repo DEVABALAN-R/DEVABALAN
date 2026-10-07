@@ -9,7 +9,7 @@ import { useTheme } from '@/theme';
 import { accountGroupIcons, accountGroupTints } from '../categoryIcons';
 import { formatEntry } from '../format';
 import { LedgerRow } from '../components/LedgerRow';
-import { PanelScroll } from '../components/PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { useTransactionForm } from '../state/transactionForm';
 import type { AccountDetailData } from './useAccountsView';
 

@@ -3,7 +3,7 @@ import { Target } from '@/components/icons';
 import { EmptyState } from '@/components/feedback';
 import { Card, CardHeader, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
-import { PanelScroll } from '../components/PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { BudgetLineRow } from './BudgetLineRow';
 import type { BudgetView } from './useBudgetView';
 import type { useBudgetEditing } from './useBudgetEditing';

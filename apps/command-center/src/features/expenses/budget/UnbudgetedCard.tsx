@@ -4,7 +4,7 @@ import type { Category } from '@/lib/domain/expenses';
 import { formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { iconFor } from '../categoryIcons';
-import { PanelScroll } from '../components/PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { BudgetEditor } from './BudgetEditor';
 import type { BudgetView } from './useBudgetView';
 import type { useBudgetEditing } from './useBudgetEditing';

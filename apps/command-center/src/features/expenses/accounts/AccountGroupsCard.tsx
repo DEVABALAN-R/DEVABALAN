@@ -6,7 +6,7 @@ import { ACCOUNT_GROUP_LABELS, type Account } from '@/lib/domain/expenses';
 import { formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { accountGroupIcons, accountGroupTints } from '../categoryIcons';
-import { PanelScroll } from '../components/PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import type { AccountsView } from './useAccountsView';
 
 type AccountGroupsCardProps = {

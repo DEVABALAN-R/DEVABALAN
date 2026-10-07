@@ -9,7 +9,7 @@ import {
   type CategoryKind,
 } from '@/lib/domain/expenses';
 import { useTheme } from '@/theme';
-import { PanelScroll } from '../components/PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { useLedger } from '../hooks/useLedger';
 import { useExpenseStore } from '../state/expenseStore';
 import { useExpenseUi } from '../state/expenseUi';

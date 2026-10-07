@@ -13,7 +13,7 @@ import { useLedger } from '../hooks/useLedger';
 import { useMonthView } from '../hooks/useMonthView';
 import { useSliceColors } from '../sliceColors';
 import { useExpenseUi } from '../state/expenseUi';
-import { PanelScroll } from './PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { formatShare, SliceRow } from './SliceRow';
 
 const STATS: Href = '/dashboard/expenses/stats' as Href;
