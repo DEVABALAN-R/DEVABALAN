@@ -1,5 +1,6 @@
 import { OTHER_ID, TRANSFER_FEES_ID, UNCATEGORIZED_ID, resolveCategory } from './categories';
 import { addMonths, monthBounds } from './dates';
+import { isRepayment, ownShare } from './people';
 import { inRange } from './periods';
 import type { Category, CategoryKind, DateRange, Transaction } from './types';
 
@@ -43,9 +44,12 @@ export function categoryBreakdown(
     if (!inRange(transaction, range) || (accountId && transaction.accountId !== accountId))
       continue;
     if (transaction.kind === kind) {
+      // Repayments are not income; a split expense counts only your share.
+      if (isRepayment(transaction)) continue;
       const { parent } = resolveCategory(categories, transaction.categoryId);
-      if (parent) add(parent.id, parent.name, parent, transaction.amount);
-      else add(UNCATEGORIZED_ID, 'Uncategorized', null, transaction.amount);
+      const share = ownShare(transaction);
+      if (parent) add(parent.id, parent.name, parent, share);
+      else add(UNCATEGORIZED_ID, 'Uncategorized', null, share);
     } else if (kind === 'expense' && transaction.kind === 'transfer' && transaction.fee > 0) {
       add(TRANSFER_FEES_ID, 'Transfer fees', null, transaction.fee);
     }
@@ -101,31 +105,41 @@ export function subcategoryBreakdown(
     };
     totals.set(id, {
       ...current,
-      amount: current.amount + transaction.amount,
+      amount: current.amount + ownShare(transaction),
       count: current.count + 1,
     });
   }
   return toSlices(totals);
 }
 
-/** Income/expense transactions whose leaf category belongs to `parentId`. */
+/**
+ * Income/expense transactions whose leaf category belongs to `parentId`. With
+ * `sliceId`, only one subcategory slice: a subcategory id, or `parentId` itself for
+ * entries filed directly under the parent (the "(general)" slice).
+ */
 export function transactionsInCategory(
   transactions: Transaction[],
   categories: Category[],
   parentId: string,
   range: DateRange,
   accountId?: string | null,
+  sliceId?: string | null,
 ): Transaction[] {
   return transactions
-    .filter((transaction) => transaction.kind !== 'transfer' && inRange(transaction, range))
-    .filter((transaction) => !accountId || transaction.accountId === accountId)
     .filter(
-      (transaction) => resolveCategory(categories, transaction.categoryId).parent?.id === parentId,
+      (transaction) =>
+        transaction.kind !== 'transfer' && !isRepayment(transaction) && inRange(transaction, range),
     )
+    .filter((transaction) => !accountId || transaction.accountId === accountId)
+    .filter((transaction) => {
+      const { parent, sub } = resolveCategory(categories, transaction.categoryId);
+      if (parent?.id !== parentId) return false;
+      return !sliceId || (sub?.id ?? parentId) === sliceId;
+    })
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
 }
 
-/** Monthly totals for one top-level category, oldest first. */
+/** Monthly totals for one top-level category (or one of its slices), oldest first. */
 export function categoryTrend(
   transactions: Transaction[],
   categories: Category[],
@@ -133,6 +147,7 @@ export function categoryTrend(
   endMonth: string,
   months = 6,
   accountId?: string | null,
+  sliceId?: string | null,
 ) {
   return Array.from({ length: months }, (_, index) => {
     const month = addMonths(endMonth, index - months + 1);
@@ -142,7 +157,8 @@ export function categoryTrend(
       parentId,
       monthBounds(month),
       accountId,
-    ).reduce((sum, transaction) => sum + transaction.amount, 0);
+      sliceId,
+    ).reduce((sum, transaction) => sum + ownShare(transaction), 0);
     return { month, amount };
   });
 }

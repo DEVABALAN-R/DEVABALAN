@@ -8,7 +8,6 @@ import {
   categoryTrend,
   entryCounts,
   limitSlices,
-  recentNotes,
   resolveCategory,
   searchCategories,
   subcategoryBreakdown,
@@ -57,6 +56,19 @@ describe('category breakdowns', () => {
     ]);
   });
 
+  it('narrows the trend to one subcategory slice', () => {
+    // Tea only (t6 in September, t3 in October).
+    expect(categoryTrend(transactions, categories, 'food', '2026-10', 2, null, 'tea')).toEqual([
+      { month: '2026-09', amount: 4_000 },
+      { month: '2026-10', amount: 5_000 },
+    ]);
+    // The parent's own id is the "(general)" slice: entries filed directly under Food.
+    expect(categoryTrend(transactions, categories, 'food', '2026-10', 2, null, 'food')).toEqual([
+      { month: '2026-09', amount: 0 },
+      { month: '2026-10', amount: 30_000 },
+    ]);
+  });
+
   it('counts entries per category, parents including their subcategories', () => {
     const counts = entryCounts(transactions, categories);
     // food: t4 + tea's t3 and t6; tea: t3, t6; rent: t2; salary: t1; transfers ignored.
@@ -83,11 +95,6 @@ describe('category breakdowns', () => {
     ]);
     expect(limited[2].name).toBe('Other (2)');
     expect(limited.reduce((sum, slice) => sum + slice.share, 0)).toBeCloseTo(1);
-  });
-
-  it('suggests distinct recent notes for a category, newest first', () => {
-    expect(recentNotes(transactions, 'tea')).toEqual(['Tea']);
-    expect(recentNotes(transactions, null)).toEqual([]);
   });
 });
 

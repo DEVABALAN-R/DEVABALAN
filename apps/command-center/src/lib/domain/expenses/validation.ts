@@ -1,5 +1,7 @@
 import { isValidIsoDate } from './dates';
-import type { Account, Category, Transaction, TransactionKind } from './types';
+import { splitsError } from './people';
+import type { Photo } from './photos';
+import type { Account, Category, Person, Split, Transaction, TransactionKind } from './types';
 
 /** ₹100 crore in paise — a sanity ceiling for a personal ledger. */
 export const MAX_AMOUNT = 100_000_000_000;
@@ -38,9 +40,18 @@ export type TransactionDraft = {
   toAccountId: string | null;
   feeText: string;
   note: string;
+  /** Expense shares owed by other people, as typed. */
+  splits: SplitDraft[];
+  /** Set when editing a repayment (income from a person, no category). */
+  personId: string | null;
+  /** Receipt photo, checked when it was picked. */
+  photo: Photo | null;
 };
 
-export type DraftField = 'date' | 'amount' | 'category' | 'account' | 'toAccount' | 'fee' | 'note';
+export type SplitDraft = { personId: string; amountText: string };
+
+export type DraftField =
+  'date' | 'amount' | 'category' | 'account' | 'toAccount' | 'fee' | 'split' | 'note';
 export type DraftErrors = Partial<Record<DraftField, string>>;
 export type ValidTransaction = Omit<Transaction, 'id' | 'createdAt'>;
 
@@ -52,12 +63,13 @@ export const DRAFT_FIELD_ORDER: DraftField[] = [
   'account',
   'toAccount',
   'fee',
+  'split',
   'note',
 ];
 
 export function validateDraft(
   draft: TransactionDraft,
-  context: { accounts: Account[]; categories: Category[] },
+  context: { accounts: Account[]; categories: Category[]; people?: Person[] },
 ): { errors: DraftErrors; value: ValidTransaction | null } {
   const errors: DraftErrors = {};
   const amount = parseAmount(draft.amountText);
@@ -84,10 +96,26 @@ export function validateDraft(
         errors.fee = 'Enter a valid fee or leave it empty.';
       else fee = parsed;
     }
+  } else if (draft.personId) {
+    // A repayment has no category; it must stay income from a known person.
+    if (draft.kind !== 'income' || !context.people?.some((item) => item.id === draft.personId))
+      errors.category = 'This repayment no longer matches a person.';
   } else {
     const category = context.categories.find((item) => item.id === draft.categoryId);
     if (!category) errors.category = 'Choose a category.';
     else if (category.kind !== draft.kind) errors.category = `Choose an ${draft.kind} category.`;
+  }
+
+  const splits: Split[] = [];
+  if (draft.kind === 'expense' && draft.splits.length) {
+    const known = new Set((context.people ?? []).map((item) => item.id));
+    for (const split of draft.splits) {
+      const value = parseAmount(split.amountText);
+      if (!known.has(split.personId)) errors.split = 'Someone in the split no longer exists.';
+      splits.push({ personId: split.personId, amount: value ?? 0 });
+    }
+    errors.split ??= splitsError(amount ?? 0, splits) ?? undefined;
+    if (!errors.split) delete errors.split;
   }
 
   const note = draft.note.trim();
@@ -105,8 +133,11 @@ export function validateDraft(
       accountId: draft.accountId,
       toAccountId: draft.kind === 'transfer' ? draft.toAccountId : null,
       fee: draft.kind === 'transfer' ? fee : 0,
-      categoryId: draft.kind === 'transfer' ? null : draft.categoryId,
+      categoryId: draft.kind === 'transfer' || draft.personId ? null : draft.categoryId,
       note,
+      splits: draft.kind === 'expense' ? splits : [],
+      personId: draft.kind === 'income' ? draft.personId : null,
+      photo: draft.photo,
     },
   };
 }

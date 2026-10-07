@@ -28,7 +28,19 @@ const config: ExpoConfig = {
     output: 'single',
     bundler: 'metro',
   },
-  plugins: ['expo-router', 'expo-font'],
+  plugins: [
+    'expo-router',
+    'expo-font',
+    'expo-secure-store',
+    [
+      'expo-image-picker',
+      {
+        photosPermission: 'Attach receipt photos to your transactions.',
+        cameraPermission: 'Take receipt photos for your transactions.',
+        microphonePermission: false,
+      },
+    ],
+  ],
   experiments: { typedRoutes: true },
 };
 

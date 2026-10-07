@@ -1,5 +1,5 @@
-import { ArrowLeftRight, type LucideIcon } from '@/components/icons';
-import { transactionEffect, type Transaction } from '@/lib/domain/expenses';
+import { ArrowLeftRight, HandCoins, type LucideIcon } from '@/components/icons';
+import { ownShare, transactionEffect, type Transaction } from '@/lib/domain/expenses';
 import { iconFor } from './categoryIcons';
 import { formatEntry } from './format';
 import type { Lookup } from './hooks/useLedger';
@@ -47,14 +47,33 @@ export function describeTransaction(
       tone: 'transfer',
     };
   }
+  if (transaction.kind === 'income' && transaction.personId) {
+    const name = lookup.person(transaction.personId)?.name ?? 'Someone';
+    return {
+      icon: HandCoins,
+      tint: 'transfer',
+      title: `${name} paid you back`,
+      caption: `Repayment · ${account}`,
+      amount: transaction.amount,
+      signed: true,
+      tone: 'income',
+    };
+  }
   const { parent, sub } = lookup.resolve(transaction.categoryId);
   const leaf = sub ?? parent;
   const path = lookup.path(transaction.categoryId) ?? 'Uncategorized';
-  const caption = transaction.note
+  const base = transaction.note
     ? `${path} · ${account}`
     : sub && parent
       ? `${parent.name} · ${account}`
       : account;
+  const names = (transaction.splits ?? [])
+    .map((split) => lookup.person(split.personId)?.name ?? 'someone')
+    .join(', ');
+  // A split expense still shows what left the account; the caption says your share.
+  const caption = names
+    ? `${base} · split with ${names} · your share ${formatEntry(ownShare(transaction))}`
+    : base;
   return {
     icon: iconFor(parent?.icon ?? 'other'),
     tint: parent?.tint ?? 0,

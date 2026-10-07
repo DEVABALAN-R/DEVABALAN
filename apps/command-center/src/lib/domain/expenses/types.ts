@@ -1,3 +1,5 @@
+import type { Photo } from './photos';
+
 /**
  * Expense-manager domain model. Mirrors the planned Supabase tables
  * (docs/architecture/MODERNIZATION_PLAN.md §7) so the preview store can be
@@ -35,6 +37,12 @@ export type Account = {
 
 export type TransactionKind = 'expense' | 'income' | 'transfer';
 
+/** Someone you share expenses with (friends, family). */
+export type Person = { id: string; name: string; order: number };
+
+/** Part of an expense that a person owes you (paise, > 0). */
+export type Split = { personId: string; amount: number };
+
 export type Transaction = {
   id: string;
   kind: TransactionKind;
@@ -51,6 +59,18 @@ export type Transaction = {
   categoryId: string | null;
   note: string;
   createdAt: number;
+  /**
+   * Expenses only: shares other people owe you. Your own share (what Stats and
+   * budgets count) is `amount` minus these; the account still pays the full amount.
+   */
+  splits?: Split[];
+  /**
+   * Income only: money a person paid back. It raises the account balance but is
+   * not income, and it settles that person's splits (oldest first).
+   */
+  personId?: string | null;
+  /** Receipt photo (preview: in memory only). */
+  photo?: Photo | null;
 };
 
 export type DateRange = { start: string; end: string };

@@ -27,6 +27,7 @@ const isEmpty = (draft: TransactionDraft, field: DraftField) =>
     account: !draft.accountId,
     toAccount: !draft.toAccountId,
     fee: false,
+    split: false,
     note: false,
   })[field];
 
@@ -72,6 +73,9 @@ const emptyDraft = (
   toAccountId: null,
   feeText: '',
   note: '',
+  splits: [],
+  personId: null,
+  photo: null,
 });
 
 const fieldsOf = (patch: Partial<TransactionDraft>): DraftField[] =>
@@ -83,6 +87,7 @@ const fieldsOf = (patch: Partial<TransactionDraft>): DraftField[] =>
         accountId: 'account',
         toAccountId: 'toAccount',
         feeText: 'fee',
+        splits: 'split',
       })[key] ?? key,
   ) as DraftField[];
 
@@ -121,6 +126,12 @@ export const useTransactionForm = create<FormState>((set, get) => ({
         toAccountId: transaction.toAccountId,
         feeText: transaction.fee ? amountToInput(transaction.fee) : '',
         note: transaction.note,
+        splits: (transaction.splits ?? []).map((split) => ({
+          personId: split.personId,
+          amountText: amountToInput(split.amount),
+        })),
+        personId: transaction.personId ?? null,
+        photo: transaction.photo ?? null,
       },
     }),
 
@@ -131,7 +142,15 @@ export const useTransactionForm = create<FormState>((set, get) => ({
       if (kind === state.draft.kind) return state;
       // Categories are kind-specific; transfers have none.
       return {
-        draft: { ...state.draft, kind, categoryId: null, toAccountId: null, feeText: '' },
+        draft: {
+          ...state.draft,
+          kind,
+          categoryId: null,
+          toAccountId: null,
+          feeText: '',
+          splits: [],
+          personId: null,
+        },
         errors: {},
       };
     }),

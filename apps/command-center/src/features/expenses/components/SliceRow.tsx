@@ -18,17 +18,27 @@ type SliceRowProps = {
   /** Drill into the category; omitted for buckets that have no category. */
   onPress?: () => void;
   active?: boolean;
+  /** The focused row (Stats › category › subcategory); announced as selected. */
+  selected?: boolean;
   onHover?: (id: string | null) => void;
 };
 
 /** Ranked category row (Money Manager style): share badge in the slice colour, name and amount. */
-export function SliceRow({ slice, color, onPress, active = false, onHover }: SliceRowProps) {
+export function SliceRow({
+  slice,
+  color,
+  onPress,
+  active = false,
+  selected,
+  onHover,
+}: SliceRowProps) {
   const theme = useTheme();
   const { hovered, focused, handlers } = useInteractionState();
   const highlighted = active || hovered;
   return (
     <Pressable
       role={onPress ? 'button' : undefined}
+      accessibilityState={selected === undefined ? undefined : { selected }}
       disabled={!onPress}
       accessibilityLabel={`${slice.name}: ${formatMoneyWhole(slice.amount)}, ${formatShare(slice.share)}, ${slice.count} ${slice.count === 1 ? 'entry' : 'entries'}`}
       onPress={onPress}
@@ -51,6 +61,8 @@ export function SliceRow({ slice, color, onPress, active = false, onHover }: Sli
           paddingHorizontal: theme.space[2],
           borderRadius: theme.radius.md,
           backgroundColor: highlighted ? theme.colors.surfaceMuted : 'transparent',
+          borderWidth: 1,
+          borderColor: selected ? theme.colors.borderStrong : 'transparent',
         },
         focused && { outlineColor: theme.colors.focus, outlineWidth: 2, outlineStyle: 'solid' },
       ]}

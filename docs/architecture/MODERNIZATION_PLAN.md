@@ -1104,6 +1104,16 @@ Each phase is one or more PRs. Each must pass CI and its acceptance criteria bef
 
 ### PHASE 2: Authentication + security foundation
 
+**Status (Oct 2026):** split into steps 2.1–2.4 in [`ROADMAP.md`](ROADMAP.md). Step 2.1 is
+implemented: Supabase client with the key guards (`src/lib/data`), session storage
+(`sessionStorage` on web, chunked SecureStore on native), sign-in / forgot / reset screens, the
+dashboard guard (labelled preview mode when no project is configured), `safeRedirect`, and
+security headers in `apps/command-center/vercel.json`. The client is `@supabase/auth-js` on its own
+(not the whole `supabase-js`, which carried ~35 KiB of unused realtime and storage code); Phase 3
+adds `@supabase/postgrest-js` beside it. Web bundle ~450 KiB gzip with people, photos and Notes;
+CI ceiling 470 KiB. The migration, MFA, sessions screen,
+idle timeout and Sentry follow in 2.2–2.4.
+
 | Item | Detail |
 |---|---|
 | Files | `lib/supabase/{client.ts, storage.native.ts, storage.web.ts}` (port key guards from `shared/lib/supabaseClient.ts`); `features/auth/*`; `app/(auth)/*`; `app/dashboard/_layout.tsx` guard; `lib/security/redirects.ts`; `vercel.json` (headers); `+native-intent.tsx` |

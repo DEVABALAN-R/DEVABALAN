@@ -6,6 +6,7 @@ import { Screen } from '@/components/layout/Screen';
 import { Badge, Card, CardHeader, CategoryIcon, SegmentedControl, Text } from '@/components/ui';
 import { useUiStore, type ThemePreference } from '@/state/ui';
 import { useTheme, type ColorRoles } from '@/theme';
+import { AccountCard } from './AccountCard';
 
 const themeSegments = [
   { value: 'system', label: 'System' },
@@ -22,7 +23,7 @@ export function SettingsScreen() {
     <Screen>
       <PageHeader
         title="Settings"
-        description="Appearance now; account, security and data controls arrive in later phases."
+        description="Appearance, your account, and data controls as they arrive."
       />
       <BentoRow>
         <BentoCell>
@@ -58,14 +59,7 @@ export function SettingsScreen() {
           </Card>
         </BentoCell>
         <BentoCell>
-          <Planned
-            index={1}
-            icon={Shield}
-            tint={2}
-            title="Account & security"
-            phase={2}
-            body="Password, two-factor (TOTP), active sessions and sign out of other devices."
-          />
+          <AccountCard index={1} />
           <Planned
             index={2}
             icon={Download}

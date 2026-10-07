@@ -67,26 +67,3 @@ export function entryCounts(transactions: Transaction[], categories: Category[])
   }
   return counts;
 }
-
-/** Distinct recent notes used with a category (newest first) — for suggestions. */
-export function recentNotes(
-  transactions: Transaction[],
-  categoryId: string | null,
-  limit = 6,
-): string[] {
-  if (!categoryId) return [];
-  const seen = new Set<string>();
-  const notes: string[] = [];
-  const sorted = [...transactions].sort(
-    (a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt,
-  );
-  for (const transaction of sorted) {
-    const note = transaction.note.trim();
-    const key = note.toLocaleLowerCase();
-    if (transaction.categoryId !== categoryId || !note || seen.has(key)) continue;
-    seen.add(key);
-    notes.push(note);
-    if (notes.length === limit) break;
-  }
-  return notes;
-}

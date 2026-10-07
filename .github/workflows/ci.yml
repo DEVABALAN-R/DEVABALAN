@@ -41,6 +41,13 @@ jobs:
           cache: npm
           cache-dependency-path: apps/command-center/package-lock.json
       - run: npm ci
+      - name: No secret-looking public variables
+        # EXPO_PUBLIC_* values are embedded in the app bundle; secrets must never use that prefix.
+        run: |
+          if grep -rEn 'EXPO_PUBLIC_[A-Z0-9_]*(SECRET|SERVICE|PRIVATE)' --include='*.ts' --include='*.tsx' --include='*.js' --include='*.json' --include='.env*' --exclude-dir=node_modules --exclude-dir=dist .; then
+            echo "A public (EXPO_PUBLIC_) variable name looks like a secret." >&2
+            exit 1
+          fi
       - name: Typecheck
         run: npm run typecheck
       - name: Lint

@@ -37,6 +37,7 @@ export function useStatsView() {
   const period = useExpenseUi((state) => state.statsPeriod);
   const accountId = useExpenseUi((state) => state.accountId);
   const drillId = useExpenseUi((state) => state.drillCategoryId);
+  const sliceId = useExpenseUi((state) => state.drillSliceId);
   return useMemo(() => {
     const year = yearOfMonth(month);
     const range = period === 'year' ? yearBounds(year) : monthBounds(month);
@@ -44,6 +45,12 @@ export function useStatsView() {
     const ranked = categoryBreakdown(transactions, categories, kind, range, accountId);
     const drill =
       categories.find((category) => category.id === drillId && category.kind === kind) ?? null;
+    const subSlices = drill
+      ? subcategoryBreakdown(transactions, categories, drill.id, range, accountId)
+      : [];
+    // The focused subcategory, when it still has entries in this period.
+    const focus = subSlices.find((slice) => slice.id === sliceId) ?? null;
+    const scope = focus?.id ?? null;
     return {
       kind,
       period,
@@ -56,26 +63,24 @@ export function useStatsView() {
       pie: limitSlices(ranked, PIE_SLICES),
       drill,
       drillTotal: drill ? (ranked.find((slice) => slice.id === drill.id)?.amount ?? 0) : 0,
-      subSlices: drill
-        ? subcategoryBreakdown(transactions, categories, drill.id, range, accountId)
-        : [],
+      subSlices,
+      focus,
       entries: drill
-        ? transactionsInCategory(transactions, categories, drill.id, range, accountId)
+        ? transactionsInCategory(transactions, categories, drill.id, range, accountId, scope)
         : [],
       trend: drill
-        ? period === 'year'
-          ? categoryTrend(transactions, categories, drill.id, `${year}-12`, 12, accountId)
-          : categoryTrend(
-              transactions,
-              categories,
-              drill.id,
-              trendEnd(month),
-              TREND_MONTHS,
-              accountId,
-            )
+        ? categoryTrend(
+            transactions,
+            categories,
+            drill.id,
+            period === 'year' ? `${year}-12` : trendEnd(month),
+            period === 'year' ? 12 : TREND_MONTHS,
+            accountId,
+            scope,
+          )
         : [],
     };
-  }, [transactions, categories, month, kind, period, accountId, drillId]);
+  }, [transactions, categories, month, kind, period, accountId, drillId, sliceId]);
 }
 
 export type StatsView = ReturnType<typeof useStatsView>;

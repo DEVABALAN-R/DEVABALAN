@@ -8,6 +8,8 @@ import { useLookup } from '../hooks/useLedger';
 import { useTransactionForm } from '../state/transactionForm';
 import { EntryInput } from './EntryInput';
 import { FieldRow } from './FieldRow';
+import { PhotoField } from '../photos/PhotoField';
+import { RepaymentRow, SplitRow } from './SplitField';
 
 const kinds: readonly Segment<TransactionKind>[] = [
   { value: 'income', label: 'Income', tone: 'income' },
@@ -53,12 +55,19 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
   return (
     <View style={{ gap: theme.space[1] }}>
       <View style={{ marginBottom: theme.space[2] }}>
-        <SegmentedControl
-          segments={kinds}
-          value={draft.kind}
-          onChange={setKind}
-          accessibilityLabel="Transaction type"
-        />
+        {draft.personId ? (
+          // A repayment stays a repayment: change it from People, or delete it.
+          <Text variant="label" color="textSecondary">
+            Repayment · not counted as income
+          </Text>
+        ) : (
+          <SegmentedControl
+            segments={kinds}
+            value={draft.kind}
+            onChange={setKind}
+            accessibilityLabel="Transaction type"
+          />
+        )}
       </View>
       <FieldRow
         label="Date"
@@ -83,7 +92,8 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
           accessibilityLabel="Amount in rupees"
         />
       </FieldRow>
-      {transfer ? null : (
+      {draft.personId ? <RepaymentRow /> : null}
+      {transfer || draft.personId ? null : (
         <FieldRow
           label="Category"
           active={active === 'category'}
@@ -142,6 +152,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
           </FieldRow>
         </>
       ) : null}
+      {draft.kind === 'expense' ? <SplitRow /> : null}
       <FieldRow label="Note" active={active === 'note'} error={errors.note}>
         <EntryInput
           ref={noteRef}
@@ -155,6 +166,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
           accessibilityLabel="Note"
         />
       </FieldRow>
+      {draft.personId ? null : <PhotoField />}
     </View>
   );
 }
