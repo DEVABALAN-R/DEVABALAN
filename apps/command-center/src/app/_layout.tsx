@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ToastProvider } from '@/components/feedback';
+import { SessionProvider } from '@/features/auth/SessionProvider';
 import { ThemeProvider, useTheme } from '@/theme';
 
 export { ErrorBoundary } from 'expo-router';
@@ -26,9 +27,11 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <ToastProvider>
-          <ThemedStack />
-        </ToastProvider>
+        <SessionProvider>
+          <ToastProvider>
+            <ThemedStack />
+          </ToastProvider>
+        </SessionProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

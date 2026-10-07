@@ -28,7 +28,7 @@ const config: ExpoConfig = {
     output: 'single',
     bundler: 'metro',
   },
-  plugins: ['expo-router', 'expo-font'],
+  plugins: ['expo-router', 'expo-font', 'expo-secure-store'],
   experiments: { typedRoutes: true },
 };
 

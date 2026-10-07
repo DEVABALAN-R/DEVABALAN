@@ -1,7 +1,25 @@
+import { Redirect, usePathname } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
+import { useSession } from '@/features/auth/sessionStore';
 import { AppShell } from '@/features/shell/AppShell';
+import { useTheme } from '@/theme';
 
-// Phase 2 wraps this in Stack.Protected (session + MFA). Until then the shell
-// renders placeholders and labelled sample data only; it reads no user data.
+// Requires a session when Supabase is configured; without a project the app runs as a
+// labelled preview. This guard is convenience only: Row Level Security is what keeps
+// data private.
 export default function DashboardLayout() {
+  const theme = useTheme();
+  const status = useSession((state) => state.status);
+  const pathname = usePathname();
+  if (status === 'loading') {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={theme.colors.textSecondary} accessibilityLabel="Loading" />
+      </View>
+    );
+  }
+  if (status === 'signedOut') {
+    return <Redirect href={{ pathname: '/sign-in', params: { redirect: pathname } }} />;
+  }
   return <AppShell />;
 }

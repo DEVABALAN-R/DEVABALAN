@@ -64,6 +64,7 @@ export { default as LayoutGrid } from 'lucide-react-native/icons/layout-grid';
 export { default as Leaf } from 'lucide-react-native/icons/leaf';
 export { default as Lightbulb } from 'lucide-react-native/icons/lightbulb';
 export { default as List } from 'lucide-react-native/icons/list';
+export { default as LogOut } from 'lucide-react-native/icons/log-out';
 export { default as MapPin } from 'lucide-react-native/icons/map-pin';
 export { default as Menu } from 'lucide-react-native/icons/menu';
 export { default as Minus } from 'lucide-react-native/icons/minus';

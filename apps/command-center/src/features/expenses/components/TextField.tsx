@@ -1,10 +1,18 @@
 import type { Ref } from 'react';
-import { View, type TextInput } from 'react-native';
+import { View, type TextInput, type TextInputProps } from 'react-native';
 import { Text } from '@/components/ui';
 import { useTheme } from '@/theme';
 import { EntryInput } from '../entry/EntryInput';
 
-type TextFieldProps = {
+type TextFieldProps = Pick<
+  TextInputProps,
+  | 'secureTextEntry'
+  | 'autoComplete'
+  | 'autoCapitalize'
+  | 'keyboardType'
+  | 'inputMode'
+  | 'textContentType'
+> & {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
