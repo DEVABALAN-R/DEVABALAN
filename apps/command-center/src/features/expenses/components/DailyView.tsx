@@ -8,7 +8,7 @@ import { formatEntry, speakEntry } from '../format';
 import { useMonthView } from '../hooks/useMonthView';
 import { useTransactionForm } from '../state/transactionForm';
 import { LedgerRow } from './LedgerRow';
-import { PanelScroll } from './PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 
 const weekday = new Intl.DateTimeFormat('en-IN', { weekday: 'short' });
 

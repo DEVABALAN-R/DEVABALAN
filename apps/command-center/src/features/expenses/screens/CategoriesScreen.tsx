@@ -9,7 +9,7 @@ import { CategoryEditor } from '../categories/CategoryEditor';
 import { CategoryListCard } from '../categories/CategoryListCard';
 import { DeleteCategorySheet } from '../categories/DeleteCategorySheet';
 import { ExpensesHeader } from '../components/ExpensesHeader';
-import { PanelScroll } from '../components/PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { useExpenseStore } from '../state/expenseStore';
 
 /**

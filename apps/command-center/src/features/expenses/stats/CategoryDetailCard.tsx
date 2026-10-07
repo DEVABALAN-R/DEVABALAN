@@ -10,7 +10,7 @@ import { formatAxisMoney, formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { iconFor } from '../categoryIcons';
 import { LedgerRow } from '../components/LedgerRow';
-import { PanelScroll } from '../components/PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { SliceRow } from '../components/SliceRow';
 import { useSliceColors } from '../sliceColors';
 import { useExpenseUi } from '../state/expenseUi';

@@ -1,7 +1,7 @@
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Card, CardHeader } from '@/components/ui';
 import { useTheme } from '@/theme';
-import { PanelScroll } from '../components/PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { SliceRow } from '../components/SliceRow';
 import { useSliceColors } from '../sliceColors';
 import { useExpenseUi } from '../state/expenseUi';

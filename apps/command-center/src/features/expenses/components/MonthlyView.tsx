@@ -18,7 +18,7 @@ import { formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { useLedger } from '../hooks/useLedger';
 import { useExpenseUi } from '../state/expenseUi';
-import { PanelScroll } from './PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 import { TotalsRow } from './TotalsRow';
 
 const short = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' });

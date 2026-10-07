@@ -9,7 +9,7 @@ import { formatEntry } from '../format';
 import { useMonthView } from '../hooks/useMonthView';
 import { useTransactionForm } from '../state/transactionForm';
 import { LedgerRow } from './LedgerRow';
-import { PanelScroll } from './PanelScroll';
+import { PanelScroll } from '@/components/layout/PanelScroll';
 
 /** The selected calendar day: its totals, its entries and "Add on this day". */
 export function DayPanel({ style }: { style?: StyleProp<ViewStyle> }) {
