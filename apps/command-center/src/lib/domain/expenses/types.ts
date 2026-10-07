@@ -1,3 +1,5 @@
+import type { Photo } from './photos';
+
 /**
  * Expense-manager domain model. Mirrors the planned Supabase tables
  * (docs/architecture/MODERNIZATION_PLAN.md §7) so the preview store can be
@@ -67,6 +69,8 @@ export type Transaction = {
    * not income, and it settles that person's splits (oldest first).
    */
   personId?: string | null;
+  /** Receipt photo (preview: in memory only). */
+  photo?: Photo | null;
 };
 
 export type DateRange = { start: string; end: string };

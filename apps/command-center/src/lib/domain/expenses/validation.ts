@@ -1,5 +1,6 @@
 import { isValidIsoDate } from './dates';
 import { splitsError } from './people';
+import type { Photo } from './photos';
 import type { Account, Category, Person, Split, Transaction, TransactionKind } from './types';
 
 /** ₹100 crore in paise — a sanity ceiling for a personal ledger. */
@@ -43,6 +44,8 @@ export type TransactionDraft = {
   splits: SplitDraft[];
   /** Set when editing a repayment (income from a person, no category). */
   personId: string | null;
+  /** Receipt photo, checked when it was picked. */
+  photo: Photo | null;
 };
 
 export type SplitDraft = { personId: string; amountText: string };
@@ -134,6 +137,7 @@ export function validateDraft(
       note,
       splits: draft.kind === 'expense' ? splits : [],
       personId: draft.kind === 'income' ? draft.personId : null,
+      photo: draft.photo,
     },
   };
 }

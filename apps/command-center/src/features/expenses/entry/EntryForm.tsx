@@ -8,6 +8,7 @@ import { useLookup } from '../hooks/useLedger';
 import { useTransactionForm } from '../state/transactionForm';
 import { EntryInput } from './EntryInput';
 import { FieldRow } from './FieldRow';
+import { PhotoField } from '../photos/PhotoField';
 import { RepaymentRow, SplitRow } from './SplitField';
 
 const kinds: readonly Segment<TransactionKind>[] = [
@@ -165,6 +166,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
           accessibilityLabel="Note"
         />
       </FieldRow>
+      {draft.personId ? null : <PhotoField />}
     </View>
   );
 }

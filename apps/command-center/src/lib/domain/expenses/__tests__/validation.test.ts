@@ -40,6 +40,7 @@ const draft = (patch: Partial<TransactionDraft>): TransactionDraft => ({
   feeText: '',
   splits: [],
   personId: null,
+  photo: null,
   note: '  Masala tea  ',
   ...patch,
 });
@@ -60,6 +61,7 @@ describe('validateDraft', () => {
       note: 'Masala tea',
       splits: [],
       personId: null,
+      photo: null,
     });
   });
 

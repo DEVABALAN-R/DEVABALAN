@@ -1,4 +1,5 @@
 import { Pressable, View } from 'react-native';
+import { Camera } from '@/components/icons';
 import { CategoryIcon, Text } from '@/components/ui';
 import { useInteractionState } from '@/hooks/useInteractionState';
 import { dayLabel, type Transaction } from '@/lib/domain/expenses';
@@ -29,7 +30,7 @@ export function LedgerRow({ transaction, accountId, showDate = false }: LedgerRo
   return (
     <Pressable
       role="button"
-      accessibilityLabel={`${entry.title}, ${speakEntry(entry.amount, sign)}, ${caption.replace(' → ', ' to ')}`}
+      accessibilityLabel={`${entry.title}, ${speakEntry(entry.amount, sign)}, ${caption.replace(' → ', ' to ')}${transaction.photo ? ', has a photo' : ''}`}
       accessibilityHint="Opens the entry to edit or delete it"
       onPress={() => openEdit(transaction)}
       {...handlers}
@@ -57,9 +58,14 @@ export function LedgerRow({ transaction, accountId, showDate = false }: LedgerRo
         size={36}
       />
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text variant="bodyStrong" numberOfLines={1}>
-          {entry.title}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text variant="bodyStrong" numberOfLines={1} style={{ flexShrink: 1 }}>
+            {entry.title}
+          </Text>
+          {transaction.photo ? (
+            <Camera size={13} color={theme.colors.textTertiary} aria-hidden />
+          ) : null}
+        </View>
         <Text variant="caption" color="textSecondary" numberOfLines={1}>
           {caption}
         </Text>

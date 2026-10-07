@@ -50,6 +50,7 @@ describe('fast entry flow', () => {
       note: '',
       splits: [],
       personId: null,
+      photo: null,
     };
     expect(nextField(draft, 'amount')).toBe('note');
     expect(nextField({ ...draft, kind: 'transfer', accountId: null }, 'amount')).toBe('account');

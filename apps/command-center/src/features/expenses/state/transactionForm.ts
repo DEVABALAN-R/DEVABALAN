@@ -75,6 +75,7 @@ const emptyDraft = (
   note: '',
   splits: [],
   personId: null,
+  photo: null,
 });
 
 const fieldsOf = (patch: Partial<TransactionDraft>): DraftField[] =>
@@ -130,6 +131,7 @@ export const useTransactionForm = create<FormState>((set, get) => ({
           amountText: amountToInput(split.amount),
         })),
         personId: transaction.personId ?? null,
+        photo: transaction.photo ?? null,
       },
     }),
 

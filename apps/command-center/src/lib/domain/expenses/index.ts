@@ -8,3 +8,4 @@ export * from './types';
 export * from './validation';
 export * from './notes';
 export * from './people';
+export * from './photos';
