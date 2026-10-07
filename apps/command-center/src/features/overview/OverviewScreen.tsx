@@ -6,7 +6,6 @@ import { Screen } from '@/components/layout/Screen';
 import { Text } from '@/components/ui';
 import { previewProfile } from '@/features/preview/notice';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
-import { useOverviewData } from '@/features/preview/useOverviewData';
 import { greeting } from '@/lib/formatting/greeting';
 import { useTheme } from '@/theme';
 import { CashflowCard } from './CashflowCard';
@@ -15,6 +14,7 @@ import { KpiQuad } from './KpiQuad';
 import { NetWorthCard } from './NetWorthCard';
 import { RecentActivityCard } from './RecentActivityCard';
 import { SpendingLimitCard } from './SpendingLimitCard';
+import { useOverviewData } from './useOverviewData';
 
 /** The command center home: net worth, cash flow, spending and investments. */
 export function OverviewScreen() {
@@ -32,7 +32,7 @@ export function OverviewScreen() {
         size="hero"
         title={`${greeting()}, ${previewProfile.name}`}
         description="Your money at a glance: balances, cash flow, spending and investments."
-        meta={<SampleDataBadge />}
+        meta={<SampleDataBadge editable />}
         actions={
           <View
             style={{
@@ -63,11 +63,11 @@ export function OverviewScreen() {
       </BentoRow>
       <BentoRow stackBelow="desktop">
         <BentoCell flex={4}>
-          <SpendingLimitCard spent={data.expense} budget={data.budget} top={data.topCategories} />
+          <SpendingLimitCard budget={data.budget} top={data.topCategories} />
           <InvestmentsSnapshot data={data} />
         </BentoCell>
         <BentoCell flex={8}>
-          <RecentActivityCard transactions={data.transactions} />
+          <RecentActivityCard transactions={data.recent} />
         </BentoCell>
       </BentoRow>
     </Screen>

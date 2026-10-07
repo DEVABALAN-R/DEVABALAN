@@ -1,10 +1,10 @@
 import { View } from 'react-native';
 import { ArrowDownLeft, ArrowUpRight, PiggyBank, TrendingUp } from '@/components/icons';
 import { StatCard } from '@/components/ui';
-import type { OverviewData } from '@/features/preview/useOverviewData';
 import { useTheme } from '@/theme';
+import type { OverviewData } from './useOverviewData';
 
-/** 2×2 KPI block; Income is the gradient hero tile (reference layout). */
+/** 2×2 KPI block for this month; Income is the gradient hero tile (reference layout). */
 export function KpiQuad({ data }: { data: OverviewData }) {
   const theme = useTheme();
   const row = { flexDirection: 'row', gap: theme.space[3], flex: 1 } as const;
@@ -18,8 +18,8 @@ export function KpiQuad({ data }: { data: OverviewData }) {
           label="Income"
           icon={ArrowDownLeft}
           value={data.income}
-          delta={data.incomeDelta}
-          caption="vs last month"
+          delta={data.incomeDelta ?? undefined}
+          caption={data.incomeDelta === null ? 'this month' : data.comparison}
           compact
         />
         <StatCard
@@ -28,9 +28,9 @@ export function KpiQuad({ data }: { data: OverviewData }) {
           label="Expenses"
           icon={ArrowUpRight}
           value={data.expense}
-          delta={data.expenseDelta}
+          delta={data.expenseDelta ?? undefined}
           goodWhen="down"
-          caption="vs last month"
+          caption={data.expenseDelta === null ? 'this month' : data.comparison}
           compact
         />
       </View>
@@ -50,7 +50,7 @@ export function KpiQuad({ data }: { data: OverviewData }) {
           label="SIP invested"
           icon={TrendingUp}
           value={data.invested}
-          caption="monthly SIPs"
+          caption="moved to investments"
           compact
         />
       </View>

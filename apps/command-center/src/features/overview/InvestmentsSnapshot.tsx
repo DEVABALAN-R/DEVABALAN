@@ -3,8 +3,8 @@ import { View } from 'react-native';
 import { Sparkline } from '@/components/charts';
 import { ChartCandlestick, ChartPie, ChevronRight, type LucideIcon } from '@/components/icons';
 import { Card, CategoryIcon, Delta, Money, Text } from '@/components/ui';
-import type { OverviewData } from '@/features/preview/useOverviewData';
 import { useTheme } from '@/theme';
+import type { OverviewData } from './useOverviewData';
 
 export function InvestmentsSnapshot({ data, index = 7 }: { data: OverviewData; index?: number }) {
   const theme = useTheme();

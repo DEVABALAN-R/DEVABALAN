@@ -2,15 +2,16 @@ import { View } from 'react-native';
 import { BarChart } from '@/components/charts';
 import { Card, CardHeader, Text } from '@/components/ui';
 import { formatAxisMoney, formatMoneyWhole } from '@/lib/formatting/currency';
-import type { MonthlyFlow } from '@/features/preview/sampleExpenses';
 import { useTheme } from '@/theme';
+
+type FlowMonth = { label: string; income: number; expense: number; projected?: boolean };
 
 export function CashflowCard({
   flow,
   index = 5,
   height,
 }: {
-  flow: MonthlyFlow[];
+  flow: FlowMonth[];
   index?: number;
   height?: number;
 }) {

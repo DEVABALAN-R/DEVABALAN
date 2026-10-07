@@ -6,22 +6,14 @@ import {
   comparisonRange,
   groupByDay,
   monthBounds,
-  monthLabel,
   monthOf,
   percentChange,
   periodTotals,
   todayIso,
-  type DateRange,
 } from '@/lib/domain/expenses';
+import { comparisonLabel } from '../format';
 import { useExpenseUi } from '../state/expenseUi';
 import { useLedger } from './useLedger';
-
-/** "vs 1–7 Sep" while a month is in progress, "vs Sep" once it is over. */
-function comparisonLabel(base: DateRange, month: string, today: string): string {
-  const name = monthLabel(monthOf(base.start), 'short');
-  if (monthOf(today) !== month) return `vs ${name}`;
-  return `vs ${Number(base.start.slice(8))}–${Number(base.end.slice(8))} ${name}`;
-}
 
 /** Everything the Transactions views need for the selected month and account filter. */
 export function useMonthView() {

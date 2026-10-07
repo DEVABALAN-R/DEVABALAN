@@ -1,3 +1,4 @@
+import { monthLabel, monthOf, type DateRange } from '@/lib/domain/expenses';
 import {
   formatAxisMoney,
   formatMoney,
@@ -20,4 +21,11 @@ export function speakEntry(minor: number, signDisplay: SignDisplay = 'auto'): st
 /** Compact signed label for calendar cells: "+₹10K", "−₹150". */
 export function signedCompact(minor: number, sign: '+' | '−'): string {
   return `${sign}${formatAxisMoney(Math.abs(minor))}`;
+}
+
+/** "vs 1–7 Sep" while a month is in progress, "vs Sep" once it is over. */
+export function comparisonLabel(base: DateRange, month: string, today: string): string {
+  const name = monthLabel(monthOf(base.start), 'short');
+  if (monthOf(today) !== month) return `vs ${name}`;
+  return `vs ${Number(base.start.slice(8))}–${Number(base.end.slice(8))} ${name}`;
 }

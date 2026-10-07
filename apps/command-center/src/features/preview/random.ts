@@ -16,10 +16,6 @@ export const rupees = (amount: number) => Math.round(amount) * 100;
 export const monthShort = (date: Date) =>
   new Intl.DateTimeFormat('en-IN', { month: 'short' }).format(date);
 
-export function isoDate(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
 /** Labels for the last `count` months ending with the current one. */
 export function recentMonths(count: number, today = new Date()): Date[] {
   return Array.from(

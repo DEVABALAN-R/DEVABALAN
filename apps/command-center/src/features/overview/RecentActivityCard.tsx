@@ -1,38 +1,36 @@
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { View } from 'react-native';
 import { Button, Card, CardHeader } from '@/components/ui';
-import { TransactionRow, TransactionTableHeader } from '@/features/expenses/TransactionRow';
-import type { SampleTransaction } from '@/features/preview/sampleExpenses';
-import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { LedgerRow } from '@/features/expenses/components/LedgerRow';
+import type { Transaction } from '@/lib/domain/expenses';
 import { useTheme } from '@/theme';
 
+/** Latest entries from the expense manager; pressing one opens it for editing. */
 export function RecentActivityCard({
   transactions,
   index = 9,
 }: {
-  transactions: SampleTransaction[];
+  transactions: Transaction[];
   index?: number;
 }) {
   const theme = useTheme();
-  const { isMobile } = useBreakpoint();
   return (
     <Card index={index} style={{ gap: theme.space[2], flex: 1 }}>
       <CardHeader
         title="Recent activity"
-        subtitle="Latest income and expenses"
+        subtitle="Latest income, expenses and transfers"
         action={
           <Button
             label="View all"
             variant="secondary"
             size="sm"
-            onPress={() => router.push('/dashboard/expenses')}
+            onPress={() => router.push('/dashboard/expenses' as Href)}
           />
         }
       />
       <View>
-        {isMobile ? null : <TransactionTableHeader />}
-        {transactions.slice(0, 6).map((row) => (
-          <TransactionRow key={row.id} row={row} layout={isMobile ? 'compact' : 'table'} />
+        {transactions.map((transaction) => (
+          <LedgerRow key={transaction.id} transaction={transaction} showDate />
         ))}
       </View>
     </Card>
