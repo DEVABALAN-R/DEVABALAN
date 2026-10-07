@@ -64,6 +64,16 @@ export const ACCOUNT_GROUP_LABELS: Record<AccountGroup, string> = {
   loan: 'Loans',
 };
 
+/** One account's type, e.g. "Card · 12 entries" (group headings use the plural labels). */
+export const ACCOUNT_TYPE_LABELS: Record<AccountGroup, string> = {
+  cash: 'Cash',
+  bank: 'Bank account',
+  card: 'Card',
+  wallet: 'Wallet',
+  investment: 'Savings or investment',
+  loan: 'Loan',
+};
+
 export const ACCOUNT_GROUP_ORDER: AccountGroup[] = [
   'cash',
   'bank',

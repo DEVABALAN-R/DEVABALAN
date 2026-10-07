@@ -11,7 +11,7 @@ import {
 } from '@/lib/domain/expenses';
 import { formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
-import { accountGroupIcons } from '../categoryIcons';
+import { accountGroupIcons, accountGroupTints } from '../categoryIcons';
 import { useLedger } from '../hooks/useLedger';
 import { GridRows } from './GridRows';
 
@@ -95,7 +95,11 @@ function AccountTile({ account, balance, selected, disabled, onPress }: AccountT
         focused && { outlineColor: theme.colors.focus, outlineWidth: 2, outlineStyle: 'solid' },
       ]}
     >
-      <CategoryIcon icon={accountGroupIcons[account.group]} tint={account.order} size={32} />
+      <CategoryIcon
+        icon={accountGroupIcons[account.group]}
+        tint={accountGroupTints[account.group]}
+        size={32}
+      />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text variant="label" numberOfLines={1}>
           {account.name}

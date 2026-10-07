@@ -1,4 +1,5 @@
-import { categoryBreakdown, topLevelCategories } from './categories';
+import { categoryBreakdown } from './breakdowns';
+import { topLevelCategories } from './categories';
 import { monthBounds } from './dates';
 import type { Category, Transaction } from './types';
 

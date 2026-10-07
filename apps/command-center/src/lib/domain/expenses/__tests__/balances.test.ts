@@ -1,4 +1,10 @@
-import { accountBalance, balanceSummary, sortAccounts, transactionEffect } from '../balances';
+import {
+  accountBalance,
+  balanceHistory,
+  balanceSummary,
+  sortAccounts,
+  transactionEffect,
+} from '../balances';
 import { accounts, transactions } from '../__fixtures__/ledger';
 
 describe('balances', () => {
@@ -44,6 +50,17 @@ describe('sortAccounts', () => {
       'bank',
       'bank-2',
       'card',
+    ]);
+  });
+});
+
+describe('balanceHistory', () => {
+  it('reports month-end balances, oldest first', () => {
+    // Card: −2,000 opening, −40 tea on 28 Sep; October adds −50 tea and the 2,000 bill payment.
+    expect(balanceHistory(accounts[1], transactions, '2026-10', 3)).toEqual([
+      { month: '2026-08', balance: -200_000 },
+      { month: '2026-09', balance: -204_000 },
+      { month: '2026-10', balance: -9_000 },
     ]);
   });
 });

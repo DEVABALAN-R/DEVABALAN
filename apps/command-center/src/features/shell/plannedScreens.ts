@@ -1,4 +1,4 @@
-import { FileChartColumn, Flag, Landmark, Lightbulb } from '@/components/icons';
+import { FileChartColumn, Flag, Lightbulb } from '@/components/icons';
 import type { ComponentProps } from 'react';
 import type { PlannedScreen } from './PlannedScreen';
 
@@ -6,17 +6,6 @@ type PlannedConfig = ComponentProps<typeof PlannedScreen>;
 
 /** Placeholder copy for destinations whose modules ship in later phases (plan §22). */
 export const plannedScreens = {
-  accounts: {
-    title: 'Accounts',
-    description: 'Bank accounts, cards, cash and wallets with correct balances.',
-    icon: Landmark,
-    phase: 5,
-    upcoming: [
-      'Balances that include card-bill transfers',
-      'Bank, credit card, cash and wallet types',
-      'Archive instead of delete',
-    ],
-  },
   goals: {
     title: 'Goals',
     description: 'Targets such as an emergency fund, vehicle or house.',

@@ -1,3 +1,4 @@
+import { addMonths, monthBounds } from './dates';
 import { ACCOUNT_GROUP_ORDER, type Account, type Transaction } from './types';
 
 /**
@@ -62,4 +63,17 @@ export function balanceSummary(accounts: Account[], transactions: Transaction[],
 export function sortAccounts(accounts: Account[]): Account[] {
   const rank = (account: Account) => ACCOUNT_GROUP_ORDER.indexOf(account.group);
   return [...accounts].sort((a, b) => rank(a) - rank(b) || a.order - b.order);
+}
+
+/** Balance at the end of each of the `months` months ending with `endMonth`, oldest first. */
+export function balanceHistory(
+  account: Account,
+  transactions: Transaction[],
+  endMonth: string,
+  months = 6,
+) {
+  return Array.from({ length: months }, (_, index) => {
+    const month = addMonths(endMonth, index - months + 1);
+    return { month, balance: accountBalance(account, transactions, monthBounds(month).end) };
+  });
 }

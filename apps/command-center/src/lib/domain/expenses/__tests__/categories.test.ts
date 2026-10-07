@@ -6,12 +6,13 @@ import {
   categoryBreakdown,
   categoryPath,
   categoryTrend,
+  entryCounts,
   limitSlices,
   recentNotes,
   resolveCategory,
   searchCategories,
   subcategoryBreakdown,
-} from '../categories';
+} from '../index';
 import { periodTotals } from '../periods';
 import { categories, october, transactions } from '../__fixtures__/ledger';
 
@@ -54,6 +55,12 @@ describe('category breakdowns', () => {
       { month: '2026-09', amount: 4_000 },
       { month: '2026-10', amount: 5_000 },
     ]);
+  });
+
+  it('counts entries per category, parents including their subcategories', () => {
+    const counts = entryCounts(transactions, categories);
+    // food: t4 + tea's t3 and t6; tea: t3, t6; rent: t2; salary: t1; transfers ignored.
+    expect(Object.fromEntries(counts)).toEqual({ food: 3, tea: 2, rent: 1, salary: 1 });
   });
 
   it('searches categories and subcategories of one kind', () => {

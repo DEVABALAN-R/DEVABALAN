@@ -1,6 +1,3 @@
-import { PlannedScreen } from '@/features/shell/PlannedScreen';
-import { plannedScreens } from '@/features/shell/plannedScreens';
+import { AccountsScreen } from '@/features/expenses/screens/AccountsScreen';
 
-export default function Route() {
-  return <PlannedScreen {...plannedScreens['accounts']} />;
-}
+export default AccountsScreen;

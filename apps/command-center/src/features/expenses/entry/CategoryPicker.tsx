@@ -12,6 +12,7 @@ import {
 } from '@/lib/domain/expenses';
 import { fontFamily, useTheme } from '@/theme';
 import { useExpenseStore } from '../state/expenseStore';
+import { useExpenseUi } from '../state/expenseUi';
 import { CategoryTile } from './CategoryTile';
 import { GridRows } from './GridRows';
 import { PickChip } from './PickChip';
@@ -30,13 +31,18 @@ type CategoryPickerProps = {
 export function CategoryPicker({ kind, selectedId, onChoose, columns }: CategoryPickerProps) {
   const theme = useTheme();
   const categories = useExpenseStore((state) => state.categories);
+  // With subcategories switched off (Categories page), parents are picked directly.
+  const withSubcategories = useExpenseUi((state) => state.showSubcategories);
   const selectedParent = resolveCategory(categories, selectedId).parent;
   const [expanded, setExpanded] = useState<string | null>(selectedParent?.id ?? null);
   const [query, setQuery] = useState('');
   const parents = useMemo(() => topLevelCategories(categories, kind), [categories, kind]);
   const results = useMemo(
-    () => searchCategories(categories, kind, query),
-    [categories, kind, query],
+    () =>
+      searchCategories(categories, kind, query).filter(
+        (category) => withSubcategories || !category.parentId,
+      ),
+    [categories, kind, query, withSubcategories],
   );
   const parentName = (category: Category) =>
     categories.find((item) => item.id === category.parentId)?.name;
@@ -99,7 +105,7 @@ export function CategoryPicker({ kind, selectedId, onChoose, columns }: Category
           gap={theme.space[2]}
           keyOf={(category) => category.id}
           render={(parent) => {
-            const children = subcategoriesOf(categories, parent.id).length;
+            const children = withSubcategories ? subcategoriesOf(categories, parent.id).length : 0;
             return (
               <CategoryTile
                 category={parent}

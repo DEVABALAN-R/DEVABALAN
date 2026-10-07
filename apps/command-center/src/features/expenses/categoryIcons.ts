@@ -93,3 +93,13 @@ export const accountGroupIcons: Record<AccountGroup, LucideIcon> = {
   investment: TrendingUp,
   loan: HandCoins,
 };
+
+/** Fixed tint per account group, so the same kind of account always looks the same. */
+export const accountGroupTints: Record<AccountGroup, number> = {
+  cash: 0,
+  bank: 2,
+  card: 3,
+  wallet: 5,
+  investment: 1,
+  loan: 4,
+};
