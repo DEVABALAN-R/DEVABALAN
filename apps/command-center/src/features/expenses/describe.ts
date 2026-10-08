@@ -90,10 +90,7 @@ export function describeTransaction(
 }
 
 /** Names of the people on a split expense: those who still owe, and those who paid back. */
-export function splitNames(
-  transaction: Transaction,
-  lookup: Lookup,
-): { open: string[]; paid: string[] } {
+function splitNames(transaction: Transaction, lookup: Lookup): { open: string[]; paid: string[] } {
   const open: string[] = [];
   const paid: string[] = [];
   for (const split of transaction.splits ?? []) {

@@ -66,7 +66,3 @@ export function BentoCell({ children, flex = 1, style, gap = true }: BentoCellPr
     </View>
   );
 }
-
-export function useStacked() {
-  return useContext(StackedContext);
-}

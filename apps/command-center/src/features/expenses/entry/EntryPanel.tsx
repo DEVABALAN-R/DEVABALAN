@@ -16,7 +16,7 @@ export type EntryPanelKind =
   'date' | 'category' | 'account' | 'toAccount' | 'fee' | 'split' | 'note';
 
 /** Which picker accompanies the active field. While typing the amount it previews the next step. */
-export function panelFor(active: DraftField | null, kind: TransactionKind): EntryPanelKind {
+function panelFor(active: DraftField | null, kind: TransactionKind): EntryPanelKind {
   if (active === null || active === 'amount') return kind === 'transfer' ? 'account' : 'category';
   return active;
 }

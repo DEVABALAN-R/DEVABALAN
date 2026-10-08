@@ -1265,7 +1265,7 @@ idle timeout and Sentry follow in 2.2–2.4.
 | `vite.config.ts`, `index.html`, `src/main.tsx`, `src/App.tsx`, `src/vite-env.d.ts` | Delete at Phase 12 | Replaced by Expo Router entry + `+html.tsx` |
 | `tsconfig.json` | Replace | Extends `expo/tsconfig.base`; keep `strict`, `noUnused*`, `@/*` path |
 | `vercel.json` | Rewrite (Phase 2 headers; Phase 12 build) | Headers, legacy redirects |
-| `public/_redirects` | Delete | Single host config |
+| `public/_redirects` | Deleted (Oct 2026) | Single host config |
 | `.env.example` | Rewrite | `EXPO_PUBLIC_*` names; comments on server-only secrets |
 | `.gitignore` | Extend | `.expo/`, `dist/`, `*.map`, `ios/`, `android/` (if CNG), `.env*` (keep `!.env.example`) |
 | `.nvmrc`, `.editorconfig` | Keep | Ensure Node meets Expo SDK minimum (SDK 58 docs list Node ≥ 22.13) |
@@ -1287,7 +1287,7 @@ idle timeout and Sentry follow in 2.2–2.4.
 | `src/features/finance/pages/CategoryManager.tsx` | Rebuild | Keep UX behaviours (inline rename, reorder, move, reassign-on-delete, undo) |
 | `src/features/finance/pages/AccountManagerPage.tsx` | Rebuild | Accounts screen with new account kinds |
 | `src/features/finance/components/Calendar.tsx` | Port | `features/transactions/components/CalendarHeatmap.tsx` (RN Views) |
-| `src/features/finance/components/Insights.tsx` | Delete (Phase 7) | Unused; ideas move to Reports |
+| `src/features/finance/components/Insights.tsx` | Deleted (Oct 2026) | Unused; ideas move to Reports |
 | `src/features/stocks/model/mutualFunds.ts` | Port + fix | → `calculations/portfolio.ts` (F2, F3, F6) |
 | `src/features/stocks/pages/MutualFundsPage.tsx` | Rebuild | `features/investments/mutual-funds/*` |
 | `src/features/workspace/data/workspaceRepository.ts` | Retire | Merge logic kept only for the conflict UI concept; removed after Phase 12 |
@@ -1297,7 +1297,7 @@ idle timeout and Sentry follow in 2.2–2.4.
 | `src/shared/components/TransactionDayContext.tsx` | Port | `features/transactions/components/DayContext.tsx` |
 | `src/shared/styles/*.css` (22 files) | Delete at Phase 12 | Tokens extracted in Phase 1 |
 | `supabase/migrations/2026100400{01,02,03}_*.sql` | **Keep unchanged** | Never edit applied migrations; supersede with new ones |
-| `README.md`, `SUPABASE_SETUP.md`, `APPLICATION_GUIDE.md`, `RUN_ON_ANOTHER_LAPTOP.md` | Rewrite per phase | Reflect Expo, env names, migrations, runbooks |
+| `README.md`, `SUPABASE_SETUP.md` | Rewrite per phase | Reflect Expo, env names, migrations, runbooks (`APPLICATION_GUIDE.md` and `RUN_ON_ANOTHER_LAPTOP.md` were folded into `README.md` in Oct 2026) |
 
 ---
 

@@ -12,7 +12,7 @@ export type Photo = {
 };
 
 export const PHOTO_MAX_BYTES = 10 * 1024 * 1024;
-export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
 /** Why a picked file cannot be attached, or null. */
 export function photoError(mimeType: string | null | undefined, bytes: number): string | null {

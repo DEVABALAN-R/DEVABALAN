@@ -34,7 +34,7 @@ function subscribe(listener: () => void) {
 }
 
 /** Whether the person asked the OS (or browser) to reduce motion. */
-export function useReducedMotion(): boolean {
+function useReducedMotion(): boolean {
   return useSyncExternalStore(
     subscribe,
     () => reduced,

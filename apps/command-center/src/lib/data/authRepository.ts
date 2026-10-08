@@ -16,7 +16,7 @@ const NOT_CONFIGURED: AuthResult = {
 const GENERIC = 'Something went wrong. Check your connection and try again.';
 
 /** Maps an Auth error to a message that does not reveal whether an account exists. */
-export function signInMessage(status: number | undefined, code: string | undefined): string {
+function signInMessage(status: number | undefined, code: string | undefined): string {
   if (code === 'over_request_rate_limit' || status === 429) {
     return 'Too many attempts. Wait a few minutes and try again.';
   }
@@ -38,7 +38,7 @@ export async function signInWithPassword(email: string, password: string): Promi
 }
 
 /** Where the reset link lands: the reset screen of this same app. */
-export function passwordResetUrl(): string {
+function passwordResetUrl(): string {
   return Linking.createURL('/reset-password');
 }
 
