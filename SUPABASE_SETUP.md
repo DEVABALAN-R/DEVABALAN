@@ -11,12 +11,41 @@ The dashboard authenticates with Supabase email/password Auth. Transactions, acc
 3. Then run [`supabase/migrations/202610040002_conflict_safe_workspace.sql`](supabase/migrations/202610040002_conflict_safe_workspace.sql). This is additive: it preserves the existing workspace row and finance records, adds a revision, routes writes through an owner-checked RPC, creates the published portfolio table, and copies the existing portfolio JSON into it.
 4. Run [`supabase/migrations/202610040003_mutual_funds_workspace.sql`](supabase/migrations/202610040003_mutual_funds_workspace.sql) to add the per-user mutual-fund and purchase collections. Apply migrations in numeric order before deploying a version of the app that uses mutual funds.
 5. Create your account under **Authentication → Users**. For this personal app, turn off public sign-ups after creating the owner account. Do not expose an admin/service key in the app to create users.
-6. Configure the Supabase Auth site URL and allowed redirect URLs for localhost during development and your exact production origin after deployment.
-7. Restart Vite after changing `.env.local`:
+6. Run [`supabase/migrations/202610080004_auth_hardening.sql`](supabase/migrations/202610080004_auth_hardening.sql) (Phase 2.2, see [Auth hardening](#auth-hardening-migration-0004) below), then enable the sign-up hook:
+   **Authentication → Hooks → Before User Created → Postgres → schema `internal`, function `before_user_created`**.
+7. Configure the Supabase Auth site URL and allowed redirect URLs for localhost during development and your exact production origin after deployment.
+8. Restart Vite after changing `.env.local`:
 
    ```cmd
    npm run dev -- --host 0.0.0.0
    ```
+
+## Auth hardening (migration 0004)
+
+What it adds, all enforced in the database rather than the app:
+
+- **Sign-up allowlist.** `internal.auth_allowlist` holds the emails that may create an account, and the Before User Created hook rejects every other sign-up with the same generic message. Every email that already has an account is added when the migration runs. The **Allow new users to sign up** switch can stay off as a second layer.
+- **`profiles` and `user_preferences`**, created automatically for every account (existing accounts are backfilled). Users can read and edit only their own row, and only the display name, currency and timezone (profiles) or theme, motion, dashboard layout and the AI opt-in (preferences). The AI opt-in is off by default.
+- **`audit_logs`**: an append-only record of who saved what, for example `workspace.save` with the names of the collections that changed. It never stores amounts, notes or any other values. Users can read only their own entries. Nobody can edit or delete entries, not even the table owner, without first removing the trigger.
+- **RPC hardening.** `save_user_workspace` and `save_public_portfolio` now pin an empty `search_path`, reject oversized payloads (8 MB for the workspace, 256 KB for the portfolio) and write an audit entry. The unused four-argument `save_user_workspace` is removed; the app calls the six-argument version.
+- **Portfolio owner gate.** Only accounts in `internal.portfolio_owners` can publish the public portfolio. Whoever already publishes it is added by the migration.
+
+`internal` is not one of the Data API's exposed schemas, so none of it is reachable from the browser.
+
+**Managing it (SQL Editor):**
+
+```sql
+-- Let someone sign up
+insert into internal.auth_allowlist (email, note) values ('person@example.com', 'why');
+-- Remove them from the list (it does not delete an existing account)
+delete from internal.auth_allowlist where email = 'person@example.com';
+-- Allow an account to publish the public portfolio
+insert into internal.portfolio_owners (user_id) values ('<auth user id>');
+```
+
+**Tests.** `supabase/tests/run.sh` applies every migration to a fresh Postgres with a small stand-in for Supabase's `auth` schema and roles. It then runs the SQL tests as the `anon`, `authenticated` and `supabase_auth_admin` roles, and checks that the rollback restores the previous state and the migration re-applies. CI runs it on every pull request.
+
+**Rollback.** First remove the hook under Authentication → Hooks, then run [`supabase/rollbacks/202610080004_auth_hardening_down.sql`](supabase/rollbacks/202610080004_auth_hardening_down.sql). It restores the earlier RPCs and drops the new tables **with their data** (export `audit_logs` first if you need it). Workspace and portfolio data are not touched.
 
 ## Existing browser data
 

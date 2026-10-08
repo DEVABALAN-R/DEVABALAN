@@ -6,8 +6,7 @@ import { Badge } from '@/components/ui';
 import { useUiStore } from '@/state/ui';
 
 /**
- * PLACEHOLDER. Global search / command palette ships in Phase 5. Quick add is
- * real: it opens the expense manager's entry sheet.
+ * PLACEHOLDER. Global search / command palette ships in Phase 5.
  */
 export function PlaceholderSheets() {
   const searchOpen = useUiStore((state) => state.searchOpen);
