@@ -23,6 +23,11 @@ SUPABASE_SETUP.md      Supabase setup, sign-up allowlist, two-step sign-in, secu
 src/, public/, ...     Legacy Vite app (until cutover)
 ```
 
+**Connecting the Command Center to Supabase** (needed to leave "Preview · not saved" and get
+the sign-in screen): set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` on
+its Vercel project and redeploy without the build cache. Step by step:
+[`apps/command-center/README.md` → Sign-in](apps/command-center/README.md#sign-in-phase-2).
+
 `supabase/migrations/` keeps the two migrations the new app depends on (0005, 0006); the older migrations, rollbacks and SQL tests were removed after being applied and remain in Git history at commit `224176d`. See `SUPABASE_SETUP.md`.
 
 ## Legacy dashboard: run and deploy

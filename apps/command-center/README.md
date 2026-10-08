@@ -32,14 +32,43 @@ Without Supabase settings the app runs as a labelled **preview** and asks for no
 them, every `/dashboard` page requires a session (the guard is convenience; Row Level Security
 is the real boundary).
 
-1. Copy `.env.example` to `.env.local` and fill in the project URL and the **publishable** key
-   (Supabase → Project Settings → API). The app refuses `sb_secret_` and service-role keys.
-2. In Supabase → Authentication → URL configuration, add the app's URLs to the redirect
-   allowlist, for example `https://<your-app>.vercel.app/reset-password` and
-   `http://localhost:8081/reset-password`.
-3. On Vercel, add the same two `EXPO_PUBLIC_` variables to the project that builds
-   `apps/command-center`, then redeploy. Locally, restart with `npx expo start --clear`:
-   public variables are inlined at build time.
+### The two values
+
+| Variable (exact name)                  | Value                                                                                                                                                  |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `EXPO_PUBLIC_SUPABASE_URL`             | The **Project URL**, `https://<project-ref>.supabase.co`, from Supabase → Project Settings → Data API. Nothing after `.supabase.co` (no `/rest/v1`). Not the dashboard address. |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The **publishable** key (`sb_publishable_…`) from Supabase → Project Settings → API Keys; on older projects, the **anon public** key.                    |
+
+Never use the **secret** (`sb_secret_…`) or **service_role** key: the app refuses both. The old
+app's `VITE_SUPABASE_*` names do not work here.
+
+### On Vercel (the live site)
+
+1. Open the Vercel project that builds `apps/command-center` (it serves
+   `devabalan-command-center.vercel.app`), not the legacy app's project.
+2. **Settings → Environment Variables**: add both variables with the exact names above,
+   **Environments: All Environments** (at least Production and Preview). Leave **Sensitive**
+   off: Vercel refuses it for public (`EXPO_PUBLIC_`) variables, and these values are public by
+   design.
+3. **Deployments** → the top **Production** deployment → **⋯ → Redeploy**, with **Use existing
+   build cache unticked**. The values are built into the bundle, so a deployment made before
+   they were added keeps running in preview.
+4. Open the site: it should show **Sign in**. If it still shows the dashboard with
+   "Preview · not saved", the build did not receive the variables: re-check the project, the
+   names and the environments, then redeploy again.
+
+### Locally
+
+Copy `.env.example` to `.env.local`, fill in the same two values, and restart with
+`npx expo start --clear` (the values are read at build time).
+
+### Supabase redirect URLs
+
+In Supabase → Authentication → URL configuration, add the app's URLs to the redirect allowlist,
+for example `https://devabalan-command-center.vercel.app/reset-password` and
+`http://localhost:8081/reset-password`.
+
+### What you get
 
 - **Two-step sign-in** (TOTP) is set up in Settings; after the password, `/verify-code` asks for
   the 6-digit code. **Sign out other devices** is in the same card.
