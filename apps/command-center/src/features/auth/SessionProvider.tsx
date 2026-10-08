@@ -4,6 +4,8 @@ import { currentSession, onAuthChange, setAutoRefresh } from '@/lib/data/authRep
 import { needsSecondStep } from '@/lib/data/mfaRepository';
 import { isSupabaseConfigured } from '@/lib/data/supabaseClient';
 import { useExpenseStore } from '@/features/expenses/state/expenseStore';
+import { useMarketStore } from '@/features/investments/state/marketStore';
+import { usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
 import { startCloudSync, stopCloudSync } from '@/features/sync/cloudSync';
 import { useDevicePrefs } from '@/state/devicePrefs';
@@ -45,6 +47,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         stopCloudSync();
         useExpenseStore.getState().resetPreview();
         useNotesStore.getState().resetPreview();
+        usePortfolioStore.getState().resetPreview();
+        useMarketStore.getState().enterPreview();
         session.setSignedOut();
       }
     });

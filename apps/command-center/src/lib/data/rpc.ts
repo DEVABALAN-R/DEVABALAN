@@ -2,7 +2,11 @@ import { getAuth } from './supabaseClient';
 import { supabaseConfig } from './supabaseConfig';
 
 /** The database functions the app may call (anything else is refused before sending). */
-export type RpcName = 'load_ledger' | 'sync_ledger';
+export type RpcName =
+  'load_ledger' | 'sync_ledger' | 'load_market' | 'search_funds' | 'search_securities' | 'nav_on';
+
+/** The Edge Functions the app may call. */
+export type FunctionName = 'market-refresh';
 
 /** A failed call. Holds only the HTTP status and Postgres error code: never the payload. */
 export class RpcError extends Error {
@@ -32,6 +36,18 @@ export class RpcError extends Error {
  * bundle lean; only the publishable key and the user's access token are sent.
  */
 export async function callRpc<T>(name: RpcName, args: Record<string, unknown> = {}): Promise<T> {
+  return post<T>(`rest/v1/rpc/${name}`, args);
+}
+
+/**
+ * Calls one of the project's Edge Functions as the signed-in user (the function checks
+ * the token itself). A 404 means the function has not been deployed.
+ */
+export async function callFunction<T>(name: FunctionName, body: Record<string, unknown> = {}) {
+  return post<T>(`functions/v1/${name}`, body);
+}
+
+async function post<T>(path: string, body: Record<string, unknown>): Promise<T> {
   const auth = getAuth();
   if (!auth || !supabaseConfig) throw new RpcError(0, 'not_configured');
   let token: string | undefined;
@@ -43,14 +59,14 @@ export async function callRpc<T>(name: RpcName, args: Record<string, unknown> = 
   if (!token) throw new RpcError(401, 'no_session');
   let response: Response;
   try {
-    response = await fetch(`${supabaseConfig.url}/rest/v1/rpc/${name}`, {
+    response = await fetch(`${supabaseConfig.url}/${path}`, {
       method: 'POST',
       headers: {
         apikey: supabaseConfig.key,
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(args),
+      body: JSON.stringify(body),
     });
   } catch {
     throw new RpcError(0, 'network');

@@ -42,7 +42,7 @@ Docs: https://docs.expo.dev/eas/index.md
 
 ## Project rules (Devabalan Command Center)
 
-- Read `README.md`, `docs/architecture/ROADMAP.md` and `docs/architecture/MODERNIZATION_PLAN.md` (repo root) before changing structure.
+- Read `README.md`, `docs/architecture/ARCHITECTURE.md`, `docs/architecture/ROADMAP.md` and the decision records in `docs/architecture/decisions/` (repo root) before changing structure; add a decision record for any new architectural choice.
 - Route files in `src/app/` stay thin (ESLint `max-lines` 80); components ≤ 200 lines.
 - Use theme roles (`useTheme().colors`), never hex; import icons from `@/components/icons`.
 - Only `src/lib/data/**` may import Supabase (enforced by ESLint, from Phase 3).

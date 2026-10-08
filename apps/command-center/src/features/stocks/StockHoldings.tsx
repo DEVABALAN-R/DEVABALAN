@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { PanelScroll } from '@/components/layout/PanelScroll';
 import { Card, CardHeader, Delta, Money, Text } from '@/components/ui';
-import { sampleStocks, stockTotals } from '@/features/preview/sampleStocks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useInteractionState } from '@/hooks/useInteractionState';
+import type { StockRow } from '@/lib/domain/investments';
 import { formatMoney } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { TickerBadge } from './TickerBadge';
@@ -13,18 +13,23 @@ const columns = [
   { label: 'Stock', flex: 3 },
   { label: 'Qty', flex: 0.8 },
   { label: 'Avg', flex: 1.1 },
-  { label: 'LTP', flex: 1.1 },
+  { label: 'Price', flex: 1.1 },
   { label: 'Value', flex: 1.3 },
   { label: 'P&L', flex: 1.3 },
 ] as const;
 
+/** Holdings; pressing a row charts it, pressing the charted row again opens its details. */
 export function StockHoldings({
+  rows,
   selected,
   onSelect,
+  onOpen,
   style,
 }: {
-  selected: string;
-  onSelect: (ticker: string) => void;
+  rows: StockRow[];
+  selected: string | null;
+  onSelect: (id: string) => void;
+  onOpen: (id: string) => void;
   style?: object;
 }) {
   const theme = useTheme();
@@ -32,7 +37,7 @@ export function StockHoldings({
   return (
     <Card index={7} padding={4} style={[{ gap: theme.space[2] }, style]}>
       <View style={{ paddingHorizontal: theme.space[1] }}>
-        <CardHeader title="Holdings" subtitle="Select a stock to chart it" />
+        <CardHeader title="Holdings" subtitle="Press to chart · press again for details" />
       </View>
       {isMobile ? null : (
         <View
@@ -59,15 +64,17 @@ export function StockHoldings({
         </View>
       )}
       <PanelScroll gap={0}>
-        {sampleStocks.map((stock, index) => {
-          const totals = stockTotals(stock);
-          const active = stock.ticker === selected;
+        {rows.map((row) => {
+          const { stock, position, quote } = row;
+          const active = stock.id === selected;
+          const gainPct = position.invested ? (position.unrealised / position.invested) * 100 : 0;
+          const right = { textAlign: 'right' as const };
           return (
             <HoverRow
-              key={stock.ticker}
+              key={stock.id}
               active={active}
-              label={`Chart ${stock.name}`}
-              onPress={() => onSelect(stock.ticker)}
+              label={active ? `${stock.name}, open details` : `Chart ${stock.name}`}
+              onPress={() => (active ? onOpen(stock.id) : onSelect(stock.id))}
             >
               <View
                 style={{
@@ -78,46 +85,46 @@ export function StockHoldings({
                   gap: theme.space[3],
                 }}
               >
-                <TickerBadge ticker={stock.ticker} tint={index + 1} />
+                <TickerBadge ticker={stock.symbol} tint={stock.order + 1} />
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Text variant="bodyStrong" numberOfLines={1}>
                     {stock.name}
                   </Text>
-                  <Text variant="caption" color="textSecondary">
-                    {stock.ticker} · {stock.sector}
+                  <Text variant="caption" color="textSecondary" numberOfLines={1}>
+                    {stock.symbol} · {position.quantity ? stock.sector || stock.exchange : 'Sold'}
                   </Text>
                 </View>
               </View>
               {isMobile ? (
                 <View style={{ alignItems: 'flex-end', gap: 2 }}>
-                  <Money value={totals.value} variant="bodyStrong" />
-                  <Delta value={totals.gainPct} variant="pill" />
+                  <Money value={position.value} variant="bodyStrong" />
+                  <Delta value={gainPct} variant="pill" />
                 </View>
               ) : (
                 <>
-                  <Text variant="label" numeric style={{ flex: 0.8, textAlign: 'right' }}>
-                    {stock.quantity}
+                  <Text variant="label" numeric style={[{ flex: 0.8 }, right]}>
+                    {position.quantity}
                   </Text>
                   <Text
                     variant="label"
                     color="textSecondary"
                     numeric
-                    style={{ flex: 1.1, textAlign: 'right' }}
+                    style={[{ flex: 1.1 }, right]}
                   >
-                    {formatMoney(stock.avgPrice)}
+                    {position.avgCost ? formatMoney(Math.round(position.avgCost)) : '—'}
                   </Text>
-                  <Text variant="label" numeric style={{ flex: 1.1, textAlign: 'right' }}>
-                    {formatMoney(stock.price)}
+                  <Text variant="label" numeric style={[{ flex: 1.1 }, right]}>
+                    {quote ? formatMoney(quote.price) : '—'}
                   </Text>
-                  <Money
-                    value={totals.value}
-                    variant="label"
-                    style={{ flex: 1.3, textAlign: 'right' }}
-                  />
+                  <Money value={position.value} variant="label" style={[{ flex: 1.3 }, right]} />
                   <View style={{ flex: 1.3, alignItems: 'flex-end' }}>
-                    <Money value={totals.gain} tone="auto" variant="label" />
-                    <Text variant="caption" color={totals.gain >= 0 ? 'profit' : 'loss'} numeric>
-                      {totals.gainPct >= 0 ? '▲' : '▼'} {Math.abs(totals.gainPct).toFixed(1)}%
+                    <Money value={position.unrealised} tone="auto" variant="label" />
+                    <Text
+                      variant="caption"
+                      color={position.unrealised >= 0 ? 'profit' : 'loss'}
+                      numeric
+                    >
+                      {gainPct >= 0 ? '▲' : '▼'} {Math.abs(gainPct).toFixed(1)}%
                     </Text>
                   </View>
                 </>

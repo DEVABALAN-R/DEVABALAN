@@ -1,39 +1,44 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { TrendLineChart } from '@/components/charts';
-import { Card, Delta, Money, SegmentedControl, Text } from '@/components/ui';
-import {
-  sampleStocks,
-  stockTotals,
-  tradingDayLabels,
-  type SampleStock,
-} from '@/features/preview/sampleStocks';
-import { formatMoney, formatMoneyWhole } from '@/lib/formatting/currency';
+import { Button, Card, Delta, Money, SegmentedControl, Text } from '@/components/ui';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { addDays, dayLabel } from '@/lib/domain/expenses';
+import { stockPriceSeries, type MarketData, type StockRow } from '@/lib/domain/investments';
+import { formatMoney, formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { TickerBadge } from './TickerBadge';
 
-type Range = '1M' | '3M';
+type Range = '1M' | '3M' | '1Y';
+const DAYS: Record<Range, number> = { '1M': 31, '3M': 92, '1Y': 366 };
 
+/** Price history of the selected holding, with a chip row to switch between holdings. */
 export function PriceChartCard({
+  rows,
   selected,
+  market,
+  today,
   onSelect,
+  onOpen,
   style,
 }: {
-  selected: SampleStock;
-  onSelect: (ticker: string) => void;
+  rows: StockRow[];
+  selected: StockRow;
+  market: MarketData;
+  today: string;
+  onSelect: (id: string) => void;
+  onOpen: (id: string) => void;
   style?: object;
 }) {
   const theme = useTheme();
   const [range, setRange] = useState<Range>('3M');
   const { isDense } = useBreakpoint();
-  const totals = stockTotals(selected);
-  const history = range === '1M' ? selected.history.slice(-22) : selected.history;
-  const up = history[history.length - 1] >= history[0];
-  const index = sampleStocks.indexOf(selected);
+  const from = addDays(today, -DAYS[range]);
+  const series = stockPriceSeries(selected, market).filter(([date]) => date >= from);
+  const values = series.map(([, value]) => value);
+  const up = values[values.length - 1] >= values[0];
   return (
     <Card index={5} style={[{ gap: theme.space[3] }, style]}>
-      {/* Dense windows drop the chip row; rows in Holdings still select a stock. */}
       {isDense ? null : (
         <ScrollView
           horizontal
@@ -41,20 +46,17 @@ export function PriceChartCard({
           contentContainerStyle={{ gap: theme.space[2] }}
           style={{ flexGrow: 0, height: 36, minHeight: 36 }}
         >
-          {sampleStocks.map((stock) => {
-            const active = stock.ticker === selected.ticker;
-            const change = stockTotals(stock).dayChangePct;
+          {rows.map((row) => {
+            const active = row.stock.id === selected.stock.id;
             return (
               <Pressable
-                key={stock.ticker}
+                key={row.stock.id}
                 role="radio"
                 accessibilityState={{ checked: active }}
-                accessibilityLabel={`${stock.name}, ${change >= 0 ? 'up' : 'down'} ${Math.abs(change).toFixed(1)} percent today`}
-                onPress={() => onSelect(stock.ticker)}
+                accessibilityLabel={`Chart ${row.stock.name}`}
+                onPress={() => onSelect(row.stock.id)}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
+                  justifyContent: 'center',
                   height: 34,
                   paddingHorizontal: theme.space[3],
                   borderRadius: theme.radius.pill,
@@ -62,20 +64,7 @@ export function PriceChartCard({
                 }}
               >
                 <Text variant="label" color={active ? 'onInk' : 'textPrimary'}>
-                  {stock.ticker}
-                </Text>
-                <Text
-                  variant="caption"
-                  style={{
-                    color: active
-                      ? theme.colors.onInkMuted
-                      : change >= 0
-                        ? theme.colors.profit
-                        : theme.colors.loss,
-                  }}
-                >
-                  {change >= 0 ? '▲' : '▼'}
-                  {Math.abs(change).toFixed(1)}%
+                  {row.stock.symbol}
                 </Text>
               </Pressable>
             );
@@ -83,16 +72,28 @@ export function PriceChartCard({
         </ScrollView>
       )}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[3] }}>
-        <TickerBadge ticker={selected.ticker} tint={index + 1} size={isDense ? 32 : 44} />
+        <TickerBadge
+          ticker={selected.stock.symbol}
+          tint={selected.stock.order + 1}
+          size={isDense ? 32 : 44}
+        />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text variant={isDense ? 'bodyStrong' : 'title'} numberOfLines={1}>
-            {selected.name}
+            {selected.stock.name}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
-            <Money value={selected.price} variant="bodyStrong" />
-            <Delta value={totals.dayChangePct} variant="pill" comparison="today" />
+            {selected.quote ? <Money value={selected.quote.price} variant="bodyStrong" /> : null}
+            {selected.dayChangePct ? (
+              <Delta value={selected.dayChangePct} variant="pill" comparison="today" />
+            ) : null}
           </View>
         </View>
+        <Button
+          label="Details"
+          variant="secondary"
+          size="sm"
+          onPress={() => onOpen(selected.stock.id)}
+        />
         <SegmentedControl
           size="sm"
           fill={false}
@@ -102,17 +103,28 @@ export function PriceChartCard({
           segments={[
             { value: '1M', label: '1M' },
             { value: '3M', label: '3M' },
+            { value: '1Y', label: '1Y' },
           ]}
         />
       </View>
-      <TrendLineChart
-        points={tradingDayLabels(selected.history.length)
-          .slice(-history.length)
-          .map((label, index) => ({ label, value: history[index], name: label }))}
-        color={up ? undefined : theme.colors.expense}
-        formatValue={formatMoneyWhole}
-        accessibilityLabel={`${selected.name} price over ${range === '1M' ? 'one month' : 'three months'}: from ${formatMoney(history[0])} to ${formatMoney(history[history.length - 1])}.`}
-      />
+      {series.length >= 2 ? (
+        <TrendLineChart
+          points={series.map(([date, value]) => ({
+            label: dayLabel(date, 'short').replace(/^\w+, /, ''),
+            value,
+            name: dayLabel(date),
+          }))}
+          color={up ? undefined : theme.colors.expense}
+          formatValue={formatMoneyWhole}
+          accessibilityLabel={`${selected.stock.name} price from ${formatMoney(values[0])} to ${formatMoney(values[values.length - 1])}.`}
+        />
+      ) : (
+        <View style={{ flex: 1, minHeight: 120, justifyContent: 'center' }}>
+          <Text variant="caption" color="textTertiary" align="center">
+            Price history builds up from the daily closing prices.
+          </Text>
+        </View>
+      )}
     </Card>
   );
 }

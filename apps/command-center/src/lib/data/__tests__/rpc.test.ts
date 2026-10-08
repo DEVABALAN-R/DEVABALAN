@@ -1,4 +1,4 @@
-import { callRpc, RpcError } from '../rpc';
+import { callFunction, callRpc, RpcError } from '../rpc';
 import { getAuth } from '../supabaseClient';
 
 jest.mock('../supabaseConfig', () => ({
@@ -44,5 +44,23 @@ describe('callRpc', () => {
     } as unknown as ReturnType<typeof getAuth>);
     await expect(callRpc('load_ledger')).rejects.toMatchObject({ status: 401 });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('callFunction', () => {
+  it('posts to the Edge Function as the user', async () => {
+    fetchMock.mockResolvedValue({ ok: true, text: async () => '{"navs":{"status":"ok"}}' });
+    expect(await callFunction('market-refresh')).toEqual({ navs: { status: 'ok' } });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://abc.supabase.co/functions/v1/market-refresh');
+    expect(init.headers).toMatchObject({ Authorization: 'Bearer user-token' });
+  });
+
+  it('reports a function that is not deployed', async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 404, json: async () => ({}) });
+    await expect(callFunction('market-refresh')).rejects.toMatchObject({
+      status: 404,
+      retryable: false,
+    });
   });
 });

@@ -1,47 +1,77 @@
 import { useState } from 'react';
+import { View } from 'react-native';
 import { CalendarDays, ChartPie, Percent, PiggyBank, Plus, TrendingUp } from '@/components/icons';
+import { EmptyState } from '@/components/feedback';
 import { BentoCell, BentoRow } from '@/components/layout/Bento';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Screen, useFitMode } from '@/components/layout/Screen';
 import { StatStrip } from '@/components/layout/StatStrip';
-import { Button, StatCard } from '@/components/ui';
+import { Button, Card, StatCard } from '@/components/ui';
+import { PriceStatus, RefreshPricesButton } from '@/features/investments/components/PriceStatus';
+import { useFundsView } from '@/features/investments/hooks/useInvestments';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
-import { PlannedSheet } from '@/features/shell/PlaceholderSheets';
-import {
-  fundTotals,
-  portfolioTotals,
-  sampleFunds,
-  sampleXirr,
-} from '@/features/preview/sampleInvestments';
+import { amountToInput } from '@/lib/domain/expenses';
+import { formatMoneyWhole, formatPercent } from '@/lib/formatting/currency';
+import { useTheme } from '@/theme';
 import { AllocationCard } from './AllocationCard';
-import { GrowthCard } from './GrowthCard';
+import { FundPanels, type FundPanel } from './FundPanels';
+import { GrowthCard, type GrowthRange } from './GrowthCard';
 import { HoldingsTable } from './HoldingsTable';
-import { UpcomingSips } from './UpcomingSips';
+import { SipCard } from './SipCard';
 
 /** Mutual fund tracker: one screen on desktop (panels scroll internally). */
 export function MutualFundsScreen() {
+  const theme = useTheme();
   const fit = useFitMode(true);
-  const [recording, setRecording] = useState(false);
-  const totals = portfolioTotals();
-  const gain = totals.value - totals.invested;
-  const gainPct = totals.invested ? (gain / totals.invested) * 100 : 0;
-  const categories = new Map<string, number>();
-  sampleFunds.forEach((fund) =>
-    categories.set(fund.category, (categories.get(fund.category) ?? 0) + fundTotals(fund).value),
+  const [range, setRange] = useState<GrowthRange>(12);
+  const [panel, setPanel] = useState<FundPanel>(null);
+  const view = useFundsView(range);
+  const { totals, rows } = view;
+  const gainPct = totals.invested ? (totals.unrealised / totals.invested) * 100 : 0;
+  const header = (
+    <PageHeader
+      size="compact"
+      title="Mutual funds"
+      meta={
+        <View style={{ gap: theme.space[1] }}>
+          <SampleDataBadge editable />
+          <PriceStatus kind="funds" />
+        </View>
+      }
+      actions={
+        <>
+          <RefreshPricesButton />
+          <Button
+            label="Add fund"
+            icon={Plus}
+            onPress={() => setPanel({ type: 'fund', fundId: null })}
+          />
+        </>
+      }
+    />
   );
-  const allocation = [...categories.entries()].map(([label, value], index) => ({
-    label,
-    value,
-    colorIndex: index,
-  }));
+  if (!rows.length) {
+    return (
+      <Screen>
+        {header}
+        <Card>
+          <EmptyState
+            icon={ChartPie}
+            title="Track your mutual funds"
+            body="Add a fund from the AMFI list (or by hand), then record purchases, SIPs and redemptions. Units, gains, XIRR and NAVs follow."
+            action={{
+              label: 'Add your first fund',
+              onPress: () => setPanel({ type: 'fund', fundId: null }),
+            }}
+          />
+        </Card>
+        <FundPanels panel={panel} onChange={setPanel} />
+      </Screen>
+    );
+  }
   return (
     <Screen fit>
-      <PageHeader
-        size="compact"
-        title="Mutual funds"
-        meta={<SampleDataBadge />}
-        actions={<Button label="Record purchase" icon={Plus} onPress={() => setRecording(true)} />}
-      />
+      {header}
       <StatStrip
         hero={
           <StatCard
@@ -50,7 +80,7 @@ export function MutualFundsScreen() {
             icon={ChartPie}
             value={totals.value}
             delta={gainPct}
-            caption="total return"
+            caption="gain on cost"
             index={0}
             style={{ flex: 1 }}
           />
@@ -61,17 +91,19 @@ export function MutualFundsScreen() {
           label="Invested"
           icon={PiggyBank}
           value={totals.invested}
-          caption="across 5 funds"
+          caption={`in ${totals.count} funds`}
           index={1}
           style={{ flex: 1 }}
         />
         <StatCard
           compact
-          label="Total gain"
+          label="Unrealised gain"
           icon={TrendingUp}
-          value={gain}
+          value={totals.unrealised}
           delta={gainPct}
-          caption="unrealised"
+          caption={
+            totals.dayChange ? `${formatMoneyWhole(totals.dayChange, 'always')} today` : 'on cost'
+          }
           index={2}
           style={{ flex: 1 }}
         />
@@ -79,8 +111,8 @@ export function MutualFundsScreen() {
           compact
           label="XIRR"
           icon={Percent}
-          value={`${sampleXirr.toFixed(1)}%`}
-          caption="annualised (indicative)"
+          value={totals.xirr === null ? '—' : formatPercent(totals.xirr * 100)}
+          caption="annualised, all cash flows"
           index={3}
           style={{ flex: 1 }}
         />
@@ -88,42 +120,57 @@ export function MutualFundsScreen() {
           compact
           label="Monthly SIP"
           icon={CalendarDays}
-          value={totals.sip}
-          caption="4 active SIPs"
+          value={view.monthlySip ? formatMoneyWhole(view.monthlySip) : '—'}
+          caption={`${view.activeSips} active`}
           index={4}
           style={{ flex: 1 }}
         />
       </StatStrip>
       <BentoRow stackBelow="desktop" fill={fit ? 1 : undefined}>
         <BentoCell flex={8}>
-          <GrowthCard style={fit ? { flex: 1 } : { height: 240 }} />
+          <GrowthCard
+            series={view.series}
+            range={range}
+            onRange={setRange}
+            style={fit ? { flex: 1 } : { height: 240 }}
+          />
         </BentoCell>
         <BentoCell flex={4}>
           <AllocationCard
             title="Allocation"
-            subtitle="By fund category"
-            items={allocation}
+            subtitle="By asset class"
+            items={view.allocation.map((slice, index) => ({ ...slice, colorIndex: index }))}
             style={fit ? { flex: 1 } : undefined}
           />
         </BentoCell>
       </BentoRow>
       <BentoRow stackBelow="desktop" fill={fit ? 1.15 : undefined}>
         <BentoCell flex={8}>
-          <HoldingsTable style={fit ? { flex: 1 } : undefined} />
+          <HoldingsTable
+            rows={rows}
+            onOpen={(fundId) => setPanel({ type: 'detail', fundId })}
+            style={fit ? { flex: 1 } : undefined}
+          />
         </BentoCell>
         <BentoCell flex={4}>
-          <UpcomingSips style={fit ? { flex: 1 } : undefined} />
+          <SipCard
+            funds={rows.map((row) => row.fund)}
+            pending={view.pending}
+            upcoming={view.upcoming}
+            today={view.today}
+            onRecord={({ sip, date }) =>
+              setPanel({
+                type: 'txn',
+                fundId: sip.fundId,
+                txnId: null,
+                preset: { kind: 'buy', date, amountText: amountToInput(sip.amount), sipId: sip.id },
+              })
+            }
+            style={fit ? { flex: 1 } : undefined}
+          />
         </BentoCell>
       </BentoRow>
-      <PlannedSheet
-        visible={recording}
-        onClose={() => setRecording(false)}
-        title="Record purchase"
-        description="Log a lump sum or SIP instalment with units and NAV."
-        icon={ChartPie}
-        phase="Phase 6"
-        body="Fund holdings arrive with the investments phase. A SIP can already be recorded as a transfer to your investment account in Expenses."
-      />
+      <FundPanels panel={panel} onChange={setPanel} />
     </Screen>
   );
 }
