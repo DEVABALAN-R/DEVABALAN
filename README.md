@@ -11,10 +11,13 @@ Live web app: **devabalan-command-center.vercel.app**
 ```text
 apps/command-center/   The app (Expo Router, React Native Web). Its README covers running,
                        checks, deployment and connecting to Supabase
-supabase/migrations/   Finance and notes tables (0005) and load/save functions (0006)
-docs/architecture/     Roadmap, the original modernization plan, expense manager flows
-SUPABASE_SETUP.md      Supabase side: hooks, two-step sign-in, access management, security
-.github/workflows/     CI: typecheck, lint, format, tests, web build, bundle size
+supabase/migrations/   Ledger and notes (0005), load/save (0006), mutual funds, stocks and
+                       market data (0007)
+supabase/functions/    market-refresh: fetches NAVs and closing prices on the server
+docs/architecture/     ARCHITECTURE.md, ROADMAP.md, decision records, expense manager flows
+docs/features/         How features work (INVESTMENTS.md)
+SUPABASE_SETUP.md      Supabase side: migrations, price function and schedule, sign-in, security
+.github/workflows/     CI (app checks, Edge Function checks) and Edge Function deployment
 ```
 
 ## Quick start
@@ -48,10 +51,15 @@ Supabase side: [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md).
 
 ## Status
 
-Done: sign-in with two-step codes, the expense manager and Notes saved to Supabase. Next: import
-the older data from `user_workspaces` (Phase 3.3), then the Overview on real data. Mutual funds
-and Stocks are design previews on labelled sample data. Phase order:
-[`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md).
+Done: sign-in with two-step codes; the expense manager, Notes, **mutual funds and stocks**
+(holdings, SIPs, FIFO gains, XIRR, AMFI NAVs and end-of-day share prices) saved to Supabase; the
+Overview's net worth includes them. Next: import the older data from `user_workspaces`
+(Phase 3.3). The full plan, including goals, other assets and personal trackers:
+[`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md). How it is built:
+[`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
+
+To get automatic prices, run migration 0007 and deploy the price function
+([`SUPABASE_SETUP.md`](SUPABASE_SETUP.md#prices-the-market-refresh-function)).
 
 The earlier Vite app was removed in October 2026; it is in Git history (last commit before
 removal: `efc04a9`). Its saved data is still in Supabase until Phase 3.3 imports it.

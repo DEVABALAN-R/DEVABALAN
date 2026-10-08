@@ -8,8 +8,8 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 > **History.** Migrations 0001–0004 (the old app's workspace, conflict-safe saves, mutual funds,
 > and auth hardening) have been applied and were removed from the repository with their rollback
 > scripts and SQL tests; they are in Git history at commit `224176d`. The old Vite app itself was
-> removed in October 2026. Migrations 0005 and 0006, which the Command Center depends on, are kept
-> in `supabase/migrations/`. New database changes add new numbered files there.
+> removed in October 2026. Migrations 0005, 0006 and 0007, which the Command Center depends on,
+> are in `supabase/migrations/`. New database changes add new numbered files there.
 
 ## What is in the database
 
@@ -18,7 +18,9 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 | Sign-up allowlist and its Before User Created hook | 0004                | Every new account (only allowlisted emails can sign up)                     |
 | `profiles`, `user_preferences`, `audit_logs`       | 0004                | Created per account; `audit_logs` records changes by column name, no values |
 | Finance and notes tables                           | 0005                | The Command Center                                                          |
-| `load_ledger()` and `sync_ledger(jsonb)`           | 0006                | The Command Center, to load and save                                        |
+| `load_ledger()` and `sync_ledger(jsonb)`           | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
+| Mutual fund and stock tables                       | 0007                | Mutual funds and Stocks pages                                               |
+| Market data tables and their functions             | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
 | `user_workspaces`, `public_portfolios`             | 0001–0003 (old app) | Nothing now. Holds your older data until Phase 3.3 imports it               |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
@@ -27,7 +29,8 @@ reachable from the browser.
 ## One-time setup checklist
 
 1. **Migrations applied, in order:** 0001–0004 (done earlier), then
-   `202610080005_core_finance.sql` and `202610080006_ledger_sync.sql` from `supabase/migrations/`.
+   `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql` and
+   `202610090007_investments.sql` from `supabase/migrations/` (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
    second layer.
@@ -38,6 +41,9 @@ reachable from the browser.
    `https://devabalan-command-center.vercel.app`.
 5. **Keys:** the app uses only the **Project URL** and the **publishable** key. Never use the
    secret or service-role key anywhere in the app or its Vercel variables.
+6. **Prices (optional, recommended):** deploy the `market-refresh` Edge Function and its daily
+   schedule ([below](#prices-the-market-refresh-function)). Without it, funds and stocks work
+   with NAVs and prices you enter by hand.
 
 ## Managing access (SQL Editor)
 
@@ -70,6 +76,98 @@ everything in one request and save a batch of changes all at once (all or nothin
 Signed in, the app shows **your** data (empty at first) and saves changes automatically; the
 badge next to the page title reads **Saved**, **Saving…** or **Offline · will retry**. Receipt
 photos stay on the device until private storage arrives (Phase 5).
+
+## Mutual funds and stocks (migration 0007)
+
+Run `202610090007_investments.sql` after 0006. It adds:
+
+- **Your investments:** `mf_funds`, `mf_sips`, `mf_transactions`, `stocks`, `stock_trades`, with the
+  same protections as the ledger (own rows only, two-step sign-in, composite keys, audit by column
+  name). The database also refuses a redemption or sale of more units or shares than were held on
+  that date, and an SIP instalment that belongs to another fund.
+- **Market data:** `mf_schemes` (AMFI list with the latest NAV), `mf_nav_history` (only for
+  schemes someone holds), `securities` and `security_prices` (end-of-day prices; history only for
+  held shares) and `market_refresh_runs` (a log of every update). Signed-in users can only read
+  them; only the service role (the Edge Function) writes.
+- **Functions:** `load_market()`, `search_funds(text)`, `search_securities(text)`,
+  `nav_on(integer, date)` for the app; `market_*` functions for the Edge Function only.
+- `load_ledger()` and `sync_ledger(jsonb)` are replaced to carry the new tables (same rules).
+
+The file ends with a commented rollback.
+
+## Prices: the market-refresh function
+
+`supabase/functions/market-refresh` downloads, on Supabase's servers, AMFI's daily NAV file and
+the exchange end-of-day price file (NSE; BSE if NSE is unavailable), plus older NAVs from mfapi.in
+for the schemes you hold. It never runs in the browser. Details:
+[`docs/features/INVESTMENTS.md`](docs/features/INVESTMENTS.md#prices).
+
+### 1. Deploy it (once; again only when the function changes)
+
+**Option A, automatic from GitHub (recommended):** add two repository secrets
+(GitHub → Settings → Secrets and variables → Actions):
+
+- `SUPABASE_ACCESS_TOKEN`: create one at supabase.com/dashboard/account/tokens.
+- `SUPABASE_PROJECT_REF`: the part of your Project URL before `.supabase.co`.
+
+Then run **Actions → Deploy Edge Functions → Run workflow** (it also runs on every change to
+`supabase/functions` on `main`).
+
+**Option B, Supabase CLI:** `supabase functions deploy market-refresh --project-ref <ref> --no-verify-jwt`.
+
+**Option C, dashboard:** Edge Functions → Deploy a new function → via editor, name it
+`market-refresh`, add the files `index.ts`, `handler.ts` and `parse.ts` from
+`supabase/functions/market-refresh/`, and turn **Verify JWT** off (the function checks callers
+itself: a signed-in user's token, or the schedule's secret).
+
+Test it: open the app signed in → Mutual funds → **Update prices**. The message says what was
+updated; `market_refresh_runs` in the Table Editor shows each run.
+
+### 2. Daily schedule (optional, recommended)
+
+1. Make a long random secret (at least 24 characters) and add it as an Edge Function secret named
+   `MARKET_REFRESH_SECRET` (Edge Functions → Secrets).
+2. Database → Extensions: enable `pg_cron` and `pg_net`.
+3. In the SQL Editor, store the URL and the same secret in Vault, then schedule two runs on
+   weekdays: after the exchange file and AMFI NAVs are out (23:45 IST), and a morning catch-up
+   (07:00 IST):
+
+```sql
+select vault.create_secret('https://<project-ref>.supabase.co/functions/v1/market-refresh', 'market_refresh_url');
+select vault.create_secret('<the MARKET_REFRESH_SECRET value>', 'market_refresh_secret');
+
+select cron.schedule('market-refresh-evening', '15 18 * * 1-5', $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'market_refresh_url'),
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-refresh-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'market_refresh_secret')),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 150000)
+$$);
+select cron.schedule('market-refresh-morning', '30 1 * * 2-6', $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'market_refresh_url'),
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-refresh-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'market_refresh_secret')),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 150000)
+$$);
+```
+
+The secret is stored encrypted in Vault and as a function secret; it is never in the repository or
+the app. To stop: `select cron.unschedule('market-refresh-evening');` (and `-morning`).
+
+### Other settings and troubleshooting
+
+- `ALLOWED_ORIGINS` (function secret, optional): the web addresses allowed to call the function,
+  comma-separated. Default: `https://devabalan-command-center.vercel.app,http://localhost:8081`.
+- "Automatic prices are not set up yet": the function is not deployed (step 1).
+- A failed NSE run followed by an ok BSE run is normal if NSE refuses downloads from the server.
+  If both fail, the run's message says why; values keep the last known price, and a price entered
+  by hand (Edit stock / Edit fund) is used when it is newer.
+- Share prices are end of day; there is no free official live-quote service.
 
 ## Two-step sign-in
 
