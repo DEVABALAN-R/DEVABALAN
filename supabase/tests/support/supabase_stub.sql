@@ -34,3 +34,17 @@ as $$
   )::uuid
 $$;
 grant execute on function auth.uid() to anon, authenticated, service_role;
+
+-- Claims of the request's JWT (aal: aal1 after the password, aal2 after the code).
+create or replace function auth.jwt() returns jsonb
+language sql stable
+as $$
+  select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb
+$$;
+grant execute on function auth.jwt() to anon, authenticated, service_role;
+
+create table if not exists auth.mfa_factors (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  status text not null default 'unverified'
+);
