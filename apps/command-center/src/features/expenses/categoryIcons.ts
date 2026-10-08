@@ -44,7 +44,7 @@ import {
 import type { AccountGroup } from '@/lib/domain/expenses';
 
 /** Icon keys stored on categories (the domain stays free of UI imports). */
-export const categoryIcons: Record<string, LucideIcon> = {
+const categoryIcons: Record<string, LucideIcon> = {
   food: Utensils,
   coffee: Coffee,
   transport: Bus,

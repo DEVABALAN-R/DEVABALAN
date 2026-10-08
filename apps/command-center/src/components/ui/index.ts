@@ -6,7 +6,6 @@ export * from './CardHeader';
 export * from './CategoryIcon';
 export * from './Chip';
 export * from './Delta';
-export * from './Divider';
 export * from './GradientFill';
 export * from './IconButton';
 export * from './Money';

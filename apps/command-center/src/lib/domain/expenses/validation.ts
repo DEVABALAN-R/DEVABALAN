@@ -158,7 +158,7 @@ export function validateDraft(
 }
 
 /** Each person's share for the draft: worked out from the amount in the equal modes. */
-export function draftShares(draft: TransactionDraft, amount: number): Split[] {
+function draftShares(draft: TransactionDraft, amount: number): Split[] {
   if (draft.splitMode === 'custom') {
     return draft.splits.map((split) => ({
       personId: split.personId,

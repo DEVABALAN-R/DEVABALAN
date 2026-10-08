@@ -3,7 +3,7 @@
  * point gets a dot and a value; longer series (daily prices) label only the
  * high, low, latest and active points and thin out the axis labels.
  */
-export const DENSE = 12;
+const DENSE = 12;
 const TOP = 24;
 const BOTTOM = 40;
 const EDGE = 28;

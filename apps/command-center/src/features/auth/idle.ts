@@ -1,5 +1,5 @@
 /** Automatic sign-out after inactivity, with a warning two minutes before. */
-export const IDLE_MINUTES = 30;
+const IDLE_MINUTES = 30;
 export const IDLE_TIMEOUT_MS = IDLE_MINUTES * 60_000;
 export const IDLE_WARNING_MS = 2 * 60_000;
 
@@ -10,7 +10,7 @@ export type IdlePhase = 'active' | 'warning' | 'expired';
  * (two-step sign-in guards new devices), otherwise 30 minutes.
  */
 export type IdleChoice = 'auto' | '15' | '60' | '480' | 'never';
-export const IDLE_CHOICES = ['auto', '15', '60', '480', 'never'] as const;
+const IDLE_CHOICES = ['auto', '15', '60', '480', 'never'] as const;
 export const isIdleChoice = (value: unknown): value is IdleChoice =>
   IDLE_CHOICES.includes(value as IdleChoice);
 

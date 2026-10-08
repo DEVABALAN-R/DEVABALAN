@@ -16,7 +16,7 @@ import {
 import { getLedger, useExpenseStore } from './expenseStore';
 
 /** Field order for the auto-advancing entry flow (Money Manager style). */
-export const FLOW: Record<TransactionKind, DraftField[]> = {
+const FLOW: Record<TransactionKind, DraftField[]> = {
   expense: ['date', 'amount', 'category', 'account', 'note'],
   income: ['date', 'amount', 'category', 'account', 'note'],
   transfer: ['date', 'amount', 'account', 'toAccount', 'fee', 'note'],

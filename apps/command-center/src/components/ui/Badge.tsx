@@ -35,25 +35,3 @@ export function Badge({ label, tone = 'neutral' }: { label: string; tone?: Badge
     </View>
   );
 }
-
-/** Coloured dot + text, e.g. "● Completed". */
-export function StatusDot({
-  label,
-  tone,
-}: {
-  label: string;
-  tone: Exclude<BadgeTone, 'neutral' | 'accent'>;
-}) {
-  const theme = useTheme();
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-      <View
-        aria-hidden
-        style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: theme.colors[tone] }}
-      />
-      <Text variant="label" color="textSecondary" numberOfLines={1}>
-        {label}
-      </Text>
-    </View>
-  );
-}

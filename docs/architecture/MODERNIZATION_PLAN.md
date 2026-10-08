@@ -1287,7 +1287,7 @@ idle timeout and Sentry follow in 2.2–2.4.
 | `src/features/finance/pages/CategoryManager.tsx` | Rebuild | Keep UX behaviours (inline rename, reorder, move, reassign-on-delete, undo) |
 | `src/features/finance/pages/AccountManagerPage.tsx` | Rebuild | Accounts screen with new account kinds |
 | `src/features/finance/components/Calendar.tsx` | Port | `features/transactions/components/CalendarHeatmap.tsx` (RN Views) |
-| `src/features/finance/components/Insights.tsx` | Delete (Phase 7) | Unused; ideas move to Reports |
+| `src/features/finance/components/Insights.tsx` | Deleted (Oct 2026) | Unused; ideas move to Reports |
 | `src/features/stocks/model/mutualFunds.ts` | Port + fix | → `calculations/portfolio.ts` (F2, F3, F6) |
 | `src/features/stocks/pages/MutualFundsPage.tsx` | Rebuild | `features/investments/mutual-funds/*` |
 | `src/features/workspace/data/workspaceRepository.ts` | Retire | Merge logic kept only for the conflict UI concept; removed after Phase 12 |

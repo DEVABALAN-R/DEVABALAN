@@ -97,7 +97,7 @@ export function calendarMonth(
 
 export type MonthSummary = Totals & { month: string };
 
-export function monthSummary(
+function monthSummary(
   month: string,
   transactions: Transaction[],
   accountId?: string | null,

@@ -18,7 +18,7 @@ export type Theme = {
 };
 
 /** `phone` uses the denser type scale and spacing for narrow windows. */
-export function createTheme(scheme: ColorScheme, phone = false): Theme {
+function createTheme(scheme: ColorScheme, phone = false): Theme {
   return {
     scheme,
     colors: scheme === 'dark' ? darkColors : lightColors,
