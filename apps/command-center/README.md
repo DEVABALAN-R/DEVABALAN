@@ -4,11 +4,12 @@ The new cross-platform app (iOS, Android, web) that will replace the Vite app at
 repository root. It is being built in phases — see
 [`docs/architecture/MODERNIZATION_PLAN.md`](../../docs/architecture/MODERNIZATION_PLAN.md).
 
-**Status: Phase 1, the 2026 UI redesign, the expense manager, and Phase 2.1 (sign-in).** The
-current phase order is in [`ROADMAP.md`](../../docs/architecture/ROADMAP.md).
+**Status: Phase 1, the 2026 UI redesign, the expense manager, and Phase 2 (sign-in, database
+auth hardening, two-step sign-in).** The current phase order is in
+[`ROADMAP.md`](../../docs/architecture/ROADMAP.md).
 
 - **Expense manager** (Expenses › Transactions, Stats, Budget, Categories, plus Accounts and the
-  global add/edit sheet) works end to end against an **in-memory preview store** seeded with
+  add/edit sheet) works end to end against an **in-memory preview store** seeded with
   labelled sample data. You can add, edit and delete entries, categories, budgets and accounts.
   Every change is lost on reload, and a "Preview · not saved" badge says so. Flows and rules:
   [`EXPENSE_MANAGER_FLOW.md`](../../docs/architecture/EXPENSE_MANAGER_FLOW.md).
@@ -24,7 +25,7 @@ current phase order is in [`ROADMAP.md`](../../docs/architecture/ROADMAP.md).
 Nothing reads or writes your real data yet (that is Phase 3). Keep using the existing app for
 real finances.
 
-## Sign-in (Phase 2.1)
+## Sign-in (Phase 2)
 
 Without Supabase settings the app runs as a labelled **preview** and asks for no sign-in. With
 them, every `/dashboard` page requires a session (the guard is convenience; Row Level Security
@@ -39,9 +40,14 @@ is the real boundary).
    `apps/command-center`, then redeploy. Locally, restart with `npx expo start --clear`:
    public variables are inlined at build time.
 
-Sessions live in `sessionStorage` on web (they end with the tab) and in the encrypted
-SecureStore on iOS/Android. Security headers (CSP, HSTS, frame blocking) are set in
-`vercel.json`.
+- **Two-step sign-in** (TOTP) is set up in Settings; after the password, `/verify-code` asks for
+  the 6-digit code. **Sign out other devices** is in the same card.
+- **Sessions:** on web they live in the tab's `sessionStorage`, or in `localStorage` when
+  "Keep me signed in on this device" is ticked; on iOS/Android in the encrypted SecureStore.
+- **Automatic sign-out** is chosen per device in Settings → This device (Auto, 15 min, 1 hour,
+  8 hours, Never).
+- Security headers (CSP, HSTS, frame blocking) are set in `vercel.json`. Server-side setup
+  (sign-up allowlist hook, migrations) is in [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md).
 
 ## Run
 

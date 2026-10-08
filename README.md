@@ -1,64 +1,51 @@
-# Devabalan Personal Dashboard
+# Devabalan Command Center
 
-A responsive React + TypeScript dashboard with a public portfolio and a private, Supabase-authenticated personal workspace. The workspace includes an expense tracker, accounts, configurable categories, and mutual-fund holdings and purchase history. Finance amounts use Indian rupees (INR).
+Personal finance and productivity app with a public portfolio: expenses, accounts, budgets,
+people and splits, notes, mutual funds and stocks. Amounts are in Indian rupees (INR).
 
-> **Redesign in progress.** A new cross-platform app (Expo: iOS, Android and web) is being built in
-> [`apps/command-center/`](apps/command-center/README.md) following
-> [`docs/architecture/MODERNIZATION_PLAN.md`](docs/architecture/MODERNIZATION_PLAN.md). Until it
-> reaches parity, this Vite app remains the production app.
+The repository holds two apps while the new one takes over:
 
-## Run locally
+| App                                          | Where                                                    | Status                                                                                                          |
+| -------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Command Center** (Expo: web, iOS, Android) | [`apps/command-center/`](apps/command-center/README.md)  | The new app. Sign-in, two-step sign-in and the full expense manager are built; your data is saved from Phase 3. |
+| **Legacy dashboard** (Vite + React)          | repository root (`src/`, `index.html`, `vite.config.ts`) | Still the app that **saves** your finances and portfolio. Kept until Phase 3 moves the data, then retired.      |
 
-Requirements: Node.js 22.19.0 (see `.nvmrc`) and npm.
+The plan and the current phase order: [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md)
+(detail in [`MODERNIZATION_PLAN.md`](docs/architecture/MODERNIZATION_PLAN.md)).
 
-```cmd
-copy .env.example .env.local
-```
-
-Edit `.env.local` and enter the Supabase project URL and **publishable** key. Then run:
-
-```cmd
-npm ci
-npm run dev
-```
-
-Open the local URL printed by Vite. To access the development server from another device on the same trusted network, run `npm run dev -- --host 0.0.0.0` and use this computer's LAN IP from the other device.
-
-For complete setup on another laptop, see [RUN_ON_ANOTHER_LAPTOP.md](RUN_ON_ANOTHER_LAPTOP.md). For schema, RLS and security details, see [SUPABASE_SETUP.md](SUPABASE_SETUP.md).
-
-## Production build
-
-```cmd
-npm run typecheck
-npm run build
-npm run preview
-```
-
-The production bundle is written to `dist/`. Deploy it to a static host that supports SPA fallback routing. Vercel and Netlify fallback configuration is included. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in the host's build environment and configure the production origin in Supabase Auth.
-
-## Project structure
+## Repository map
 
 ```text
-src/
-  app/                 App shell, routing and shared workspace layout
-  features/
-    auth/              Sign-in, protected routes and session timeout
-    dashboard/         Home page
-    finance/           Expense tracker, accounts, categories and models
-    portfolio/         Public portfolio and private editor
-    stocks/            Mutual-fund dashboard and investment calculations
-    workspace/         Authenticated cloud workspace persistence
-  shared/              Shared components, Supabase client and styles
-supabase/migrations/   Database schema, RPCs and row-level security
-public/                Static assets used by the portfolio
+apps/command-center/   New Expo app (its README covers running, checks and sign-in setup)
+supabase/migrations/   Database history: tables, RPCs, RLS, auth hardening (applied in order)
+supabase/rollbacks/    How to undo a migration
+supabase/tests/        SQL tests run in CI against a fresh Postgres
+docs/architecture/     Roadmap, modernization plan, expense manager flows
+SUPABASE_SETUP.md      Supabase setup, sign-up allowlist, two-step sign-in, security notes
+src/, public/, ...     Legacy Vite app (until cutover)
 ```
 
-See [APPLICATION_GUIDE.md](APPLICATION_GUIDE.md) for application behavior, routes, data boundaries and architecture notes.
+## Legacy dashboard: run and deploy
+
+Requirements: Node.js 22 (see `.nvmrc`) and npm. It connects to the same hosted Supabase project.
+
+```bash
+cp .env.example .env.local   # then fill in the project URL and the publishable key
+npm ci
+npm run dev                  # local development
+npm run typecheck && npm run build   # production bundle in dist/
+```
+
+On Vercel, set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` on the project that builds
+the repository root. Routes: `/` public portfolio, `/login`, `/dashboard/...` private (finance,
+accounts, categories, mutual funds, portfolio editor). Data lives in one `user_workspaces` row per
+user, protected by Row Level Security and written through revision-checked RPCs.
 
 ## Security
 
-- The browser must use only the Supabase publishable key. Never put a service-role key, database password or other secret in a `VITE_` variable.
-- Keep `.env.local` private. It is ignored by Git; `.env.example` contains placeholders only.
-- Disable public sign-ups for this single-owner app and provision the owner in Supabase Auth.
-- Supabase RLS policies and owner-checked RPCs enforce data access; frontend route guards are not the database security boundary.
-- Use HTTPS in production and configure only the required Auth redirect URLs.
+- Apps use only the Supabase **publishable** key. Never put a secret or service-role key, a
+  database password or any other secret in a `VITE_` or `EXPO_PUBLIC_` variable, or commit one.
+- Keep `.env.local` private (ignored by Git; `.env.example` holds placeholders only).
+- New accounts are blocked server-side except for allowlisted emails (see `SUPABASE_SETUP.md`).
+- Row Level Security and owner-checked RPCs are the security boundary; screens and route guards
+  are convenience only.
