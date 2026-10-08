@@ -31,7 +31,7 @@ Expenses (top nav)                       Accounts (left rail)
 └── Categories     /dashboard/expenses/categories
 
 Add / edit transaction: one sheet, reachable from everywhere
-  (header "Quick add", phone "+" button, "Add" on any expense page, any transaction row)
+  ("Add" on any expense page, the Overview quick actions, any transaction row)
 ```
 
 Shared state across Expenses pages:
@@ -72,7 +72,7 @@ Shared state across Expenses pages:
 
 ### 4.1 Add an expense (fast path, about 4 interactions)
 
-1. Open: press **Quick add**, the phone **+**, or the "Add" button on any expense page.
+1. Open: press the "Add" button on any expense page (or an Overview quick action).
    - **Type** defaults to the last used type, otherwise Expense.
    - **Date** defaults to the selected calendar day, otherwise today.
    - **Account** defaults to the last used one.
@@ -197,7 +197,7 @@ The seed data and the preview banner go away once the repositories are connected
 | Rules and calculations | —                                | `src/lib/domain/expenses/` (balances, periods, categories, breakdowns, budgets, dates, validation), unit-tested against a hand-checked fixture |
 | Preview store and seed | —                                | `src/features/expenses/state/` (`expenseStore`, `expenseUi`, `transactionForm`, seed files)                                                    |
 | Transactions           | `/dashboard/expenses`            | `screens/TransactionsScreen` + `components/` (header, summary, Calendar / Daily / Monthly, panels)                                             |
-| Add / edit sheet       | global                           | `entry/` (`TransactionSheet`, fields, category / account / date pickers), opened by Quick add, the phone **+**, Add buttons and any row        |
+| Add / edit sheet       | global                           | `entry/` (`TransactionSheet`, fields, category / account / date pickers), opened by Add buttons, Overview quick actions and any row            |
 | Stats                  | `/dashboard/expenses/stats`      | `stats/` + `components/charts/PieChart` (callout layout in `pieLayout.ts`)                                                                     |
 | Budget                 | `/dashboard/expenses/budget`     | `budget/`                                                                                                                                      |
 | Categories             | `/dashboard/expenses/categories` | `categories/`                                                                                                                                  |

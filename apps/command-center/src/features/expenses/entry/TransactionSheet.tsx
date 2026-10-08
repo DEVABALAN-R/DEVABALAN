@@ -13,8 +13,8 @@ import { kindLabel, useEntryActions, type SavedNotice } from './useEntryActions'
 const BODY_HEIGHT = 452;
 
 /**
- * Add / edit transaction, reachable from everywhere (header Quick add, the
- * phone + button, any Add button, any transaction row). A dialog with the
+ * Add / edit transaction, opened from the expense pages' Add buttons, the
+ * Overview's quick actions and any transaction row. A dialog with the
  * fields beside the active picker on wide screens; a bottom sheet on phones.
  */
 export function TransactionSheet() {

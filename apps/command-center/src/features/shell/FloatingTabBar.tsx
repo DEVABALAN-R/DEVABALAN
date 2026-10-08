@@ -1,21 +1,18 @@
 import { Link, usePathname, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Plus } from '@/components/icons';
 import { Appear, Text } from '@/components/ui';
-import { useTransactionForm } from '@/features/expenses/state/transactionForm';
 import { useTheme } from '@/theme';
 import { isActive, mobileMore, mobileTabs } from './navigation';
 
 /**
  * Phone navigation: a floating ink bar whose active tab expands into an inverted
- * pill with its label, plus a separate quick-add button.
+ * pill with its label. Adding entries lives on each section's own page.
  */
 export function FloatingTabBar() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
-  const openNew = useTransactionForm((state) => state.openNew);
   const moreActive = mobileMore.some((item) => isActive(pathname, item.href));
   return (
     <View
@@ -26,7 +23,6 @@ export function FloatingTabBar() {
         right: 0,
         bottom: insets.bottom + theme.space[3],
         flexDirection: 'row',
-        gap: theme.space[2],
         paddingHorizontal: theme.space[3],
       }}
     >
@@ -85,23 +81,6 @@ export function FloatingTabBar() {
           );
         })}
       </View>
-      <Pressable
-        role="button"
-        accessibilityLabel="Quick add"
-        onPress={() => openNew()}
-        style={({ pressed }) => ({
-          width: 54,
-          height: 54,
-          borderRadius: 27,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: pressed ? theme.colors.primaryPressed : theme.colors.primary,
-          transform: [{ scale: pressed ? 0.94 : 1 }],
-          ...theme.elevation(3),
-        })}
-      >
-        <Plus size={26} color={theme.colors.onPrimary} strokeWidth={2.4} />
-      </Pressable>
     </View>
   );
 }
