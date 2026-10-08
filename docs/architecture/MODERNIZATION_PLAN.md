@@ -1,5 +1,7 @@
 # DEVABALAN Personal Command Center: Audit, Target Architecture, and Phased Migration Plan
 
+> **Historical document.** This is the original audit and plan, written when the repository was a Vite app. The Vite app has since been removed (the last commit that has it is `efc04a9`) and the phase order changed: the current status and order are in [`ROADMAP.md`](ROADMAP.md). File paths and "current state" sections below describe the repository at the time of the audit.
+
 > Status: **PLAN ONLY.** No application code, schema, or configuration has been changed.
 > Audited commit: `000d63e` (branch `claude/funny-clarke-necgkn`), 2026-10-07.
 > Scope: every file under `src/`, `supabase/`, `public/`, the root configuration files, and the four existing Markdown guides.

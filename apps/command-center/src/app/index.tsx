@@ -1,7 +1,7 @@
 import { Redirect } from 'expo-router';
 
-// The public portfolio still lives in the Vite app until it is ported
-// (see docs/architecture/MODERNIZATION_PLAN.md §21). Phase 2 adds sign-in.
+// No public home page yet (the portfolio is not ported); `/` opens the dashboard,
+// which asks for sign-in when Supabase is configured.
 export default function Index() {
   return <Redirect href="/dashboard" />;
 }
