@@ -67,7 +67,7 @@ These change Phases 3, 6 and 7; none blocks Phase 2.1.
 5. Should the public portfolio keep showing phone and email?
 6. **New:** which stock-quote provider (it must be called from an Edge Function, and its terms must allow personal use)?
 
-> The SQL files were removed from the repository in October 2026 after being applied; they are in Git history at commit `224176d` (`supabase/migrations`, `supabase/rollbacks`, `supabase/tests`). New database changes in later phases will add their own migration files again.
+> Migrations 0005 and 0006 stay in `supabase/migrations`; the older migrations, rollbacks and SQL tests were removed in October 2026 after being applied and are in Git history at commit `224176d`. New database changes in later phases will add their own migration files again.
 
 ## Rules that hold for every phase
 

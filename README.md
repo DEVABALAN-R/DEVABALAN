@@ -17,12 +17,13 @@ The plan and the current phase order: [`docs/architecture/ROADMAP.md`](docs/arch
 
 ```text
 apps/command-center/   New Expo app (its README covers running, checks and sign-in setup)
+supabase/migrations/   Finance tables (0005) and load/save functions (0006), both applied
 docs/architecture/     Roadmap, modernization plan, expense manager flows
 SUPABASE_SETUP.md      Supabase setup, sign-up allowlist, two-step sign-in, security notes
 src/, public/, ...     Legacy Vite app (until cutover)
 ```
 
-Database migrations were applied and then removed from the repository (Oct 2026); they remain in Git history at commit `224176d`. See `SUPABASE_SETUP.md`.
+`supabase/migrations/` keeps the two migrations the new app depends on (0005, 0006); the older migrations, rollbacks and SQL tests were removed after being applied and remain in Git history at commit `224176d`. See `SUPABASE_SETUP.md`.
 
 ## Legacy dashboard: run and deploy
 

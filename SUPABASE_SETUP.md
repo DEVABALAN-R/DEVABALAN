@@ -1,6 +1,6 @@
 # Supabase backend setup
 
-> **Note:** all migrations below have been applied to the project. The SQL files were removed from the repository in October 2026 after being applied; they are in Git history at commit `224176d` (`supabase/migrations`, `supabase/rollbacks`, `supabase/tests`).
+> **Note:** all migrations below have been applied to the project. The two the Command Center depends on, `supabase/migrations/202610080005_core_finance.sql` and `202610080006_ledger_sync.sql`, are kept in the repository; the older ones (0001–0004), the rollback scripts and the SQL tests were removed in October 2026 and remain in Git history at commit `224176d`.
 
 ## Current implementation
 
