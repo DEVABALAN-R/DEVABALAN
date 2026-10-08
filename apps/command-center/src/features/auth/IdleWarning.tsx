@@ -1,11 +1,13 @@
 import { Sheet } from '@/components/overlays';
 import { Button, Text } from '@/components/ui';
+import { flushCloudSync } from '@/features/sync/cloudSync';
 import { signOut } from '@/lib/data/authRepository';
 import { useSession } from './sessionStore';
 
 /** Shown in the last two minutes before an idle sign-out. */
 export function IdleWarning({ visible, onStay }: { visible: boolean; onStay: () => void }) {
   const leave = async () => {
+    await flushCloudSync();
     await signOut();
     useSession.getState().setSignedOut();
   };

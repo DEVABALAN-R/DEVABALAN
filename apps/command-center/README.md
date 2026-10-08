@@ -22,8 +22,9 @@ auth hardening, two-step sign-in).** The current phase order is in
   static sample data (fictional names, "Sample data · design preview" badge).
 - Goals, Insights and Reports are labelled placeholders.
 
-Nothing reads or writes your real data yet (that is Phase 3). Keep using the existing app for
-real finances.
+Signed in (with migrations 0005 and 0006 applied), the expense manager and Notes load and
+save **your own** data in Supabase (Phase 3.2); the preview build keeps the labelled sample.
+Importing from the existing app is Phase 3.3.
 
 ## Sign-in (Phase 2)
 

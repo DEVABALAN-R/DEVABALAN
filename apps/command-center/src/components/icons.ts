@@ -4,7 +4,6 @@
  * every icon (~2 MB) to the web bundle. Add new icons here.
  */
 export type { LucideIcon } from 'lucide-react-native';
-
 export { default as Archive } from 'lucide-react-native/icons/archive';
 export { default as ArchiveRestore } from 'lucide-react-native/icons/archive-restore';
 export { default as ArrowDownLeft } from 'lucide-react-native/icons/arrow-down-left';
@@ -28,6 +27,8 @@ export { default as ChevronLeft } from 'lucide-react-native/icons/chevron-left';
 export { default as ChevronRight } from 'lucide-react-native/icons/chevron-right';
 export { default as ChevronUp } from 'lucide-react-native/icons/chevron-up';
 export { default as CircleAlert } from 'lucide-react-native/icons/circle-alert';
+export { default as Cloud } from 'lucide-react-native/icons/cloud';
+export { default as CloudOff } from 'lucide-react-native/icons/cloud-off';
 export { default as Coffee } from 'lucide-react-native/icons/coffee';
 export { default as Coins } from 'lucide-react-native/icons/coins';
 export { default as Compass } from 'lucide-react-native/icons/compass';

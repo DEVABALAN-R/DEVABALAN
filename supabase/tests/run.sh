@@ -71,5 +71,19 @@ end \$\$;"
 psql_db -f "$root/migrations/202610080005_core_finance.sql" >/dev/null
 psql_db -f "$here/202610080005_core_finance.test.sql"
 
+echo "→ 0006 ledger sync (twice: idempotent)"
+psql_db -f "$root/migrations/202610080006_ledger_sync.sql"
+psql_db -f "$root/migrations/202610080006_ledger_sync.sql"
+psql_db -f "$here/202610080006_ledger_sync.test.sql"
+echo "→ 0006 rollback, then re-apply"
+psql_db -f "$root/rollbacks/202610080006_ledger_sync_down.sql"
+psql_db -c "do \$\$ begin
+  if to_regprocedure('public.sync_ledger(jsonb)') is not null or to_regclass('public.transactions') is null then
+    raise exception 'FAIL: 0006 rollback should drop only its functions';
+  end if;
+end \$\$;"
+psql_db -f "$root/migrations/202610080006_ledger_sync.sql"
+psql_db -f "$here/202610080006_ledger_sync.test.sql"
+
 psql -X -q -d postgres -c "drop database if exists $db"
 echo "✓ Database migration tests passed"

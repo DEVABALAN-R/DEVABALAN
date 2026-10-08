@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { Plus } from '@/components/icons';
 import { Button, Heading } from '@/components/ui';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
+import { StarterCard } from '@/features/sync/StarterCard';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useTheme } from '@/theme';
 import { useExpenseUi } from '../state/expenseUi';
@@ -47,6 +48,7 @@ export function ExpensesHeader({ period = 'month' }: { period?: 'month' | 'year'
         </View>
         <SectionTabs />
         {navigator}
+        <StarterCard />
       </View>
     );
   }
@@ -61,6 +63,7 @@ export function ExpensesHeader({ period = 'month' }: { period?: 'month' | 'year'
         {add}
       </View>
       {oneRow ? null : <SectionTabs />}
+      <StarterCard />
     </View>
   );
 }
