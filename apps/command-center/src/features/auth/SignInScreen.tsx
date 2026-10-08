@@ -7,12 +7,13 @@ import { signInWithPassword } from '@/lib/data/authRepository';
 import { safeRedirect } from '@/lib/security/redirects';
 import { useTheme } from '@/theme';
 import { AuthCard, FormMessage } from './AuthCard';
+import { IDLE_MINUTES } from './idle';
 import { useSession } from './sessionStore';
 
 export function SignInScreen() {
   const theme = useTheme();
   const status = useSession((state) => state.status);
-  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
+  const { redirect, reason } = useLocalSearchParams<{ redirect?: string; reason?: string }>();
   const target = safeRedirect(redirect);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +21,9 @@ export function SignInScreen() {
   const [busy, setBusy] = useState(false);
 
   if (status === 'signedIn') return <Redirect href={target as '/dashboard'} />;
+  if (status === 'needsCode') {
+    return <Redirect href={{ pathname: '/verify-code', params: { redirect: target } }} />;
+  }
   if (status === 'preview') {
     return (
       <AuthCard
@@ -39,9 +43,10 @@ export function SignInScreen() {
     setBusy(true);
     setError(null);
     const result = await signInWithPassword(email, password);
-    setBusy(false);
-    if (result.ok) router.replace(target as '/dashboard');
-    else {
+    // On success the session changes and this screen redirects: to the target, or to
+    // the code screen when two-step sign-in is on.
+    if (!result.ok) {
+      setBusy(false);
       setPassword('');
       setError(result.message);
     }
@@ -73,6 +78,9 @@ export function SignInScreen() {
         onSubmitEditing={submit}
       />
       {error ? <FormMessage tone="error">{error}</FormMessage> : null}
+      {!error && reason === 'idle' ? (
+        <FormMessage tone="info">{`You were signed out after ${IDLE_MINUTES} minutes without activity.`}</FormMessage>
+      ) : null}
       <Button label="Sign in" loading={busy} fullWidth onPress={submit} />
       <View style={{ alignItems: 'center', gap: theme.space[1] }}>
         <Link href="/forgot-password">

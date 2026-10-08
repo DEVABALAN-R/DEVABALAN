@@ -6,7 +6,9 @@ import { Screen } from '@/components/layout/Screen';
 import { Badge, Card, CardHeader, CategoryIcon, SegmentedControl, Text } from '@/components/ui';
 import { useUiStore, type ThemePreference } from '@/state/ui';
 import { useTheme, type ColorRoles } from '@/theme';
+import { useSession } from '@/features/auth/sessionStore';
 import { AccountCard } from './AccountCard';
+import { SecurityCard } from './SecurityCard';
 
 const themeSegments = [
   { value: 'system', label: 'System' },
@@ -19,6 +21,7 @@ export function SettingsScreen() {
   const preference = useUiStore((state) => state.themePreference);
   const setPreference = useUiStore((state) => state.setThemePreference);
   const Icon = preference === 'dark' ? Moon : preference === 'light' ? Sun : Monitor;
+  const signedIn = useSession((state) => state.status === 'signedIn');
   return (
     <Screen>
       <PageHeader
@@ -60,8 +63,9 @@ export function SettingsScreen() {
         </BentoCell>
         <BentoCell>
           <AccountCard index={1} />
+          {signedIn ? <SecurityCard index={2} /> : null}
           <Planned
-            index={2}
+            index={3}
             icon={Download}
             tint={4}
             title="Data & privacy"

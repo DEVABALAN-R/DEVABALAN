@@ -1104,7 +1104,7 @@ Each phase is one or more PRs. Each must pass CI and its acceptance criteria bef
 
 ### PHASE 2: Authentication + security foundation
 
-**Status (Oct 2026):** split into steps 2.1–2.4 in [`ROADMAP.md`](ROADMAP.md). Step 2.1 is
+**Status (Oct 2026):** split into steps 2.1–2.4 in [`ROADMAP.md`](ROADMAP.md). Steps 2.2 (migration `202610080004_auth_hardening.sql`) and 2.3 (TOTP two-step sign-in, sign out other devices, idle sign-out; `aal2` RLS deferred to the Phase 3 tables) are done. Step 2.1 is
 implemented: Supabase client with the key guards (`src/lib/data`), session storage
 (`sessionStorage` on web, chunked SecureStore on native), sign-in / forgot / reset screens, the
 dashboard guard (labelled preview mode when no project is configured), `safeRedirect`, and
