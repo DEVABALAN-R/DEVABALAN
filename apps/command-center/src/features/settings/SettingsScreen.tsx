@@ -8,6 +8,7 @@ import { useUiStore, type ThemePreference } from '@/state/ui';
 import { useTheme, type ColorRoles } from '@/theme';
 import { useSession } from '@/features/auth/sessionStore';
 import { AccountCard } from './AccountCard';
+import { DeviceSignInCard } from './DeviceSignInCard';
 import { SecurityCard } from './SecurityCard';
 
 const themeSegments = [
@@ -64,8 +65,9 @@ export function SettingsScreen() {
         <BentoCell>
           <AccountCard index={1} />
           {signedIn ? <SecurityCard index={2} /> : null}
+          {signedIn ? <DeviceSignInCard index={3} /> : null}
           <Planned
-            index={3}
+            index={4}
             icon={Download}
             tint={4}
             title="Data & privacy"

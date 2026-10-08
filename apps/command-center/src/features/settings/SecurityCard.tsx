@@ -4,7 +4,6 @@ import { LogOut, Smartphone } from '@/components/icons';
 import { ConfirmSheet } from '@/components/overlays';
 import { Badge, Button, Card, CardHeader, CategoryIcon, Text } from '@/components/ui';
 import { FormMessage } from '@/features/auth/AuthCard';
-import { IDLE_MINUTES } from '@/features/auth/idle';
 import {
   listTotpFactors,
   removeFactor,
@@ -122,7 +121,7 @@ export function SecurityCard({ index }: { index: number }) {
       <View style={{ gap: theme.space[2], paddingTop: theme.space[2] }}>
         <Text variant="bodyStrong">Other devices</Text>
         <Text color="textSecondary">
-          {`Signed in somewhere you no longer use? End every other session. After ${IDLE_MINUTES} minutes without activity, this app signs you out on its own.`}
+          Signed in somewhere you no longer use? End every other session; this one stays signed in.
         </Text>
         <View style={{ alignSelf: 'flex-start' }}>
           <Button

@@ -5,11 +5,13 @@ import { needsSecondStep } from '@/lib/data/mfaRepository';
 import { isSupabaseConfigured } from '@/lib/data/supabaseClient';
 import { useExpenseStore } from '@/features/expenses/state/expenseStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
+import { useDevicePrefs } from '@/state/devicePrefs';
 import { useSession } from './sessionStore';
 
 /** Keeps `useSession` in step with Supabase Auth for the whole app. */
 export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
+    void useDevicePrefs.getState().hydrate();
     const session = useSession.getState();
     if (!isSupabaseConfigured()) {
       session.setPreview();

@@ -7,6 +7,12 @@ import * as SecureStore from 'expo-secure-store';
  * stored under `key`.
  */
 const CHUNK = 1800;
+
+/** The keystore keeps the session on this device; there is no tab-only mode on native. */
+export const canChooseKeepSignedIn = false;
+export const isKeptSignedIn = () => true;
+export const setKeptSignedIn = (keep: boolean): void => void keep;
+
 const safeKey = (key: string) => key.replace(/[^A-Za-z0-9._-]/g, '_');
 
 async function clearChunks(base: string) {

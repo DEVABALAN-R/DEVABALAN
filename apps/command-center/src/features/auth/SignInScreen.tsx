@@ -7,7 +7,7 @@ import { signInWithPassword } from '@/lib/data/authRepository';
 import { safeRedirect } from '@/lib/security/redirects';
 import { useTheme } from '@/theme';
 import { AuthCard, FormMessage } from './AuthCard';
-import { IDLE_MINUTES } from './idle';
+import { KeepSignedInCheck } from './KeepSignedInCheck';
 import { useSession } from './sessionStore';
 
 export function SignInScreen() {
@@ -77,9 +77,10 @@ export function SignInScreen() {
         maxLength={200}
         onSubmitEditing={submit}
       />
+      <KeepSignedInCheck />
       {error ? <FormMessage tone="error">{error}</FormMessage> : null}
       {!error && reason === 'idle' ? (
-        <FormMessage tone="info">{`You were signed out after ${IDLE_MINUTES} minutes without activity.`}</FormMessage>
+        <FormMessage tone="info">You were signed out after a period without activity.</FormMessage>
       ) : null}
       <Button label="Sign in" loading={busy} fullWidth onPress={submit} />
       <View style={{ alignItems: 'center', gap: theme.space[1] }}>

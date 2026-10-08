@@ -59,7 +59,7 @@ describe('SignInScreen', () => {
   it('explains an idle sign-out', async () => {
     mockParams = { reason: 'idle' };
     await renderWithProviders(<SignInScreen />);
-    expect(screen.getByText('You were signed out after 30 minutes without activity.')).toBeTruthy();
+    expect(screen.getByText('You were signed out after a period without activity.')).toBeTruthy();
   });
 
   it('ignores an unsafe redirect', async () => {
