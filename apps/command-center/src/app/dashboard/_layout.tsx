@@ -2,6 +2,7 @@ import { Redirect, usePathname } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { useSession } from '@/features/auth/sessionStore';
 import { AppShell } from '@/features/shell/AppShell';
+import { CloudGate } from '@/features/sync/CloudGate';
 import { useTheme } from '@/theme';
 
 // Requires a session when Supabase is configured; without a project the app runs as a
@@ -24,5 +25,9 @@ export default function DashboardLayout() {
   if (status === 'needsCode') {
     return <Redirect href={{ pathname: '/verify-code', params: { redirect: pathname } }} />;
   }
-  return <AppShell />;
+  return (
+    <CloudGate>
+      <AppShell />
+    </CloudGate>
+  );
 }

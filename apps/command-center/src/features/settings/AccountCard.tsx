@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { LogOut, Shield } from '@/components/icons';
 import { Badge, Button, Card, CardHeader, CategoryIcon, Text } from '@/components/ui';
 import { useSession } from '@/features/auth/sessionStore';
+import { flushCloudSync } from '@/features/sync/cloudSync';
 import { signOut } from '@/lib/data/authRepository';
 import { useTheme } from '@/theme';
 
@@ -14,6 +15,8 @@ export function AccountCard({ index }: { index: number }) {
   const [busy, setBusy] = useState(false);
   const leave = async () => {
     setBusy(true);
+    // Send any change still waiting before the session ends.
+    await flushCloudSync();
     await signOut();
     useSession.getState().setSignedOut();
     setBusy(false);

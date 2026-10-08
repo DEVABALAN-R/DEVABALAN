@@ -1,6 +1,7 @@
 import { router, usePathname } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, Platform } from 'react-native';
+import { flushCloudSync } from '@/features/sync/cloudSync';
 import { signOut } from '@/lib/data/authRepository';
 import { useDevicePrefs } from '@/state/devicePrefs';
 import { idlePhase, idleTimeoutMs, type IdlePhase } from './idle';
@@ -37,10 +38,15 @@ export function useIdleSignOut() {
       setPhase(next);
       if (next === 'expired' && !ended) {
         ended = true;
-        void signOut().then(() => {
-          useSession.getState().setSignedOut();
-          router.replace({ pathname: '/sign-in', params: { reason: 'idle', redirect: pathname } });
-        });
+        void flushCloudSync()
+          .then(signOut)
+          .then(() => {
+            useSession.getState().setSignedOut();
+            router.replace({
+              pathname: '/sign-in',
+              params: { reason: 'idle', redirect: pathname },
+            });
+          });
       }
     };
     const timer = setInterval(check, CHECK_EVERY_MS);

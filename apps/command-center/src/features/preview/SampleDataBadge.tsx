@@ -1,6 +1,8 @@
 import { View } from 'react-native';
 import { Sparkles } from '@/components/icons';
 import { Text } from '@/components/ui';
+import { SyncBadge } from '@/features/sync/SyncBadge';
+import { isCloudActive, useSyncStatus } from '@/features/sync/syncStatus';
 import { useTheme } from '@/theme';
 import {
   PREVIEW_STORE_DESCRIPTION,
@@ -15,6 +17,9 @@ import {
  */
 export function SampleDataBadge({ editable = false }: { editable?: boolean }) {
   const theme = useTheme();
+  const cloud = useSyncStatus((state) => isCloudActive(state.status));
+  // Signed in: editable screens show the user's own data and its save state instead.
+  if (editable && cloud) return <SyncBadge />;
   return (
     <View
       accessible

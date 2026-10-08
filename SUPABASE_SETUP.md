@@ -57,6 +57,12 @@ Run [`supabase/migrations/202610080005_core_finance.sql`](supabase/migrations/20
 - Changes are recorded in `audit_logs` by column name only.
 - Rollback: [`supabase/rollbacks/202610080005_core_finance_down.sql`](supabase/rollbacks/202610080005_core_finance_down.sql) drops these tables **with their data**.
 
+## Loading and saving (migration 0006, Phase 3.2)
+
+Run [`supabase/migrations/202610080006_ledger_sync.sql`](supabase/migrations/202610080006_ledger_sync.sql) after 0005. It adds `load_ledger()` and `sync_ledger(jsonb)`, which the Command Center calls when you are signed in. Both run as you (`security invoker`), so Row Level Security, two-step sign-in and every rule from 0005 still apply: they only let the app read everything in one request and save a batch of changes all at once (all or nothing).
+
+Once it is applied and the app is deployed with the Supabase settings, signing in shows **your** data (empty at first) instead of the sample, and changes are saved automatically: the badge next to the page title reads **Saved**, **Saving…** or **Offline · will retry**. Receipt photos stay on the device until private storage arrives (Phase 5).
+
 ## Two-step sign-in (Command Center, Phase 2.3)
 
 Turn it on in the app under **Settings → Two-step sign-in**: scan the QR code with an authenticator app (or type the setup key), then enter the first code. From then on, signing in asks for your password and then the 6-digit code. Supabase signs out your other sessions when it is turned on.

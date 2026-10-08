@@ -5,6 +5,7 @@ import { needsSecondStep } from '@/lib/data/mfaRepository';
 import { isSupabaseConfigured } from '@/lib/data/supabaseClient';
 import { useExpenseStore } from '@/features/expenses/state/expenseStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
+import { startCloudSync, stopCloudSync } from '@/features/sync/cloudSync';
 import { useDevicePrefs } from '@/state/devicePrefs';
 import { useSession } from './sessionStore';
 
@@ -39,11 +40,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         signedIn(next.user.email ?? null);
       } else {
         latest += 1;
-        // Signed out (here, elsewhere, or the session expired): drop anything entered.
+        // Signed out (here, elsewhere, or the session expired): stop syncing first, so
+        // clearing the stores is never sent as a deletion, then drop anything entered.
+        stopCloudSync();
         useExpenseStore.getState().resetPreview();
         useNotesStore.getState().resetPreview();
         session.setSignedOut();
       }
+    });
+    // The signed-in user's real data replaces the preview while they are signed in.
+    const unsubscribeSync = useSession.subscribe((state, previous) => {
+      if (state.status === 'signedIn' && previous.status !== 'signedIn') void startCloudSync();
+      if (state.status !== 'signedIn' && previous.status === 'signedIn') stopCloudSync();
     });
     // Native apps refresh tokens only while in the foreground (Supabase guidance for RN).
     const appState =
@@ -53,6 +61,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
       unsubscribe();
+      unsubscribeSync();
       appState?.remove();
     };
   }, []);
