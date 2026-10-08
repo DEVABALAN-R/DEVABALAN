@@ -2,8 +2,7 @@
  * Supabase connection settings, checked before any client is created.
  *
  * Only the project URL and the publishable key may reach the app: both are public by
- * design and Row Level Security protects the data. These guards (ported from the Vite
- * app) refuse anything that would hand the browser server-level access.
+ * design and Row Level Security protects the data. These guards refuse anything that would hand the browser server-level access.
  */
 export type SupabaseConfig = { url: string; key: string };
 

@@ -1,6 +1,6 @@
 /**
  * Web session storage for Supabase Auth. By default the tab's sessionStorage, so the
- * refreshable session ends with the tab (as in the Vite app). On a device the owner
+ * refreshable session ends with the tab. On a device the owner
  * marks as their own ("Keep me signed in"), localStorage instead, so it survives
  * closing the browser; two-step sign-in still guards every new device. Neither
  * replaces Row Level Security. Storage can be unavailable (private windows, blocked

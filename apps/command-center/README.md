@@ -1,30 +1,29 @@
 # Command Center (Expo)
 
-The new cross-platform app (iOS, Android, web) that will replace the Vite app at the
-repository root. It is being built in phases — see
-[`docs/architecture/MODERNIZATION_PLAN.md`](../../docs/architecture/MODERNIZATION_PLAN.md).
+The cross-platform app (iOS, Android, web) for Devabalan's finances and notes, built in phases.
+The current phase order is in [`ROADMAP.md`](../../docs/architecture/ROADMAP.md); the original
+design is in [`MODERNIZATION_PLAN.md`](../../docs/architecture/MODERNIZATION_PLAN.md).
 
-**Status: Phase 1, the 2026 UI redesign, the expense manager, and Phase 2 (sign-in, database
-auth hardening, two-step sign-in).** The current phase order is in
-[`ROADMAP.md`](../../docs/architecture/ROADMAP.md).
+**Status: Phases 1–2 and 3.1–3.2 are done** (design system, sign-in with two-step codes, the
+expense manager and Notes saved to Supabase). Next: Phase 3.3, importing the older data from
+`user_workspaces`.
 
 - **Expense manager** (Expenses › Transactions, Stats, Budget, Categories, plus Accounts and the
-  add/edit sheet) works end to end against an **in-memory preview store** seeded with
-  labelled sample data. You can add, edit and delete entries, categories, budgets and accounts.
-  Every change is lost on reload, and a "Preview · not saved" badge says so. Flows and rules:
-  [`EXPENSE_MANAGER_FLOW.md`](../../docs/architecture/EXPENSE_MANAGER_FLOW.md).
+  add/edit sheet): add, edit and delete entries, categories, budgets and accounts. Flows and
+  rules: [`EXPENSE_MANAGER_FLOW.md`](../../docs/architecture/EXPENSE_MANAGER_FLOW.md).
 - **People and splits:** split an expense with friends; Stats and budgets count your share, and
   Expenses › People tracks who owes you and records repayments. Notes are suggested as you type,
-  and entries can carry a receipt photo (kept in memory in the preview).
+  and entries can carry a receipt photo (kept on the device for now).
 - **Notes** (Google Keep style): text notes and checklists with colours, pins, labels, archive
-  and search, on the same preview footing.
+  and search.
 - **Overview** reads the same expense ledger. Mutual funds and Stocks are designs driven by
   static sample data (fictional names, "Sample data · design preview" badge).
 - Goals, Insights and Reports are labelled placeholders.
 
-Signed in (with migrations 0005 and 0006 applied), the expense manager and Notes load and
-save **your own** data in Supabase (Phase 3.2); the preview build keeps the labelled sample.
-Importing from the existing app is Phase 3.3.
+**Signed in** (migrations 0005 and 0006 applied), the expense manager and Notes load and save
+**your own** data, and the badge by the page title reads Saved / Saving… / Offline · will retry.
+**Without the Supabase settings** the app runs as a labelled preview on sample data, and a
+"Preview · not saved" badge says every change is lost on reload.
 
 ## Sign-in (Phase 2)
 
@@ -32,14 +31,43 @@ Without Supabase settings the app runs as a labelled **preview** and asks for no
 them, every `/dashboard` page requires a session (the guard is convenience; Row Level Security
 is the real boundary).
 
-1. Copy `.env.example` to `.env.local` and fill in the project URL and the **publishable** key
-   (Supabase → Project Settings → API). The app refuses `sb_secret_` and service-role keys.
-2. In Supabase → Authentication → URL configuration, add the app's URLs to the redirect
-   allowlist, for example `https://<your-app>.vercel.app/reset-password` and
-   `http://localhost:8081/reset-password`.
-3. On Vercel, add the same two `EXPO_PUBLIC_` variables to the project that builds
-   `apps/command-center`, then redeploy. Locally, restart with `npx expo start --clear`:
-   public variables are inlined at build time.
+### The two values
+
+| Variable (exact name)                  | Value                                                                                                                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EXPO_PUBLIC_SUPABASE_URL`             | The **Project URL**, `https://<project-ref>.supabase.co`, from Supabase → Project Settings → Data API. Nothing after `.supabase.co` (no `/rest/v1`). Not the dashboard address. |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The **publishable** key (`sb_publishable_…`) from Supabase → Project Settings → API Keys; on older projects, the **anon public** key.                                           |
+
+Never use the **secret** (`sb_secret_…`) or **service_role** key: the app refuses both. Other names
+(for example `VITE_SUPABASE_*` or `SUPABASE_ANON_KEY`) are ignored.
+
+### On Vercel (the live site)
+
+1. Open the Vercel project that builds `apps/command-center` (named
+   **devabalan-command-center**; it serves `devabalan-command-center.vercel.app`).
+2. **Settings → Environment Variables**: add both variables with the exact names above,
+   **Environments: All Environments** (at least Production and Preview). Leave **Sensitive**
+   off: Vercel refuses it for public (`EXPO_PUBLIC_`) variables, and these values are public by
+   design.
+3. **Deployments** → the top **Production** deployment → **⋯ → Redeploy**, with **Use existing
+   build cache unticked**. The values are built into the bundle, so a deployment made before
+   they were added keeps running in preview.
+4. Open the site: it should show **Sign in**. If it still shows the dashboard with
+   "Preview · not saved", the build did not receive the variables: re-check the project, the
+   names and the environments, then redeploy again.
+
+### Locally
+
+Copy `.env.example` to `.env.local`, fill in the same two values, and restart with
+`npx expo start --clear` (the values are read at build time).
+
+### Supabase redirect URLs
+
+In Supabase → Authentication → URL configuration, add the app's URLs to the redirect allowlist,
+for example `https://devabalan-command-center.vercel.app/reset-password` and
+`http://localhost:8081/reset-password`.
+
+### What you get
 
 - **Two-step sign-in** (TOTP) is set up in Settings; after the password, `/verify-code` asks for
   the 6-digit code. **Sign out other devices** is in the same card.
@@ -83,13 +111,15 @@ src/
   components/          ui · layout · navigation · feedback · overlays · icons.ts
   components/charts/   BarChart, AreaChart, DonutChart, PieChart (callouts), Sparkline
                        (react-native-svg, no extra deps)
-  features/            shell (header, nav, rail, tab bar), overview, expenses, mutual-funds,
-                       stocks, settings, dev-gallery
-  features/expenses/   state/ (preview store, seed, entry-form state) · entry/ (add/edit sheet)
+  features/            auth, shell (header, nav, rail, tab bar), overview, expenses, notes,
+                       mutual-funds, stocks, settings, sync, preview, dev-gallery
+  features/expenses/   state/ (ledger store, seed, entry-form state) · entry/ (add/edit sheet)
                        · components/ (Transactions) · stats/ · budget/ · categories/ · accounts/
   lib/domain/expenses/ pure, tested money rules: balances, totals, breakdowns, budgets,
                        validation (no React, no storage)
-  features/preview/    SAMPLE DATA for the design preview — delete when real data lands
+  features/preview/    SAMPLE DATA for preview mode and the Mutual funds / Stocks designs
+  features/sync/       cloud load/save, save status badge, starter setup
+  lib/data/            the only code that talks to Supabase (auth, MFA, RPCs, ledger)
   hooks/               useBreakpoint, useInteractionState
   lib/formatting/      display-only money/percent formatting (integer paise in)
   state/               small Zustand UI store (no financial data)

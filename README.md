@@ -1,51 +1,66 @@
 # Devabalan Command Center
 
-Personal finance and productivity app with a public portfolio: expenses, accounts, budgets,
-people and splits, notes, mutual funds and stocks. Amounts are in Indian rupees (INR).
+Personal finance and productivity app: expenses, accounts, budgets, people and splits, notes,
+mutual funds and stocks. Amounts are in Indian rupees (INR). One Expo codebase for web, iOS and
+Android, backed by Supabase.
 
-The repository holds two apps while the new one takes over:
-
-| App                                          | Where                                                    | Status                                                                                                          |
-| -------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Command Center** (Expo: web, iOS, Android) | [`apps/command-center/`](apps/command-center/README.md)  | The new app. Sign-in, two-step sign-in and the full expense manager are built; your data is saved from Phase 3. |
-| **Legacy dashboard** (Vite + React)          | repository root (`src/`, `index.html`, `vite.config.ts`) | Still the app that **saves** your finances and portfolio. Kept until Phase 3 moves the data, then retired.      |
-
-The plan and the current phase order: [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md)
-(detail in [`MODERNIZATION_PLAN.md`](docs/architecture/MODERNIZATION_PLAN.md)).
+Live web app: **devabalan-command-center.vercel.app**
 
 ## Repository map
 
 ```text
-apps/command-center/   New Expo app (its README covers running, checks and sign-in setup)
-supabase/migrations/   Database history: tables, RPCs, RLS, auth hardening (applied in order)
-supabase/rollbacks/    How to undo a migration
-supabase/tests/        SQL tests run in CI against a fresh Postgres
-docs/architecture/     Roadmap, modernization plan, expense manager flows
-SUPABASE_SETUP.md      Supabase setup, sign-up allowlist, two-step sign-in, security notes
-src/, public/, ...     Legacy Vite app (until cutover)
+apps/command-center/   The app (Expo Router, React Native Web). Its README covers running,
+                       checks, deployment and connecting to Supabase
+supabase/migrations/   Finance and notes tables (0005) and load/save functions (0006)
+docs/architecture/     Roadmap, the original modernization plan, expense manager flows
+SUPABASE_SETUP.md      Supabase side: hooks, two-step sign-in, access management, security
+.github/workflows/     CI: typecheck, lint, format, tests, web build, bundle size
 ```
 
-## Legacy dashboard: run and deploy
+## Quick start
 
-Requirements: Node.js 22 (see `.nvmrc`) and npm. It connects to the same hosted Supabase project.
+Requirements: Node.js 22 (see `.nvmrc`) and npm.
 
 ```bash
-cp .env.example .env.local   # then fill in the project URL and the publishable key
+cd apps/command-center
+cp .env.example .env.local   # fill in the Supabase Project URL and publishable key
 npm ci
-npm run dev                  # local development
-npm run typecheck && npm run build   # production bundle in dist/
+npm run web                  # or: npm run ios / npm run android
 ```
 
-On Vercel, set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` on the project that builds
-the repository root. Routes: `/` public portfolio, `/login`, `/dashboard/...` private (finance,
-accounts, categories, mutual funds, portfolio editor). Data lives in one `user_workspaces` row per
-user, protected by Row Level Security and written through revision-checked RPCs.
+Without the two Supabase values the app runs as a labelled **preview** with sample data and no
+sign-in.
+
+## Deploy (Vercel)
+
+The Vercel project **devabalan-command-center** builds `apps/command-center` (Root Directory)
+using its `vercel.json` (build `npm run build:web`, output `dist`, security headers).
+
+1. Settings → Environment Variables: `EXPO_PUBLIC_SUPABASE_URL` and
+   `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for **All Environments**.
+2. Redeploy with **Use existing build cache** unticked whenever they change (they are built into
+   the bundle).
+3. The site should open on **Sign in**. If it shows "Preview · not saved", the build did not get
+   the variables.
+
+Full steps: [`apps/command-center/README.md` → Sign-in](apps/command-center/README.md#sign-in-phase-2).
+Supabase side: [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md).
+
+## Status
+
+Done: sign-in with two-step codes, the expense manager and Notes saved to Supabase. Next: import
+the older data from `user_workspaces` (Phase 3.3), then the Overview on real data. Mutual funds
+and Stocks are design previews on labelled sample data. Phase order:
+[`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md).
+
+The earlier Vite app was removed in October 2026; it is in Git history (last commit before
+removal: `efc04a9`). Its saved data is still in Supabase until Phase 3.3 imports it.
 
 ## Security
 
-- Apps use only the Supabase **publishable** key. Never put a secret or service-role key, a
-  database password or any other secret in a `VITE_` or `EXPO_PUBLIC_` variable, or commit one.
+- The app uses only the Supabase **publishable** key. Never put a secret or service-role key, a
+  database password or any other secret in an `EXPO_PUBLIC_` variable, or commit one.
 - Keep `.env.local` private (ignored by Git; `.env.example` holds placeholders only).
 - New accounts are blocked server-side except for allowlisted emails (see `SUPABASE_SETUP.md`).
-- Row Level Security and owner-checked RPCs are the security boundary; screens and route guards
+- Row Level Security and the database checks are the security boundary; screens and route guards
   are convenience only.
