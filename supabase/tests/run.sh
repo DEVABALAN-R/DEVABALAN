@@ -10,6 +10,7 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/.." && pwd)"
 db="${TEST_DB:-devabalan_migrations_test}"
+export PGOPTIONS="${PGOPTIONS:-} -c client_min_messages=warning"
 psql_db() { psql -X -q -v ON_ERROR_STOP=1 -d "$db" "$@"; }
 
 psql -X -q -v ON_ERROR_STOP=1 -d postgres -c "drop database if exists $db" -c "create database $db"
@@ -52,6 +53,23 @@ psql_db -c "do \$\$ begin
 end \$\$;"
 psql_db -f "$root/migrations/202610080004_auth_hardening.sql"
 psql_db -f "$here/202610080004_auth_hardening.test.sql"
+
+echo "→ 0005 core finance (twice: idempotent)"
+psql_db -f "$root/migrations/202610080005_core_finance.sql" >/dev/null
+psql_db -f "$root/migrations/202610080005_core_finance.sql" >/dev/null
+echo "→ Tests (0004 still holds, 0005)"
+psql_db -f "$here/202610080004_auth_hardening.test.sql"
+psql_db -f "$here/202610080005_core_finance.test.sql"
+echo "→ 0005 rollback, then re-apply"
+psql_db -f "$root/rollbacks/202610080005_core_finance_down.sql"
+psql_db -c "do \$\$ begin
+  if to_regclass('public.transactions') is not null or to_regclass('public.notes') is not null
+    or to_regclass('public.profiles') is null then
+    raise exception 'FAIL: 0005 rollback should drop only its own objects';
+  end if;
+end \$\$;"
+psql_db -f "$root/migrations/202610080005_core_finance.sql" >/dev/null
+psql_db -f "$here/202610080005_core_finance.test.sql"
 
 psql -X -q -d postgres -c "drop database if exists $db"
 echo "✓ Database migration tests passed"
