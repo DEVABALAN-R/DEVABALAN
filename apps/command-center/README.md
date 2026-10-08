@@ -34,10 +34,10 @@ is the real boundary).
 
 ### The two values
 
-| Variable (exact name)                  | Value                                                                                                                                                  |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Variable (exact name)                  | Value                                                                                                                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `EXPO_PUBLIC_SUPABASE_URL`             | The **Project URL**, `https://<project-ref>.supabase.co`, from Supabase → Project Settings → Data API. Nothing after `.supabase.co` (no `/rest/v1`). Not the dashboard address. |
-| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The **publishable** key (`sb_publishable_…`) from Supabase → Project Settings → API Keys; on older projects, the **anon public** key.                    |
+| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | The **publishable** key (`sb_publishable_…`) from Supabase → Project Settings → API Keys; on older projects, the **anon public** key.                                           |
 
 Never use the **secret** (`sb_secret_…`) or **service_role** key: the app refuses both. The old
 app's `VITE_SUPABASE_*` names do not work here.
