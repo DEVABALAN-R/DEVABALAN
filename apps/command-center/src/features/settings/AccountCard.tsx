@@ -7,7 +7,7 @@ import { useSession } from '@/features/auth/sessionStore';
 import { signOut } from '@/lib/data/authRepository';
 import { useTheme } from '@/theme';
 
-/** Who is signed in, sign out, and what security features are still to come. */
+/** Who is signed in, and signing out of this device. */
 export function AccountCard({ index }: { index: number }) {
   const theme = useTheme();
   const { status, email } = useSession();
@@ -51,10 +51,6 @@ export function AccountCard({ index }: { index: number }) {
           </Text>
         </>
       )}
-      <Badge label="Planned · Phase 2.3" tone="neutral" />
-      <Text color="textSecondary">
-        Two-factor sign-in (TOTP), active sessions and signing out other devices.
-      </Text>
     </Card>
   );
 }

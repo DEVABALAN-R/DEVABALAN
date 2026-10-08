@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { act, fireEvent, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { renderWithProviders } from '@/test/render';
 import {
@@ -15,9 +15,11 @@ let mockParams: Record<string, string> = {};
 jest.mock('expo-router', () => ({
   router: { replace: jest.fn() },
   useLocalSearchParams: () => mockParams,
-  Redirect: ({ href }: { href: string }) => {
+  Redirect: ({ href }: { href: string | { pathname: string; params: object } }) => {
     const { Text } = jest.requireActual('react-native');
-    return <Text>{`redirect:${href}`}</Text>;
+    const target =
+      typeof href === 'string' ? href : `${href.pathname}?${JSON.stringify(href.params)}`;
+    return <Text>{`redirect:${target}`}</Text>;
   },
   Link: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -42,7 +44,22 @@ describe('SignInScreen', () => {
     await fireEvent.changeText(screen.getByLabelText('Password'), 'correct horse');
     await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
     expect(signInWithPassword).toHaveBeenCalledWith('me@example.com', 'correct horse');
-    expect(router.replace).toHaveBeenCalledWith('/dashboard/expenses');
+    // The session listener marks the user signed in; the screen then redirects.
+    await act(() => useSession.getState().setSignedIn('me@example.com'));
+    expect(screen.getByText('redirect:/dashboard/expenses')).toBeTruthy();
+  });
+
+  it('asks for the 6-digit code when two-step sign-in is on', async () => {
+    mockParams = { redirect: '/dashboard/notes' };
+    useSession.setState({ status: 'needsCode', email: 'me@example.com' });
+    await renderWithProviders(<SignInScreen />);
+    expect(screen.getByText('redirect:/verify-code?{"redirect":"/dashboard/notes"}')).toBeTruthy();
+  });
+
+  it('explains an idle sign-out', async () => {
+    mockParams = { reason: 'idle' };
+    await renderWithProviders(<SignInScreen />);
+    expect(screen.getByText('You were signed out after a period without activity.')).toBeTruthy();
   });
 
   it('ignores an unsafe redirect', async () => {
@@ -52,7 +69,8 @@ describe('SignInScreen', () => {
     await fireEvent.changeText(screen.getByLabelText('Email'), 'me@example.com');
     await fireEvent.changeText(screen.getByLabelText('Password'), 'pw');
     await fireEvent.press(screen.getByRole('button', { name: 'Sign in' }));
-    expect(router.replace).toHaveBeenCalledWith('/dashboard');
+    await act(() => useSession.getState().setSignedIn('me@example.com'));
+    expect(screen.getByText('redirect:/dashboard')).toBeTruthy();
   });
 
   it('shows the generic error and clears the password on failure', async () => {

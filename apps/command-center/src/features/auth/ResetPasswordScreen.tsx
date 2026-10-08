@@ -1,4 +1,4 @@
-import { Link, router } from 'expo-router';
+import { Link, Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Button, Text } from '@/components/ui';
@@ -28,6 +28,9 @@ export function ResetPasswordScreen() {
         <ActivityIndicator color={theme.colors.textSecondary} accessibilityLabel="Loading" />
       </AuthCard>
     );
+  }
+  if (status === 'needsCode' && recovery) {
+    return <Redirect href={{ pathname: '/verify-code', params: { then: 'reset' } }} />;
   }
   if (status !== 'signedIn' || !recovery) {
     return (

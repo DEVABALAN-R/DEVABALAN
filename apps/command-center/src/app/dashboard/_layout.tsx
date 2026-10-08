@@ -21,5 +21,8 @@ export default function DashboardLayout() {
   if (status === 'signedOut') {
     return <Redirect href={{ pathname: '/sign-in', params: { redirect: pathname } }} />;
   }
+  if (status === 'needsCode') {
+    return <Redirect href={{ pathname: '/verify-code', params: { redirect: pathname } }} />;
+  }
   return <AppShell />;
 }

@@ -47,6 +47,15 @@ insert into internal.portfolio_owners (user_id) values ('<auth user id>');
 
 **Rollback.** First remove the hook under Authentication → Hooks, then run [`supabase/rollbacks/202610080004_auth_hardening_down.sql`](supabase/rollbacks/202610080004_auth_hardening_down.sql). It restores the earlier RPCs and drops the new tables **with their data** (export `audit_logs` first if you need it). Workspace and portfolio data are not touched.
 
+## Two-step sign-in (Command Center, Phase 2.3)
+
+Turn it on in the app under **Settings → Two-step sign-in**: scan the QR code with an authenticator app (or type the setup key), then enter the first code. From then on, signing in asks for your password and then the 6-digit code. Supabase signs out your other sessions when it is turned on.
+
+- **Day-to-day use:** tick **Keep me signed in on this device** at sign-in on your own phone or computer. The session then survives closing the browser, so the code is asked for only when you sign in again (on a new device, after signing out, or when the session expires). Choose the automatic sign-out under **Settings → This device**.
+- TOTP must be enabled in Supabase under **Authentication → Multi-Factor** (on by default).
+- Keep access to the authenticator app. If you lose it, the factor can be removed in **Authentication → Users → (your user) → Multi-factor authentication**, then set up again.
+- The legacy Vite app does not ask for the code. The database does not yet require two-step sign-in (`aal2`): that arrives with the Phase 3 tables, so that the legacy app keeps working until cutover.
+
 ## Existing browser data
 
 When an authenticated user has no cloud workspace and this browser has older local data, the app stops and asks whether to import it or start empty. It never silently assigns local data to an account. Local finance records are removed from browser storage only after the chosen cloud write succeeds. If the write fails, the local copy remains available for retry.
