@@ -17,13 +17,12 @@ The plan and the current phase order: [`docs/architecture/ROADMAP.md`](docs/arch
 
 ```text
 apps/command-center/   New Expo app (its README covers running, checks and sign-in setup)
-supabase/migrations/   Database history: tables, RPCs, RLS, auth hardening (applied in order)
-supabase/rollbacks/    How to undo a migration
-supabase/tests/        SQL tests run in CI against a fresh Postgres
 docs/architecture/     Roadmap, modernization plan, expense manager flows
 SUPABASE_SETUP.md      Supabase setup, sign-up allowlist, two-step sign-in, security notes
 src/, public/, ...     Legacy Vite app (until cutover)
 ```
+
+Database migrations were applied and then removed from the repository (Oct 2026); they remain in Git history at commit `224176d`. See `SUPABASE_SETUP.md`.
 
 ## Legacy dashboard: run and deploy
 

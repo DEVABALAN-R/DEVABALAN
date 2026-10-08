@@ -1,5 +1,7 @@
 # Supabase backend setup
 
+> **Note:** all migrations below have been applied to the project. The SQL files were removed from the repository in October 2026 after being applied; they are in Git history at commit `224176d` (`supabase/migrations`, `supabase/rollbacks`, `supabase/tests`).
+
 ## Current implementation
 
 The dashboard authenticates with Supabase email/password Auth. Transactions, accounts, and categories remain in a private per-user `user_workspaces` JSONB snapshot for compatibility. Revision-checked writes prevent silent last-write-wins overwrites: independent record changes merge automatically, while conflicting edits to the same record stop and offer a local export or cloud reload. Portfolio content is stored separately in `public_portfolios`; only published profiles are readable without signing in, and saving requires the owner session.
@@ -7,11 +9,11 @@ The dashboard authenticates with Supabase email/password Auth. Transactions, acc
 ## One-time project setup
 
 1. In Supabase, confirm the project URL and publishable key match `.env.local`. `.env.local` is ignored by Git. The browser publishable key is expected to be public; never put a service-role or secret key in a `VITE_` variable.
-2. Open **SQL Editor** and run [`supabase/migrations/202610040001_private_workspace.sql`](supabase/migrations/202610040001_private_workspace.sql) if it has not already been applied.
-3. Then run [`supabase/migrations/202610040002_conflict_safe_workspace.sql`](supabase/migrations/202610040002_conflict_safe_workspace.sql). This is additive: it preserves the existing workspace row and finance records, adds a revision, routes writes through an owner-checked RPC, creates the published portfolio table, and copies the existing portfolio JSON into it.
-4. Run [`supabase/migrations/202610040003_mutual_funds_workspace.sql`](supabase/migrations/202610040003_mutual_funds_workspace.sql) to add the per-user mutual-fund and purchase collections. Apply migrations in numeric order before deploying a version of the app that uses mutual funds.
+2. Open **SQL Editor** and run `202610040001_private_workspace.sql` if it has not already been applied.
+3. Then run `202610040002_conflict_safe_workspace.sql`. This is additive: it preserves the existing workspace row and finance records, adds a revision, routes writes through an owner-checked RPC, creates the published portfolio table, and copies the existing portfolio JSON into it.
+4. Run `202610040003_mutual_funds_workspace.sql` to add the per-user mutual-fund and purchase collections. Apply migrations in numeric order before deploying a version of the app that uses mutual funds.
 5. Create your account under **Authentication → Users**. For this personal app, turn off public sign-ups after creating the owner account. Do not expose an admin/service key in the app to create users.
-6. Run [`supabase/migrations/202610080004_auth_hardening.sql`](supabase/migrations/202610080004_auth_hardening.sql) (Phase 2.2, see [Auth hardening](#auth-hardening-migration-0004) below), then enable the sign-up hook:
+6. Run `202610080004_auth_hardening.sql` (Phase 2.2, see [Auth hardening](#auth-hardening-migration-0004) below), then enable the sign-up hook:
    **Authentication → Hooks → Before User Created → Postgres → schema `internal`, function `before_user_created`**.
 7. Configure the Supabase Auth site URL and allowed redirect URLs for localhost during development and your exact production origin after deployment.
 8. Restart Vite after changing `.env.local`:
@@ -43,23 +45,23 @@ delete from internal.auth_allowlist where email = 'person@example.com';
 insert into internal.portfolio_owners (user_id) values ('<auth user id>');
 ```
 
-**Tests.** `supabase/tests/run.sh` applies every migration to a fresh Postgres with a small stand-in for Supabase's `auth` schema and roles. It then runs the SQL tests as the `anon`, `authenticated` and `supabase_auth_admin` roles, and checks that the rollback restores the previous state and the migration re-applies. CI runs it on every pull request.
+**Tests.** The SQL tests that checked these rules (run in CI against a fresh Postgres) were removed with the files; see the commit above.
 
-**Rollback.** First remove the hook under Authentication → Hooks, then run [`supabase/rollbacks/202610080004_auth_hardening_down.sql`](supabase/rollbacks/202610080004_auth_hardening_down.sql). It restores the earlier RPCs and drops the new tables **with their data** (export `audit_logs` first if you need it). Workspace and portfolio data are not touched.
+**Rollback.** First remove the hook under Authentication → Hooks, then run `202610080004_auth_hardening_down.sql`. It restores the earlier RPCs and drops the new tables **with their data** (export `audit_logs` first if you need it). Workspace and portfolio data are not touched.
 
 ## Finance and notes tables (migration 0005, Phase 3.1)
 
-Run [`supabase/migrations/202610080005_core_finance.sql`](supabase/migrations/202610080005_core_finance.sql) after 0004. It creates `accounts`, `categories`, `people`, `transactions`, `transaction_splits`, `repayment_settles` and `notes` for the Command Center. Nothing uses them until Phase 3.2 connects the app, and the legacy app keeps using `user_workspaces`.
+Run `202610080005_core_finance.sql` after 0004. It creates `accounts`, `categories`, `people`, `transactions`, `transaction_splits`, `repayment_settles` and `notes` for the Command Center. Nothing uses them until Phase 3.2 connects the app, and the legacy app keeps using `user_workspaces`.
 
 - Every row belongs to the signed-in user; others cannot read, change or link to it (RLS plus composite foreign keys).
 - Accounts with two-step sign-in turned on must enter the code before these tables open (`aal2`, enforced by the database).
 - The rules the app checks (amounts, transfer accounts, category types, split totals, note sizes) are also enforced by the database.
 - Changes are recorded in `audit_logs` by column name only.
-- Rollback: [`supabase/rollbacks/202610080005_core_finance_down.sql`](supabase/rollbacks/202610080005_core_finance_down.sql) drops these tables **with their data**.
+- Rollback: `202610080005_core_finance_down.sql` drops these tables **with their data**.
 
 ## Loading and saving (migration 0006, Phase 3.2)
 
-Run [`supabase/migrations/202610080006_ledger_sync.sql`](supabase/migrations/202610080006_ledger_sync.sql) after 0005. It adds `load_ledger()` and `sync_ledger(jsonb)`, which the Command Center calls when you are signed in. Both run as you (`security invoker`), so Row Level Security, two-step sign-in and every rule from 0005 still apply: they only let the app read everything in one request and save a batch of changes all at once (all or nothing).
+Run `202610080006_ledger_sync.sql` after 0005. It adds `load_ledger()` and `sync_ledger(jsonb)`, which the Command Center calls when you are signed in. Both run as you (`security invoker`), so Row Level Security, two-step sign-in and every rule from 0005 still apply: they only let the app read everything in one request and save a batch of changes all at once (all or nothing).
 
 Once it is applied and the app is deployed with the Supabase settings, signing in shows **your** data (empty at first) instead of the sample, and changes are saved automatically: the badge next to the page title reads **Saved**, **Saving…** or **Offline · will retry**. Receipt photos stay on the device until private storage arrives (Phase 5).
 
