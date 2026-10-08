@@ -67,12 +67,16 @@ export function describeTransaction(
     : sub && parent
       ? `${parent.name} · ${account}`
       : account;
-  const names = (transaction.splits ?? [])
-    .map((split) => lookup.person(split.personId)?.name ?? 'someone')
-    .join(', ');
+  const { open, paid } = splitNames(transaction, lookup);
+  const people = [
+    open.length ? `split with ${open.join(', ')}` : '',
+    paid.length ? `${paid.join(', ')} paid` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
   // A split expense still shows what left the account; the caption says your share.
-  const caption = names
-    ? `${base} · split with ${names} · your share ${formatEntry(ownShare(transaction))}`
+  const caption = people
+    ? `${base} · ${people} · your share ${formatEntry(ownShare(transaction))}`
     : base;
   return {
     icon: iconFor(parent?.icon ?? 'other'),
@@ -83,4 +87,19 @@ export function describeTransaction(
     signed: true,
     tone: transaction.kind,
   };
+}
+
+/** Names of the people on a split expense: those who still owe, and those who paid back. */
+export function splitNames(
+  transaction: Transaction,
+  lookup: Lookup,
+): { open: string[]; paid: string[] } {
+  const open: string[] = [];
+  const paid: string[] = [];
+  for (const split of transaction.splits ?? []) {
+    const name = lookup.person(split.personId)?.name ?? 'someone';
+    const status = lookup.share(transaction.id, split.personId);
+    (status && status.remaining === 0 ? paid : open).push(name);
+  }
+  return { open, paid };
 }

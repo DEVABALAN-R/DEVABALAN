@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { X } from '@/components/icons';
-import { Button, Text } from '@/components/ui';
+import { Badge, Button, Text } from '@/components/ui';
 import { useTheme } from '@/theme';
 import { TextField } from '../components/TextField';
 import { formatEntry } from '../format';
@@ -12,20 +12,30 @@ import { EntryInput } from './EntryInput';
 export function ShareInput({
   name,
   value,
+  paid,
   onChange,
   onRemove,
 }: {
   name: string;
   value: string;
+  /** Already paid back on this share, if any. */
+  paid?: number;
   onChange: (text: string) => void;
   onRemove?: () => void;
 }) {
   const theme = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
-      <Text variant="label" style={{ width: 84 }} numberOfLines={1}>
-        {name}
-      </Text>
+      <View style={{ width: 84 }}>
+        <Text variant="label" numberOfLines={1}>
+          {name}
+        </Text>
+        {paid ? (
+          <Text variant="caption" color="textTertiary" numberOfLines={1}>
+            {`${formatEntry(paid)} paid`}
+          </Text>
+        ) : null}
+      </View>
       <View style={{ flex: 1 }}>
         <EntryInput
           money
@@ -51,15 +61,49 @@ export function ShareInput({
   );
 }
 
+/** A share that has been paid back in full: struck out, not editable here. */
+export function PaidShare({ name, amount }: { name: string; amount: number }) {
+  const theme = useTheme();
+  return (
+    <View
+      accessibilityLabel={`${name}, ${formatEntry(amount)}, paid`}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2], minHeight: 36 }}
+    >
+      <Text
+        variant="label"
+        color="textTertiary"
+        numberOfLines={1}
+        style={{ width: 84, textDecorationLine: 'line-through' }}
+      >
+        {name}
+      </Text>
+      <Text
+        variant="label"
+        color="textTertiary"
+        numeric
+        style={{ flex: 1, textDecorationLine: 'line-through' }}
+      >
+        {formatEntry(amount)}
+      </Text>
+      <View style={{ alignSelf: 'center' }}>
+        <Badge label="Paid" tone="success" />
+      </View>
+    </View>
+  );
+}
+
 /** Your share in the equal modes; in Custom, whether everyone's shares add up to the amount. */
 export function SplitStatus({
   amount,
   others,
+  repaid = 0,
   mine,
   onRestToMe,
 }: {
   amount: number;
   others: number;
+  /** Already paid back on these shares. */
+  repaid?: number;
   mine: number | null;
   onRestToMe: () => void;
 }) {
@@ -67,7 +111,7 @@ export function SplitStatus({
   if (mine === null) {
     return (
       <Text variant="label" color="textSecondary">
-        {`Your share ${formatEntry(Math.max(0, amount - others))} · they owe you ${formatEntry(others)}`}
+        {`Your share ${formatEntry(Math.max(0, amount - others))} · they owe you ${formatEntry(Math.max(0, others - repaid))}`}
       </Text>
     );
   }
@@ -75,7 +119,7 @@ export function SplitStatus({
   if (gap === 0) {
     return (
       <Text variant="label" color="success">
-        {`Adds up to ${formatEntry(amount)} · they owe you ${formatEntry(others)}`}
+        {`Adds up to ${formatEntry(amount)} · they owe you ${formatEntry(Math.max(0, others - repaid))}`}
       </Text>
     );
   }

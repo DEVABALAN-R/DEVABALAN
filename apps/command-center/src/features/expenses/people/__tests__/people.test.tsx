@@ -4,6 +4,7 @@ import { renderWithProviders } from '@/test/render';
 import { TransactionSheet } from '../../entry/TransactionSheet';
 import { useExpenseStore } from '../../state/expenseStore';
 import { useTransactionForm } from '../../state/transactionForm';
+import { recordRepayment } from '../../state/peopleActions';
 import { SettleSheet } from '../SettleSheet';
 
 const store = () => useExpenseStore.getState();
@@ -71,6 +72,23 @@ describe('splitting an expense', () => {
     expect(screen.getByText('₹100 left to assign of ₹1,000')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Rest to me' }));
     expect(screen.getByLabelText('Your share in rupees').props.value).toBe('300');
+  });
+
+  it('shows who has paid back when a split expense is edited', async () => {
+    const arun = personBalances(store().people, store().transactions)[0];
+    const share = arun.splits[0];
+    recordRepayment({
+      personId: 'person-arun',
+      amount: share.amount,
+      accountId: store().accounts[0].id,
+      settles: [share.transaction.id],
+    });
+    await renderWithProviders(<TransactionSheet />);
+    await act(() => useTransactionForm.getState().openEdit(share.transaction));
+    expect(screen.getByRole('button', { name: /^Split, .*Arun paid/ })).toBeTruthy();
+    await act(() => useTransactionForm.getState().setActive('split'));
+    expect(screen.getByLabelText(/^Arun, .*, paid$/)).toBeTruthy();
+    expect(screen.queryByLabelText("Arun's share in rupees")).toBeNull();
   });
 
   it('adds a new person from the split panel', async () => {
