@@ -81,7 +81,8 @@ export function seedPortfolio(today = todayIso()): { portfolio: Portfolio; marke
     market.schemes[code] = { name, fundHouse, category, nav, navDate };
     portfolio.funds.push({
       ...{ id, name, category, fundHouse, folio: '', note: '', archived: false },
-      ...{ schemeCode: Number(code), manualNav: null, manualNavDate: null, order: index },
+      ...{ schemeCode: Number(code), isin: null, manualNav: null, manualNavDate: null },
+      order: index,
       createdAt: 0,
     });
     const buy = (date: string, amount: number, sipId: string | null): FundTxn => {

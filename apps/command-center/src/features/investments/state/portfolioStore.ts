@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import {
   keepsSharesCovered,
   keepsUnitsCovered,
+  type Additions,
   type Fund,
   type FundTxn,
   type Portfolio,
@@ -19,8 +20,10 @@ import { seedPortfolio } from './seedPortfolio';
  * cloud sync loads the user's own portfolio into it and saves every change (the same
  * pattern as the expense store). Calculations live in src/lib/domain/investments.
  */
-export type FundInput = Omit<Fund, 'id' | 'createdAt' | 'order' | 'archived'> & {
+export type FundInput = Omit<Fund, 'id' | 'createdAt' | 'order' | 'archived' | 'isin'> & {
   archived?: boolean;
+  /** Left out: the fund keeps the ISIN it has. */
+  isin?: string | null;
 };
 export type SipInput = Omit<Sip, 'id' | 'createdAt'>;
 export type StockInput = Omit<Stock, 'id' | 'createdAt' | 'order' | 'archived'> & {
@@ -40,6 +43,8 @@ type PortfolioStore = Portfolio & {
   deleteStock: (id: string) => Portfolio;
   saveTrade: (stockId: string, value: ValidTrade, id?: string | null) => Trade;
   deleteTrade: (id: string) => boolean;
+  /** Adds approved imported rows in one change (saved as one batch). */
+  importPortfolio: (additions: Additions) => void;
   restorePortfolio: (portfolio: Portfolio) => void;
   resetPreview: () => void;
 };
@@ -68,6 +73,7 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     const existing = id ? get().funds.find((fund) => fund.id === id) : undefined;
     const fund: Fund = {
       ...input,
+      isin: input.isin !== undefined ? input.isin : (existing?.isin ?? null),
       id: existing?.id ?? newId(),
       archived: input.archived ?? existing?.archived ?? false,
       order: existing?.order ?? nextOrder(get().funds),
@@ -169,6 +175,13 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     return true;
   },
 
+  importPortfolio: (additions) =>
+    set((state) => ({
+      funds: additions.funds.reduce(upsert, state.funds),
+      fundTxns: [...state.fundTxns, ...additions.fundTxns],
+      stocks: additions.stocks.reduce(upsert, state.stocks),
+      trades: [...state.trades, ...additions.trades],
+    })),
   restorePortfolio: (portfolio) => set(portfolio),
   resetPreview: () => set(seedPortfolio().portfolio),
 }));

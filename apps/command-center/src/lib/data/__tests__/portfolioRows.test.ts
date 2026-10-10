@@ -6,6 +6,7 @@ const remote = {
     {
       id: 'f1',
       scheme_code: 120465,
+      isin: 'INF000S01011',
       name: 'Horizon Bluechip',
       category: 'Equity Scheme - Large Cap Fund',
       fund_house: 'Horizon',
@@ -83,6 +84,7 @@ const remote = {
 describe('portfolio rows', () => {
   it('maps database rows to the app and back without changes', () => {
     const portfolio = portfolioFromRemote(remote);
+    expect(portfolio.funds[0].isin).toBe('INF000S01011');
     expect(portfolio.fundTxns[0]).toMatchObject({
       units: 62.1234,
       nav: 80.4567,
@@ -109,7 +111,12 @@ describe('portfolio rows', () => {
     };
     const changes = portfolioChanges(before, after);
     expect(changes.upserts.mf_funds).toEqual([
-      expect.objectContaining({ id: 'f1', folio: '9/9', scheme_code: 120465 }),
+      expect.objectContaining({
+        id: 'f1',
+        folio: '9/9',
+        scheme_code: 120465,
+        isin: 'INF000S01011',
+      }),
     ]);
     expect(changes.deletes.stock_trades).toEqual(['r1']);
     expect(portfolioChanges(EMPTY_PORTFOLIO, before).upserts.mf_transactions).toEqual([

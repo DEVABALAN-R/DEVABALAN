@@ -9,6 +9,8 @@ export type Fund = {
   id: string;
   /** AMFI scheme code when picked from the list; null for a fund entered by hand. */
   schemeCode: number | null;
+  /** Growth-option ISIN, as in tradebooks and statements; matches imported trades. */
+  isin: string | null;
   name: string;
   /** AMFI category, e.g. "Equity Scheme - Large Cap Fund". */
   category: string;

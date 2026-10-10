@@ -77,6 +77,8 @@ export async function loadMarket(): Promise<MarketData> {
 
 export type FundMatch = {
   schemeCode: number;
+  /** Growth-option ISIN (null until migration 0009 returns it). */
+  isin: string | null;
   name: string;
   fundHouse: string;
   category: string;
@@ -89,6 +91,7 @@ export async function searchFunds(query: string): Promise<FundMatch[]> {
   const rows = await callRpc<Row[]>('search_funds', { p_query: query });
   return (rows ?? []).map((row) => ({
     schemeCode: Number(row.scheme_code),
+    isin: strOrNull(row.isin),
     name: str(row.name),
     fundHouse: str(row.fund_house),
     category: str(row.category),
