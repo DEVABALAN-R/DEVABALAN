@@ -60,12 +60,14 @@ flowchart LR
 You chose not to bring the old app's data over. Instead:
 
 - **Migration 0008** permanently deletes the old app's tables (`user_workspaces`,
-  `public_portfolios`) and the functions that wrote them. The planned import (a check report, then
-  import) was built and then withdrawn before it was ever run ([ADR 0008](decisions/0008-start-from-scratch.md)).
-- **A one-time SQL file** (made for you, never committed because it holds your data) empties
-  everything you had saved in the app, then loads your three SIP funds (58 purchases) and your
-  shares and ETFs (11 trades) from the Excel tracker, with the sheet's dates corrected and its
-  totals checked.
+  `public_portfolios`) and the functions that wrote them. The planned import (a check report,
+  then import) was built and then withdrawn before it was ever run
+  ([ADR 0008](decisions/0008-start-from-scratch.md)).
+- **A one-time SQL file**
+  ([`supabase/one-time/20261010_fresh_start.sql`](../../supabase/one-time/20261010_fresh_start.sql),
+  committed at your request) empties everything you had saved in the app, then loads your three
+  SIP funds (58 purchases, on the 1st of each month after the first) and your shares and ETFs
+  (11 trades) from the Excel tracker, with its totals checked against the sheet.
 - The expense manager starts empty: **Add starter categories** sets up the usual categories and a
   Cash account in one tap.
 

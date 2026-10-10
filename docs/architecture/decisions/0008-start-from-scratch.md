@@ -17,8 +17,10 @@ in a personal Excel tracker.
 - The ledger starts empty; the existing starter (usual categories and a Cash account) sets it up.
 - Fund and share history from the Excel tracker is loaded once with a SQL file generated for the
   owner and run in the SQL Editor as the owner (same Row Level Security and checks as the app).
-  The file holds personal data, so it is kept out of the repository. It corrects dates Excel had
-  read as month/day, reads two rows as sales so the sheet's own totals reconcile under FIFO, and
+  The file holds personal data; it is committed in `supabase/one-time/` at the owner's request,
+  although the repository is public. Fund purchases follow the owner's rule (the first date as in
+  the sheet, then the 1st of each following month); share dates that Excel read as month/day are
+  corrected; two rows are read as sales so the sheet's own totals reconcile under FIFO; and it
   refuses to commit if the loaded totals differ from the sheet.
 - The next importer is built around the export file of the app used today, together with export.
 

@@ -103,9 +103,22 @@ October 2026). `202610100008_retire_old_app.sql` **permanently deletes** `user_w
 `public_portfolios` with the functions that wrote them. Nothing in the Command Center reads them.
 Take a backup first (Database → Backups) if you might want them again; there is no rollback.
 
-Your own data in the Command Center (entries, notes, funds, stocks) is not touched by it. To clear
-that as well and load your funds and shares from the Excel tracker, a one-time SQL file was made
-for you outside the repository (it holds your personal data, so it is never committed).
+Your own data in the Command Center (entries, notes, funds, stocks) is not touched by it.
+
+## Fresh start (one-time)
+
+[`supabase/one-time/20261010_fresh_start.sql`](supabase/one-time/20261010_fresh_start.sql) clears
+everything you saved in the app (entries, accounts, categories, people, notes, funds, stocks) and
+loads your mutual funds and shares from the Excel tracker. It runs as you, with the same Row Level
+Security and checks as the app, and refuses to commit if the loaded totals differ from the sheet.
+The notes at its top list what was read from the sheet; confirm them before relying on gains.
+
+1. Run migration 0008 first, then sign out of the app on every device.
+2. SQL Editor → paste the whole file → Run.
+3. Sign in again, and tap **Add starter categories** on Expenses.
+
+It holds personal financial data and was committed at the owner's request, although the
+repository is public. Running it again clears anything saved since and reloads the same history.
 
 ## Prices: the market-refresh function
 

@@ -13,6 +13,7 @@ apps/command-center/   The app (Expo Router, React Native Web). Its README cover
                        checks, deployment and connecting to Supabase
 supabase/migrations/   Ledger and notes (0005), load/save (0006), mutual funds, stocks and
                        market data (0007), retiring the old app's data (0008)
+supabase/one-time/     The owner's fresh start: clears app data, loads funds and shares from Excel
 supabase/functions/    market-refresh: fetches NAVs and closing prices on the server
 docs/architecture/     ARCHITECTURE.md, ROADMAP.md, decision records, expense manager flows
 docs/features/         How features work (INVESTMENTS.md)
