@@ -13,7 +13,7 @@ stays, marked "Superseded by …").
 | [0005](0005-money-units-and-dates.md)             | Money in integer paise, units and NAVs as exact 4-decimal values, calendar dates    | Accepted           |
 | [0006](0006-fifo-gains-and-xirr.md)               | Gains by first-in-first-out lots; returns as XIRR                                   | Accepted           |
 | [0007](0007-import-inside-the-database.md)        | Import the old app's data inside the database, checked before it is kept            | Superseded by 0008 |
-| [0008](0008-start-from-scratch.md)                | Start from scratch: retire the old app's data, load investments once from the Excel | Accepted           |
+| [0008](0008-start-from-scratch.md)                | Start from scratch: retire the old app's data, load investments once from Zerodha   | Accepted           |
 
 ## Template
 

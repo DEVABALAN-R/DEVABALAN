@@ -89,8 +89,8 @@ are paid in cash and rounded down). ETFs and listed bonds can be tracked as stoc
 - Capital-gains report by financial year (realised lots already carry buy and sell dates and
   holding periods) and tax estimates (rates change by budget; they will come with a source and a
   date, never hard-coded silently).
-- Importing a CAMS/KFintech consolidated account statement and broker tradebooks. (Your funds and
-  shares from the Excel tracker were loaded once, directly in the database.)
+- Importing a CAMS/KFintech consolidated account statement and broker tradebooks from the app.
+  (Your funds and shares were loaded once from your Zerodha tradebooks, directly in the database.)
 - Live share prices (needs a paid or broker data provider), price alerts, benchmark comparison.
 
 See [`ROADMAP.md`](../architecture/ROADMAP.md) for when these arrive.
