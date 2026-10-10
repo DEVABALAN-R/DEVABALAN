@@ -1,6 +1,6 @@
 # 0007. Import the old app's data inside the database, checked before it is kept
 
-- Status: Accepted
+- Status: Superseded by [0008](0008-start-from-scratch.md) (withdrawn before it was ever run)
 - Date: 2026-10-10
 
 ## Context

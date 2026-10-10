@@ -4,15 +4,16 @@ One short file per decision that shapes the system: the context, what was decide
 costs. A decision is changed by adding a new record that supersedes the old one (the old one
 stays, marked "Superseded by …").
 
-| #                                                 | Decision                                                                            | Status   |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------- | -------- |
-| [0001](0001-expo-universal-app.md)                | One Expo (React Native + web) codebase for web, iOS and Android                     | Accepted |
-| [0002](0002-supabase-rls-as-security-boundary.md) | Supabase, with Row Level Security and database constraints as the security boundary | Accepted |
-| [0003](0003-batch-sync-through-rpcs.md)           | Load everything once, save changes as one atomic batch through RPCs                 | Accepted |
-| [0004](0004-market-data-on-the-server.md)         | Market data fetched on the server from official end-of-day files                    | Accepted |
-| [0005](0005-money-units-and-dates.md)             | Money in integer paise, units and NAVs as exact 4-decimal values, calendar dates    | Accepted |
-| [0006](0006-fifo-gains-and-xirr.md)               | Gains by first-in-first-out lots; returns as XIRR                                   | Accepted |
-| [0007](0007-import-inside-the-database.md)        | Import the old app's data inside the database, checked before it is kept            | Accepted |
+| #                                                 | Decision                                                                            | Status             |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------ |
+| [0001](0001-expo-universal-app.md)                | One Expo (React Native + web) codebase for web, iOS and Android                     | Accepted           |
+| [0002](0002-supabase-rls-as-security-boundary.md) | Supabase, with Row Level Security and database constraints as the security boundary | Accepted           |
+| [0003](0003-batch-sync-through-rpcs.md)           | Load everything once, save changes as one atomic batch through RPCs                 | Accepted           |
+| [0004](0004-market-data-on-the-server.md)         | Market data fetched on the server from official end-of-day files                    | Accepted           |
+| [0005](0005-money-units-and-dates.md)             | Money in integer paise, units and NAVs as exact 4-decimal values, calendar dates    | Accepted           |
+| [0006](0006-fifo-gains-and-xirr.md)               | Gains by first-in-first-out lots; returns as XIRR                                   | Accepted           |
+| [0007](0007-import-inside-the-database.md)        | Import the old app's data inside the database, checked before it is kept            | Superseded by 0008 |
+| [0008](0008-start-from-scratch.md)                | Start from scratch: retire the old app's data, load investments once from the Excel | Accepted           |
 
 ## Template
 

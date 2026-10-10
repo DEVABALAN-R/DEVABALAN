@@ -7,21 +7,20 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 
 ## Where we are
 
-| Area                        | Status           | Notes                                                                                                                                        |
-| --------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Expo app, design system, CI | Done             | Web on Vercel (`devabalan-command-center`); iOS/Android from the same code                                                                   |
-| Sign-in and security        | Done             | Allowlisted sign-up, two-step sign-in (TOTP, aal2 in the database), sessions, idle sign-out                                                  |
-| Expense manager             | Done, saved      | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts on device                                          |
-| Notes                       | Done, saved      | Text and checklists, colours, pins, labels, archive                                                                                          |
-| Mutual funds                | **Done, saved**  | AMFI search, purchases/SIPs/redemptions/dividends, SIP plans with due and missed instalments, FIFO cost, XIRR, allocation, growth, AMFI NAVs |
-| Stocks                      | **Done, saved**  | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
-| Overview                    | Done             | Net worth includes funds and stocks                                                                                                          |
-| Old app's data              | **Import ready** | Settings → Old app's data, after migration 0008: a check report first, then import                                                           |
-| Goals, Insights, Reports    | Placeholders     | Labelled "Planned"                                                                                                                           |
+| Area                        | Status          | Notes                                                                                                                                        |
+| --------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Expo app, design system, CI | Done            | Web on Vercel (`devabalan-command-center`); iOS/Android from the same code                                                                   |
+| Sign-in and security        | Done            | Allowlisted sign-up, two-step sign-in (TOTP, aal2 in the database), sessions, idle sign-out                                                  |
+| Expense manager             | Done, saved     | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts on device                                          |
+| Notes                       | Done, saved     | Text and checklists, colours, pins, labels, archive                                                                                          |
+| Mutual funds                | **Done, saved** | AMFI search, purchases/SIPs/redemptions/dividends, SIP plans with due and missed instalments, FIFO cost, XIRR, allocation, growth, AMFI NAVs |
+| Stocks                      | **Done, saved** | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
+| Overview                    | Done            | Net worth includes funds and stocks                                                                                                          |
+| Old app's data              | Retired         | Not imported (your decision); migration 0008 deletes it. The ledger starts from scratch                                                      |
+| Goals, Insights, Reports    | Placeholders    | Labelled "Planned"                                                                                                                           |
 
 > **October 2026:** the old Vite app was removed from the repository (the last commit that has it
-> is `efc04a9`); its data stays in Supabase (`user_workspaces`) until it is imported and backed
-> up. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
+> is `efc04a9`); its saved data is not imported and migration 0008 deletes it. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
 > history at `224176d`); 0005–0008 are in `supabase/migrations`.
 
 ## The plan in one picture
@@ -29,14 +28,14 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 ```mermaid
 flowchart LR
   subgraph Now
-    A[3.3 Import old data<br/>check, then import]
+    A[Fresh start<br/>empty ledger + Excel funds and shares]
+    M[Import and export<br/>from your current app's file]
     B[Price setup live<br/>schedule + checks]
-    P[PF / EPF tracker]
-    S[Salary payslips]
   end
   subgraph Next
-    X[Excel tracker import<br/>funds, equity, gold, PF history]
-    C[Money Manager import<br/>recurring, search, offline]
+    P[PF / EPF tracker]
+    S[Salary payslips]
+    C[Everyday power features<br/>recurring, search, offline]
     D[Investments v2<br/>CAS import, capital gains, benchmarks]
     E[Net worth: other assets<br/>FD, PPF, EPF, NPS, gold, loans, cards]
     F[Goals and planning]
@@ -47,7 +46,7 @@ flowchart LR
     I[Notifications, app lock, widgets]
     J[Hardening and performance]
   end
-  A --> X --> C --> G
+  A --> M --> C --> G
   S --> P --> E
   B --> D --> G
   E --> F --> G
@@ -56,24 +55,25 @@ flowchart LR
 
 ## Now
 
-### 3.3: Import the old app's data (built; your turn)
+### Fresh start (October 2026)
 
-Migration 0008 and **Settings → Old app's data** (details in
-[`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#importing-the-old-apps-data-migration-0008)):
+You chose not to bring the old app's data over. Instead:
 
-- `import_legacy_workspace` runs as you and reads only your own `user_workspaces` row. **Check**
-  does the whole import inside the database, builds the report from the rows it wrote, then undoes
-  it; **Import** keeps them. Accounts, categories with subcategories and budgets, entries (card
-  payments become transfers), funds with their last NAV, and purchases with stamp duty and units.
-- The **check report** puts the old app's numbers next to the new ones: balance per account (with
-  the card payments the old app left out shown separately), totals per category, invested amount
-  and units per fund, and every row that cannot come over with its reason.
-- Running it again adds only what is missing. Instead of a `legacy_id` column on five tables, each
-  new row's id is derived from the old id. Categories are matched by type and name, so a name the
-  old app used for both income and expense becomes one category of each type (no manual review of
-  type flips needed).
-- **Your steps:** run migration 0008; Check old data → View report → Import; link each fund to its
-  AMFI scheme from Edit fund; keep `user_workspaces` until you have a backup.
+- **Migration 0008** permanently deletes the old app's tables (`user_workspaces`,
+  `public_portfolios`) and the functions that wrote them. The planned import (a check report, then
+  import) was built and then withdrawn before it was ever run ([ADR 0008](decisions/0008-start-from-scratch.md)).
+- **A one-time SQL file** (made for you, never committed because it holds your data) empties
+  everything you had saved in the app, then loads your three SIP funds (58 purchases) and your
+  shares and ETFs (11 trades) from the Excel tracker, with the sheet's dates corrected and its
+  totals checked.
+- The expense manager starts empty: **Add starter categories** sets up the usual categories and a
+  Cash account in one tap.
+
+### Import and export (waiting for your export file)
+
+You will share an export from the app you use today; the importer is built around that file:
+upload, match its columns, a preview with duplicates flagged, then import. It runs on the server
+and the file is not kept. Export from the Command Center comes with it, in the same shape.
 
 ### Price updates live
 
@@ -83,9 +83,12 @@ Migration 0008 and **Settings → Old app's data** (details in
   download is blocked from Supabase's servers, the BSE fallback or manual prices keep values
   current; a paid provider is the long-term option (decision below).
 
-### PF / EPF tracker (next PR)
+## Next
 
-Your first personal tracker (chosen October 2026), replacing the spreadsheet's PF sheet:
+### PF / EPF tracker
+
+Your first personal tracker (chosen October 2026), after the import; it replaces the spreadsheet's
+PF sheet:
 
 - Monthly contributions: your share, VPF, and the employer's split between EPF and the pension
   scheme (EPS), entered per month or carried over from the payslip.
@@ -104,19 +107,14 @@ Your first personal tracker (chosen October 2026), replacing the spreadsheet's P
 - Totals by financial year: gross, deductions and tax deducted so far. Payslip files wait for
   private storage.
 
-## Next
+### The rest of the Excel tracker
 
-### Excel tracker import
+Fund and equity history is already loaded. PF history, salary rows and digital gold come in with
+the PF tracker, the payslips and the other-assets module. Sheets with passwords or identity numbers
+are never read or stored.
 
-Brings in the rest of your old spreadsheet: fund transactions, equity trades, gold, PF history and
-salary rows, with a preview that fixes what the review found (swapped dates, average cost as total
-cost ÷ units, realised gains on units already sold). Sheets with passwords or identity numbers are
-never read or stored; the file is processed on the server and not kept.
+### Everyday power features
 
-### Money Manager import and everyday power features
-
-- CSV import from Money Manager (your current app): upload → map columns → preview with duplicate
-  detection → import. Runs in an Edge Function; the file is not kept.
 - Recurring entries (rent, salary, subscriptions) with "record now" reminders.
 - Search across entries and notes; saved filters.
 - Offline add queue on phones (entries made without a connection are sent later).
@@ -199,8 +197,7 @@ quick add for anything.
   ships (and back in CI if the owner wants them in the repository).
 - Route-level code splitting (web bundle to ≤ 350 KiB); performance budgets per screen.
 - Error reporting with a scrubber that never sends amounts, notes or tokens (optional Sentry).
-- Retire `user_workspaces` after the import, a verified backup and 30 days; delete the old Vercel
-  project.
+- Delete the old Vercel project.
 
 ## What premium apps do, and how we do it
 
@@ -221,18 +218,20 @@ quick add for anything.
 
 ## Decisions needed from you
 
-1. Phase 3.3: run the check and confirm the report (Settings → Old app's data).
+1. Share the export file from the app you use today, so the importer can be built around it.
 2. Live share prices: stay end of day (free), or pick a provider (paid feed or a broker API) whose
    terms allow personal use? Its key would live only in a function secret.
 3. Phone app stores, or the installable web app first?
-4. After PF / EPF and salary: Money Manager import, Investments v2, or the other assets first?
+4. After the import, PF / EPF and salary: Investments v2 or the other assets first?
 5. Tax estimates: show only gains and holding periods, or estimate tax with dated, sourced rates?
 6. Personal trackers: which three matter most to you (habits, health, journal, documents, dates)?
 
 ### Decided (October 2026)
 
-- Import the old app's data first; then the PF / EPF tracker; then salary as full payslips; the
-  Excel importer after those.
+- Start from scratch: the old app's data is not imported and is deleted. Funds and shares from the
+  Excel tracker are loaded once, directly in the database.
+- Then import and export built around the export of the app you use today; then the PF / EPF
+  tracker; then salary as full payslips.
 - Parents' finances stay out of the app.
 - Passwords are never stored in the app (use a password manager and two-step sign-in on those
   accounts).

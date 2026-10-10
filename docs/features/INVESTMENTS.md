@@ -49,15 +49,6 @@ chart. A price entered by hand (with its date) is used when there is no newer cl
 Bonus issues and splits apply to the shares held before that day; whole shares only (fractions
 are paid in cash and rounded down). ETFs and listed bonds can be tracked as stocks.
 
-## Funds from the old app
-
-Settings → **Old app's data** brings over each fund (name, folio, the last NAV you saved with its
-date; expense ratio and exit load go into the note) and every purchase on its execution date,
-with the amount paid, stamp duty, units and NAV exactly as recorded. The free-text category
-("Large Cap") is filed under its asset class (Equity, Debt, Hybrid, Index & ETF, Gold & silver)
-so the allocation chart can group it. Afterwards, open each fund → **Edit fund** and pick its AMFI
-scheme: the NAV then updates every day and AMFI's category replaces the old one.
-
 ## Prices
 
 | What                  | Source                                                                      | When                                                       |
@@ -98,8 +89,8 @@ scheme: the NAV then updates every day and AMFI's category replaces the old one.
 - Capital-gains report by financial year (realised lots already carry buy and sell dates and
   holding periods) and tax estimates (rates change by budget; they will come with a source and a
   date, never hard-coded silently).
-- Importing a CAMS/KFintech consolidated account statement and broker tradebooks. (The older
-  app's funds and purchases come in from Settings → Old app's data; see above.)
+- Importing a CAMS/KFintech consolidated account statement and broker tradebooks. (Your funds and
+  shares from the Excel tracker were loaded once, directly in the database.)
 - Live share prices (needs a paid or broker data provider), price alerts, benchmark comparison.
 
 See [`ROADMAP.md`](../architecture/ROADMAP.md) for when these arrive.
