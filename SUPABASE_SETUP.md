@@ -13,16 +13,15 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 
 ## What is in the database
 
-| Part                                                 | From                | Used by                                                                     |
-| ---------------------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
-| Sign-up allowlist and its Before User Created hook   | 0004                | Every new account (only allowlisted emails can sign up)                     |
-| `profiles`, `user_preferences`, `audit_logs`         | 0004                | Created per account; `audit_logs` records changes by column name, no values |
-| Finance and notes tables                             | 0005                | The Command Center                                                          |
-| `load_ledger()` and `sync_ledger(jsonb)`             | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
-| Mutual fund and stock tables                         | 0007                | Mutual funds and Stocks pages                                               |
-| Market data tables and their functions               | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
-| `import_legacy_workspace(boolean)`, `legacy_imports` | 0008                | Settings → Old app's data: imports `user_workspaces` after a check report   |
-| `user_workspaces`, `public_portfolios`               | 0001–0003 (old app) | Read by the import only. Keep until imported and backed up                  |
+| Part                                               | From                | Used by                                                                     |
+| -------------------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
+| Sign-up allowlist and its Before User Created hook | 0004                | Every new account (only allowlisted emails can sign up)                     |
+| `profiles`, `user_preferences`, `audit_logs`       | 0004                | Created per account; `audit_logs` records changes by column name, no values |
+| Finance and notes tables                           | 0005                | The Command Center                                                          |
+| `load_ledger()` and `sync_ledger(jsonb)`           | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
+| Mutual fund and stock tables                       | 0007                | Mutual funds and Stocks pages                                               |
+| Market data tables and their functions             | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
+| `user_workspaces`, `public_portfolios`             | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
 reachable from the browser.
@@ -31,7 +30,7 @@ reachable from the browser.
 
 1. **Migrations applied, in order:** 0001–0004 (done earlier), then
    `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
-   `202610090007_investments.sql` and `202610100008_legacy_import.sql` from
+   `202610090007_investments.sql` and `202610100008_retire_old_app.sql` from
    `supabase/migrations/` (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
@@ -97,51 +96,29 @@ Run `202610090007_investments.sql` after 0006. It adds:
 
 The file ends with a commented rollback.
 
-## Importing the old app's data (migration 0008)
+## Retiring the old app's data (migration 0008)
 
-Run `202610100008_legacy_import.sql` after 0007. It adds `import_legacy_workspace(p_commit)` and a
-small `legacy_imports` table (when you imported, and how many rows; never names or amounts).
+The Command Center starts from scratch: the old app's data is not imported (owner's decision,
+October 2026). `202610100008_retire_old_app.sql` **permanently deletes** `user_workspaces` and
+`public_portfolios` with the functions that wrote them. Nothing in the Command Center reads them.
+Take a backup first (Database → Backups) if you might want them again; there is no rollback.
 
-**In the app:** Settings → **Old app's data** → **Check old data**. The check does the whole
-import inside the database, builds a report from the rows it wrote, then undoes everything:
-nothing is saved. **View report** shows, for each account, the old app's balance next to the new
-one and why they differ; category totals; each fund's invested amount and units; and anything
-that cannot be brought over, with the reason. **Import** saves your waiting changes, runs the same
-import for real, and reloads.
+Your own data in the Command Center (entries, notes, funds, stocks) is not touched by it.
 
-| Old app                                                 | Becomes                                                                                      |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Bank account, opening balance                           | Bank account (same opening balance)                                                          |
-| Credit card, opening balance owed                       | Card account; what you owe is shown as a negative balance                                    |
-| Category with subcategories, monthly budget             | Category and subcategories (icon picked from the name), budget on expense ones               |
-| Expense / income                                        | Expense / income in the same category and subcategory; description · note as note            |
-| Payment (card bill)                                     | Transfer: the paying account goes down, the card's debt goes down                            |
-| Mutual fund (name, category, folio, NAV, expense ratio) | Fund entered by hand with the last NAV and its date; expense ratio and exit load in its note |
-| Fund purchase                                           | Purchase on the execution (NAV) date with the amount paid, stamp duty, units and NAV         |
+## Fresh start (one-time)
 
-- **Same name, no duplicate:** an account, category or fund with the same name as one already in
-  the app is used as it is (its own opening balance is kept; the report says so).
-- **Run it again safely:** every imported row gets an id derived from the old one, so a second
-  import adds only what is missing (for example an entry you deleted since).
-- **Why balances can differ:** the old app did not take card payments out of the paying account
-  (and ignored refunds on a card); the new app does. The report shows that amount separately, so
-  "Matches" means everything else agrees.
-- **Left out on purpose:** the old personal profile page (`portfolio`, not money), older NAV
-  snapshots (the latest is kept; link the fund to its AMFI scheme from Edit fund for full
-  history), and rows the database would refuse (no date, zero amount, missing account), which
-  are listed in the report.
-- **Takes about a second** for a few thousand entries. If it ever says the database took too
-  long, run it from the SQL Editor as yourself (same rules; find your user id under
-  Authentication → Users):
+[`supabase/one-time/20261010_fresh_start.sql`](supabase/one-time/20261010_fresh_start.sql) clears
+everything you saved in the app (entries, accounts, categories, people, notes, funds, stocks) and
+loads your mutual funds and shares from the Excel tracker. It runs as you, with the same Row Level
+Security and checks as the app, and refuses to commit if the loaded totals differ from the sheet.
+The notes at its top list what was read from the sheet; confirm them before relying on gains.
 
-  ```sql
-  begin;
-  select set_config('request.jwt.claims',
-    '{"sub":"<your user id>","role":"authenticated","aal":"aal2"}', true);
-  set local role authenticated;
-  select public.import_legacy_workspace(false);  -- the check; true imports
-  commit;
-  ```
+1. Run migration 0008 first, then sign out of the app on every device.
+2. SQL Editor → paste the whole file → Run.
+3. Sign in again, and tap **Add starter categories** on Expenses.
+
+It holds personal financial data and was committed at the owner's request, although the
+repository is public. Running it again clears anything saved since and reloads the same history.
 
 ## Prices: the market-refresh function
 
@@ -228,13 +205,6 @@ asks for your password and then the 6-digit code.
   under **Settings → This device**.
 - If you lose the authenticator app, remove the factor in **Authentication → Users → (your user)
   → Multi-factor authentication**, then set it up again.
-
-## Older data (`user_workspaces`)
-
-Your finances saved by the old app are still in `user_workspaces` (and the profile page in
-`public_portfolios`). The import above copies them; it never changes or deletes them. Keep them
-until the import is confirmed and you have a backup (Database → Backups, or export the row from
-the Table Editor); retiring them is a later, separate migration.
 
 ## Security boundaries
 

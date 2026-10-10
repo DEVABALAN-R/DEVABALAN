@@ -3,13 +3,7 @@ import { supabaseConfig } from './supabaseConfig';
 
 /** The database functions the app may call (anything else is refused before sending). */
 export type RpcName =
-  | 'load_ledger'
-  | 'sync_ledger'
-  | 'load_market'
-  | 'search_funds'
-  | 'search_securities'
-  | 'nav_on'
-  | 'import_legacy_workspace';
+  'load_ledger' | 'sync_ledger' | 'load_market' | 'search_funds' | 'search_securities' | 'nav_on';
 
 /** The Edge Functions the app may call. */
 export type FunctionName = 'market-refresh';

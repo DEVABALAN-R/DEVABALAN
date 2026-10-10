@@ -5,8 +5,8 @@ The current phase order is in [`ROADMAP.md`](../../docs/architecture/ROADMAP.md)
 design is in [`MODERNIZATION_PLAN.md`](../../docs/architecture/MODERNIZATION_PLAN.md).
 
 **Status: Phases 1–2, 3.1–3.2 and the investment pages are done** (design system, sign-in with
-two-step codes, the expense manager, Notes, mutual funds and stocks saved to Supabase). Next:
-Phase 3.3, importing the older data from `user_workspaces`.
+two-step codes, the expense manager, Notes, mutual funds and stocks saved to Supabase). The
+ledger starts from scratch; next is importing from the export of the app you use today.
 
 - **Expense manager** (Expenses › Transactions, Stats, Budget, Categories, plus Accounts and the
   add/edit sheet): add, edit and delete entries, categories, budgets and accounts. Flows and
@@ -23,8 +23,6 @@ Phase 3.3, importing the older data from `user_workspaces`.
 - **Stocks**: buys, sells, dividends, bonus issues and splits; FIFO P&L, XIRR, sectors, day
   change and price charts at end-of-day exchange prices.
 - **Overview** reads the same ledger and portfolio; net worth includes funds and stocks.
-- **Settings → Old app's data** brings over the previous app's entries, accounts, categories,
-  funds and purchases after a check report (migration 0008).
 - Goals, Insights and Reports are labelled placeholders.
 
 **Signed in** (migrations 0005–0008 applied), every page loads and saves **your own** data, and

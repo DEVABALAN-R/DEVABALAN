@@ -18,7 +18,7 @@ export function StarterCard() {
       <Text variant="bodyStrong">Your ledger is empty</Text>
       <Text color="textSecondary">
         Start with the usual expense and income categories and a Cash account. You can rename,
-        remove or add more at any time. Importing from the old app comes next.
+        remove or add more at any time.
       </Text>
       <View style={{ alignSelf: 'flex-start' }}>
         <Button label="Add starter categories" onPress={addStarterLedger} />
