@@ -17,7 +17,7 @@
 --     tradebooks). Send the 2024 tradebook to add them with their realised gains.
 --
 -- Before running: close the app (or sign out). Then run this whole file in Supabase -> SQL Editor
--- and open the app again. Needs migrations 0005-0007.
+-- and open the app again. Needs migrations 0005-0007 (after 0009, each fund also gets its ISIN).
 
 begin;
 
@@ -204,6 +204,16 @@ begin
   if (select sum(case when t.kind = 'buy' then t.quantity else -t.quantity end) from public.stock_trades t
       join public.stocks s on s.id = t.stock_id where s.symbol = 'SUZLON') <> 5 then
     raise exception 'Check failed: %', 'SUZLON';
+  end if;
+end $$;
+
+-- After migration 0009: each fund keeps its ISIN in its own column (tradebook imports match by it).
+do $$
+begin
+  if exists (select 1 from information_schema.columns
+             where table_schema = 'public' and table_name = 'mf_funds' and column_name = 'isin') then
+    execute $q$update public.mf_funds set isin = substring(note from '^ISIN ([A-Z]{2}[A-Z0-9]{9}[0-9])$'), note = ''
+                where note ~ '^ISIN [A-Z]{2}[A-Z0-9]{9}[0-9]$'$q$;
   end if;
 end $$;
 

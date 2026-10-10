@@ -15,13 +15,14 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 | Notes                       | Done, saved     | Text and checklists, colours, pins, labels, archive                                                                                          |
 | Mutual funds                | **Done, saved** | AMFI search, purchases/SIPs/redemptions/dividends, SIP plans with due and missed instalments, FIFO cost, XIRR, allocation, growth, AMFI NAVs |
 | Stocks                      | **Done, saved** | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
+| Tradebook import            | **Done**        | Zerodha tradebooks (.xlsx/.csv) read on the device; you review each trade and approve before anything is saved                               |
 | Overview                    | Done            | Net worth includes funds and stocks                                                                                                          |
 | Old app's data              | Retired         | Not imported (your decision); migration 0008 deletes it. The ledger starts from scratch                                                      |
 | Goals, Insights, Reports    | Placeholders    | Labelled "Planned"                                                                                                                           |
 
 > **October 2026:** the old Vite app was removed from the repository (the last commit that has it
 > is `efc04a9`); its saved data is not imported and migration 0008 deletes it. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
-> history at `224176d`); 0005–0008 are in `supabase/migrations`.
+> history at `224176d`); 0005–0009 are in `supabase/migrations`.
 
 ## The plan in one picture
 
@@ -70,6 +71,14 @@ You chose not to bring the old app's data over. Instead:
   from the Excel tracker, which lacked trades the tradebooks have.
 - The expense manager starts empty: **Add starter categories** sets up the usual categories and a
   Cash account in one tap.
+
+### Tradebook import (October 2026)
+
+Mutual funds or Stocks → **Import**: choose Zerodha Console tradebooks, review every trade the
+app would add (with units and invested amount before → after, and what is already in the app),
+switch off any holding, then **Approve and add**. Files are read on the device and nothing is saved
+before you approve ([ADR 0009](decisions/0009-tradebook-import-on-device.md); how it works:
+[`INVESTMENTS.md`](../features/INVESTMENTS.md#import-a-tradebook-zerodha)). Needs migration 0009.
 
 ### Import and export (waiting for your export file)
 
@@ -125,7 +134,8 @@ are never read or stored.
 
 - **Consolidated account statement (CAS) import** from CAMS/KFintech PDFs: every fund and
   transaction in one go. Parsed on the server; the PDF password is used once and never stored.
-- **Broker tradebook import** (CSV from Zerodha, Groww, Upstox and others) for stocks.
+- **Other brokers' tradebooks** (Groww, Upstox and others), with the same review and approve
+  step as the Zerodha import.
 - **Capital gains by financial year**: FIFO lots, short/long term by holding period, grandfathered
   cost for older equity; tax estimates only with rates that name their source and year.
 - **Dividends and corporate actions** calendar; prompts when a held share has a bonus or split.

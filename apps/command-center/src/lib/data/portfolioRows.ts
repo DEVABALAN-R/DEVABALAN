@@ -24,6 +24,7 @@ export function portfolioFromRemote(raw: RemotePortfolio): Portfolio {
     funds: (raw.mf_funds ?? []).map((row) => ({
       id: str(row.id),
       schemeCode: numOrNull(row.scheme_code),
+      isin: strOrNull(row.isin),
       name: str(row.name),
       category: str(row.category),
       fundHouse: str(row.fund_house),
@@ -93,6 +94,7 @@ export function portfolioFromRemote(raw: RemotePortfolio): Portfolio {
 const fundRow = (f: Fund) => ({
   id: f.id,
   scheme_code: f.schemeCode,
+  isin: f.isin,
   name: f.name,
   category: f.category,
   fund_house: f.fundHouse,

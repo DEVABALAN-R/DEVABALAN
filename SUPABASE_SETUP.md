@@ -8,7 +8,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 > **History.** Migrations 0001–0004 (the old app's workspace, conflict-safe saves, mutual funds,
 > and auth hardening) have been applied and were removed from the repository with their rollback
 > scripts and SQL tests; they are in Git history at commit `224176d`. The old Vite app itself was
-> removed in October 2026. Migrations 0005–0008, which the Command Center depends on, are in
+> removed in October 2026. Migrations 0005–0009, which the Command Center depends on, are in
 > `supabase/migrations/`. New database changes add new numbered files there.
 
 ## What is in the database
@@ -20,6 +20,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 | Finance and notes tables                           | 0005                | The Command Center                                                          |
 | `load_ledger()` and `sync_ledger(jsonb)`           | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
 | Mutual fund and stock tables                       | 0007                | Mutual funds and Stocks pages                                               |
+| `mf_funds.isin`, `sync_ledger` saving it           | 0009                | Matching tradebook imports to your funds                                    |
 | Market data tables and their functions             | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
 | `user_workspaces`, `public_portfolios`             | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
 
@@ -30,8 +31,8 @@ reachable from the browser.
 
 1. **Migrations applied, in order:** 0001–0004 (done earlier), then
    `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
-   `202610090007_investments.sql` and `202610100008_retire_old_app.sql` from
-   `supabase/migrations/` (SQL Editor → paste → Run).
+   `202610090007_investments.sql`, `202610100008_retire_old_app.sql` and
+   `202610110009_fund_isin.sql` from `supabase/migrations/` (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
    second layer.
@@ -105,14 +106,25 @@ Take a backup first (Database → Backups) if you might want them again; there i
 
 Your own data in the Command Center (entries, notes, funds, stocks) is not touched by it.
 
+## Fund ISINs for imports (migration 0009)
+
+Run `202610110009_fund_isin.sql` after 0008 (or after the one-file update below). It gives each
+fund an `isin` column, which **Import** uses to match tradebook rows to the right fund, and fills it
+in for the funds you have: from the fund's AMFI scheme, or from the "ISIN …" note the Zerodha load
+left (that note is then cleared). `sync_ledger` is replaced to save the new column (nothing else in
+it changes) and `search_funds` also returns each scheme's ISIN. Safe to run again. The file ends
+with a commented rollback.
+
+How the import itself works: [`docs/features/INVESTMENTS.md`](docs/features/INVESTMENTS.md#import-a-tradebook-zerodha).
+
 ## Everything up to now in one file
 
 [`supabase/one-time/20261010_update_all.sql`](supabase/one-time/20261010_update_all.sql) is
 migration 0007, migration 0008 and the Zerodha load below, in that order, so one run brings the
 database up to date. It is safe whether or not 0007 or 0008 were already run, stops at once if
 0005 or 0006 are missing, and leaves entries, accounts, categories, people and notes as they are.
-Run it once; do not run it again after any later migration (it holds the 0007 versions of the load
-and save functions). To reload funds and stocks later, run the Zerodha file on its own.
+Run it once, then migration 0009. Do not run it after 0009 or any later migration (it holds the
+0007 versions of the load and save functions). To reload funds and stocks later, run the Zerodha file on its own.
 
 ## Your funds and stocks from Zerodha (one-time)
 
@@ -123,7 +135,8 @@ categories, people and notes are not touched. It runs as you, with the same Row 
 checks as the app, and keeps nothing if the units, invested amounts or shares differ from your
 Kite holdings.
 
-1. Close the app (or sign out). Migrations 0005–0007 must be in place.
+1. Close the app (or sign out). Migrations 0005–0007 must be in place (after 0009, each fund also
+   gets its ISIN).
 2. SQL Editor → paste the whole file → Run.
 3. Open the app again.
 
