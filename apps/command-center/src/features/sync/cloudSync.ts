@@ -1,6 +1,9 @@
 import { useSession } from '@/features/auth/sessionStore';
 import { getLedger, useExpenseStore } from '@/features/expenses/state/expenseStore';
+import { useMarketStore } from '@/features/investments/state/marketStore';
+import { getPortfolio, usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
+import { EMPTY_PORTFOLIO } from '@/lib/domain/investments';
 import {
   buildChanges,
   loadCloudData,
@@ -30,16 +33,18 @@ let attempt = 0;
 
 const snapshot = (): CloudData => {
   const { accounts, categories, people, transactions } = getLedger();
-  return { accounts, categories, people, transactions, notes: useNotesStore.getState().notes };
+  const notes = useNotesStore.getState().notes;
+  return { accounts, categories, people, transactions, notes, portfolio: getPortfolio() };
 };
 
 const setStatus = (status: Parameters<ReturnType<typeof useSyncStatus.getState>['set']>[0]) =>
   useSyncStatus.getState().set(status);
 
 function applyToStores(data: CloudData) {
-  const { notes, ...ledger } = data;
+  const { notes, portfolio, ...ledger } = data;
   useExpenseStore.setState(ledger);
   useNotesStore.setState({ notes });
+  usePortfolioStore.setState(portfolio);
 }
 
 function clearTimer() {
@@ -57,7 +62,15 @@ export async function startCloudSync(): Promise<void> {
   stopCloudSync();
   const run = ++generation;
   // Never show sample data as if it were the user's, even for a moment.
-  applyToStores({ accounts: [], categories: [], people: [], transactions: [], notes: [] });
+  applyToStores({
+    accounts: [],
+    categories: [],
+    people: [],
+    transactions: [],
+    notes: [],
+    portfolio: EMPTY_PORTFOLIO,
+  });
+  useMarketStore.getState().enterCloud();
   setStatus('loading');
   let data: CloudData;
   try {
@@ -70,9 +83,12 @@ export async function startCloudSync(): Promise<void> {
   baseline = data;
   applyToStores(data);
   setStatus('saved');
+  // Prices for the holdings load alongside (a failure only affects valuations).
+  void useMarketStore.getState().load();
   unsubscribers = [
     useExpenseStore.subscribe(() => schedule()),
     useNotesStore.subscribe(() => schedule()),
+    usePortfolioStore.subscribe(() => schedule()),
   ];
 }
 

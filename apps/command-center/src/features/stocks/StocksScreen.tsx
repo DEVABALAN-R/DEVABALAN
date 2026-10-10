@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { View } from 'react-native';
 import {
   ArrowLeftRight,
   ChartCandlestick,
@@ -7,40 +8,78 @@ import {
   Plus,
   TrendingUp,
 } from '@/components/icons';
+import { EmptyState } from '@/components/feedback';
 import { BentoCell, BentoRow } from '@/components/layout/Bento';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Screen, useFitMode } from '@/components/layout/Screen';
 import { StatStrip } from '@/components/layout/StatStrip';
-import { Button, StatCard } from '@/components/ui';
+import { Button, Card, StatCard } from '@/components/ui';
+import { PriceStatus, RefreshPricesButton } from '@/features/investments/components/PriceStatus';
+import { useStocksView } from '@/features/investments/hooks/useInvestments';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
-import { PlannedSheet } from '@/features/shell/PlaceholderSheets';
-import { sampleStocks, stockPortfolio } from '@/features/preview/sampleStocks';
+import { formatMoneyWhole, formatPercent } from '@/lib/formatting/currency';
+import { useTheme } from '@/theme';
 import { PriceChartCard } from './PriceChartCard';
 import { SectorCard } from './SectorCard';
 import { StockHoldings } from './StockHoldings';
+import { StockPanels, type StockPanel } from './StockPanels';
 import { TopMovers } from './TopMovers';
 
 /** Stock portfolio: one screen on desktop (panels scroll internally). */
 export function StocksScreen() {
+  const theme = useTheme();
   const fit = useFitMode(true);
-  const [trading, setTrading] = useState(false);
-  const [ticker, setTicker] = useState(sampleStocks[0].ticker);
-  const selected = sampleStocks.find((stock) => stock.ticker === ticker) ?? sampleStocks[0];
-  const totals = stockPortfolio();
-  const gain = totals.value - totals.invested;
-  const gainPct = totals.invested ? (gain / totals.invested) * 100 : 0;
-  const dayPct =
-    totals.value - totals.dayChange
-      ? (totals.dayChange / (totals.value - totals.dayChange)) * 100
-      : 0;
+  const [panel, setPanel] = useState<StockPanel>(null);
+  const [chosen, setChosen] = useState<string | null>(null);
+  const view = useStocksView();
+  const { rows, totals } = view;
+  const selected = rows.find((row) => row.stock.id === chosen) ?? rows[0];
+  const gainPct = totals.invested ? (totals.unrealised / totals.invested) * 100 : 0;
+  const dayBase = totals.value - totals.dayChange;
+  const header = (
+    <PageHeader
+      size="compact"
+      title="Stocks"
+      meta={
+        <View style={{ gap: theme.space[1] }}>
+          <SampleDataBadge editable />
+          <PriceStatus kind="stocks" />
+        </View>
+      }
+      actions={
+        <>
+          <RefreshPricesButton />
+          <Button
+            label="Add stock"
+            icon={Plus}
+            onPress={() => setPanel({ type: 'stock', stockId: null })}
+          />
+        </>
+      }
+    />
+  );
+  if (!selected) {
+    return (
+      <Screen>
+        {header}
+        <Card>
+          <EmptyState
+            icon={ChartCandlestick}
+            title="Track your shares"
+            body="Add a stock, then record buys, sells, dividends, bonus issues and splits. Holdings, profit and loss and XIRR follow, valued at the exchange closing price."
+            action={{
+              label: 'Add your first stock',
+              onPress: () => setPanel({ type: 'stock', stockId: null }),
+            }}
+          />
+        </Card>
+        <StockPanels panel={panel} onChange={setPanel} />
+      </Screen>
+    );
+  }
   return (
     <Screen fit>
-      <PageHeader
-        size="compact"
-        title="Stocks"
-        meta={<SampleDataBadge />}
-        actions={<Button label="Add trade" icon={Plus} onPress={() => setTrading(true)} />}
-      />
+      {header}
       <StatStrip
         hero={
           <StatCard
@@ -49,7 +88,7 @@ export function StocksScreen() {
             icon={ChartCandlestick}
             value={totals.value}
             delta={gainPct}
-            caption="total return"
+            caption="gain on cost"
             index={0}
             style={{ flex: 1 }}
           />
@@ -60,17 +99,17 @@ export function StocksScreen() {
           label="Invested"
           icon={PiggyBank}
           value={totals.invested}
-          caption="cost basis"
+          caption="cost of shares held"
           index={1}
           style={{ flex: 1 }}
         />
         <StatCard
           compact
-          label="Total P&L"
+          label="Unrealised P&L"
           icon={TrendingUp}
-          value={gain}
+          value={totals.unrealised}
           delta={gainPct}
-          caption="unrealised"
+          caption={`${formatMoneyWhole(totals.realised + totals.dividends, 'always')} realised + dividends`}
           index={2}
           style={{ flex: 1 }}
         />
@@ -79,17 +118,17 @@ export function StocksScreen() {
           label="Day change"
           icon={ArrowLeftRight}
           value={totals.dayChange}
-          delta={dayPct}
-          caption="today"
+          delta={dayBase ? (totals.dayChange / dayBase) * 100 : 0}
+          caption="since the previous close"
           index={3}
           style={{ flex: 1 }}
         />
         <StatCard
           compact
-          label="Holdings"
+          label="XIRR"
           icon={Layers}
-          value={`${sampleStocks.length} stocks`}
-          caption="6 sectors"
+          value={totals.xirr === null ? '—' : formatPercent(totals.xirr * 100)}
+          caption={`${totals.count} stocks held`}
           index={4}
           style={{ flex: 1 }}
         />
@@ -97,36 +136,38 @@ export function StocksScreen() {
       <BentoRow stackBelow="desktop" fill={fit ? 1.1 : undefined}>
         <BentoCell flex={8}>
           <PriceChartCard
+            rows={rows}
             selected={selected}
-            onSelect={setTicker}
+            market={view.market}
+            today={view.today}
+            onSelect={setChosen}
+            onOpen={(stockId) => setPanel({ type: 'detail', stockId })}
             style={fit ? { flex: 1 } : { height: 280 }}
           />
         </BentoCell>
         <BentoCell flex={4}>
-          <SectorCard style={fit ? { flex: 1 } : undefined} />
+          <SectorCard sectors={view.sectors} style={fit ? { flex: 1 } : undefined} />
         </BentoCell>
       </BentoRow>
       <BentoRow stackBelow="desktop" fill={fit ? 1 : undefined}>
         <BentoCell flex={8}>
           <StockHoldings
-            selected={ticker}
-            onSelect={setTicker}
+            rows={rows}
+            selected={selected.stock.id}
+            onSelect={setChosen}
+            onOpen={(stockId) => setPanel({ type: 'detail', stockId })}
             style={fit ? { flex: 1 } : undefined}
           />
         </BentoCell>
         <BentoCell flex={4}>
-          <TopMovers style={fit ? { flex: 1 } : undefined} />
+          <TopMovers
+            movers={view.movers}
+            market={view.market}
+            style={fit ? { flex: 1 } : undefined}
+          />
         </BentoCell>
       </BentoRow>
-      <PlannedSheet
-        visible={trading}
-        onClose={() => setTrading(false)}
-        title="Add trade"
-        description="Record a buy or sell with quantity, price and charges."
-        icon={ChartCandlestick}
-        phase="Phase 6"
-        body="Stock holdings arrive with the investments phase. Prices will come from a server-side quote service, never from the browser."
-      />
+      <StockPanels panel={panel} onChange={setPanel} />
     </Screen>
   );
 }

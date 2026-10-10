@@ -101,6 +101,7 @@ describe('fromRemote', () => {
       categories: [],
       people: [],
       transactions: [],
+      portfolio: { funds: [], fundTxns: [], sips: [], stocks: [], trades: [] },
       notes: [],
     });
   });

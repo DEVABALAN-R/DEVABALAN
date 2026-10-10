@@ -9,17 +9,3 @@ export function seeded(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
-/** Whole rupees → integer paise. */
-export const rupees = (amount: number) => Math.round(amount) * 100;
-
-export const monthShort = (date: Date) =>
-  new Intl.DateTimeFormat('en-IN', { month: 'short' }).format(date);
-
-/** Labels for the last `count` months ending with the current one. */
-export function recentMonths(count: number, today = new Date()): Date[] {
-  return Array.from(
-    { length: count },
-    (_, index) => new Date(today.getFullYear(), today.getMonth() - (count - 1 - index), 1),
-  );
-}

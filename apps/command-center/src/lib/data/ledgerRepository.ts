@@ -1,6 +1,8 @@
 import type { Account, Category, Person, Transaction } from '@/lib/domain/expenses';
+import type { Portfolio } from '@/lib/domain/investments';
 import type { Note } from '@/lib/domain/notes';
 import { diffById, isEmptyDiff } from '@/lib/domain/sync';
+import { portfolioChanges, portfolioFromRemote, type RemotePortfolio } from './portfolioRows';
 import { callRpc } from './rpc';
 
 /** Everything the app keeps in the cloud for one user. */
@@ -10,27 +12,35 @@ export type CloudData = {
   people: Person[];
   transactions: Transaction[];
   notes: Note[];
+  /** Mutual funds and stocks (migration 0007). */
+  portfolio: Portfolio;
 };
 
+type InvestmentKey = 'mf_funds' | 'mf_sips' | 'mf_transactions' | 'stocks' | 'stock_trades';
+
 /** One batch for `sync_ledger`, in the database's column names. */
-export type LedgerChanges = {
+export type LedgerChanges = Partial<Record<InvestmentKey, unknown[]>> & {
   accounts?: unknown[];
   categories?: unknown[];
   people?: unknown[];
   transactions?: unknown[];
   notes?: unknown[];
   deleted?: Partial<
-    Record<'accounts' | 'categories' | 'people' | 'transactions' | 'notes', string[]>
+    Record<
+      'accounts' | 'categories' | 'people' | 'transactions' | 'notes' | InvestmentKey,
+      string[]
+    >
   >;
 };
 
 type Row = Record<string, unknown>;
-type Raw = Partial<
-  Record<
-    'accounts' | 'categories' | 'people' | 'transactions' | 'splits' | 'settles' | 'notes',
-    Row[]
-  >
->;
+type Raw = RemotePortfolio &
+  Partial<
+    Record<
+      'accounts' | 'categories' | 'people' | 'transactions' | 'splits' | 'settles' | 'notes',
+      Row[]
+    >
+  >;
 
 const str = (value: unknown) => (typeof value === 'string' ? value : '');
 const num = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : 0);
@@ -109,6 +119,7 @@ export function fromRemote(raw: Raw | null): CloudData {
       createdAt: time(row.created_at),
       updatedAt: time(row.updated_at),
     })),
+    portfolio: portfolioFromRemote(data),
   };
 }
 
@@ -167,8 +178,12 @@ export function buildChanges(previous: CloudData, next: CloudData): LedgerChange
   const transactions = diffById(previous.transactions, next.transactions, transactionRow);
   // Edit times alone are not changes; the server keeps its own.
   const notes = diffById(previous.notes, next.notes, noteRow);
-  if (isEmptyDiff([accounts, categories, people, transactions, notes])) return null;
+  const portfolio = portfolioChanges(previous.portfolio, next.portfolio);
+  if (isEmptyDiff([accounts, categories, people, transactions, notes, ...portfolio.diffs])) {
+    return null;
+  }
   return {
+    ...portfolio.upserts,
     accounts: accounts.upserts.map(accountRow),
     categories: categories.upserts.map(categoryRow),
     people: people.upserts.map(personRow),
@@ -180,6 +195,7 @@ export function buildChanges(previous: CloudData, next: CloudData): LedgerChange
       people: people.deletes,
       transactions: transactions.deletes,
       notes: notes.deletes,
+      ...portfolio.deletes,
     },
   };
 }

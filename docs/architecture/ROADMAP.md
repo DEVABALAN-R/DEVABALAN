@@ -1,80 +1,205 @@
-# Command Center roadmap (revised October 2026)
+# Command Center roadmap (October 2026)
 
-This updates the phase order in [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) §22 to match where the
-app actually is. The detailed design for each phase (tables, security rules, tests, rollback) is
-still in that document; this page says **what is done, what comes next, and in which order**.
+What is done, what comes next and why, and the longer plan for turning the app into Devabalan's
+everyday personal command center. The architecture behind it is in
+[`ARCHITECTURE.md`](ARCHITECTURE.md); decisions are in [`decisions/`](decisions/README.md). The
+original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md)) is historical.
 
 ## Where we are
 
-| Area                                                     | Status                       | Notes                                                                                                                                   |
-| -------------------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Phase 0: audit and plan                                  | Done                         | `MODERNIZATION_PLAN.md`                                                                                                                 |
-| Phase 1: Expo app, design system, CI                     | Done                         | `apps/command-center`, deployed on Vercel (`devabalan-command-center` project)                                                          |
-| UI redesign (monochrome, compact, black dark-mode tiles) | Done                         |                                                                                                                                         |
-| Expense manager (Money Manager style)                    | Done, **saved to Supabase**  | Transactions, Stats pie and category trend, Budget, Categories, Accounts. Flows in [`EXPENSE_MANAGER_FLOW.md`](EXPENSE_MANAGER_FLOW.md) |
-| One line-chart style across the app                      | Done                         | Accounts, Stocks, Mutual funds, sparklines                                                                                              |
-| Mutual funds and Stocks screens                          | Design only, **sample data** | Labelled "Sample data · design preview"                                                                                                 |
-| Sign-in, real saved data                                 | Done (Phases 2, 3.1, 3.2)    | Older data in `user_workspaces` is imported in Phase 3.3                                                                                |
+| Area                        | Status          | Notes                                                                                                                                        |
+| --------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Expo app, design system, CI | Done            | Web on Vercel (`devabalan-command-center`); iOS/Android from the same code                                                                   |
+| Sign-in and security        | Done            | Allowlisted sign-up, two-step sign-in (TOTP, aal2 in the database), sessions, idle sign-out                                                  |
+| Expense manager             | Done, saved     | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts on device                                          |
+| Notes                       | Done, saved     | Text and checklists, colours, pins, labels, archive                                                                                          |
+| Mutual funds                | **Done, saved** | AMFI search, purchases/SIPs/redemptions/dividends, SIP plans with due and missed instalments, FIFO cost, XIRR, allocation, growth, AMFI NAVs |
+| Stocks                      | **Done, saved** | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
+| Overview                    | Done            | Net worth includes funds and stocks                                                                                                          |
+| Old app's data              | Waiting         | Still in `user_workspaces`; Phase 3.3 imports it                                                                                             |
+| Goals, Insights, Reports    | Placeholders    | Labelled "Planned"                                                                                                                           |
 
-The original plan built the database (Phase 3) before the screens (Phases 4–5). In practice the
-screens were built first on an in-memory store whose actions already match the planned
-repositories. So the most valuable next step is to **make the data real**: sign-in first, then
-persistence, before adding more screens.
+> **October 2026:** the old Vite app was removed from the repository (the last commit that has it
+> is `efc04a9`); its data stays in Supabase until 3.3 imports it. Migrations 0001–0004, their
+> rollbacks and SQL tests were removed after being applied (in history at `224176d`); 0005–0007
+> are in `supabase/migrations`.
 
-## Revised phase order
+## The plan in one picture
 
-| #     | Phase                                   | Goal                                                                                                                                                            | Depends on           |
-| ----- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| **2** | **Sign-in and security foundation**     | Only you can open the app; sessions are safe on web and phone                                                                                                   | —                    |
-| 3     | Save the expense ledger                 | Accounts, categories, transactions and budgets stored in Supabase with RLS; preview store replaced by repositories; old workspace imported with a parity report | 2                    |
-| 4     | Overview on real data                   | Overview numbers from the ledger and read models; first insight rules; decide bar vs line for Cash flow                                                         | 3                    |
-| 5     | Money Manager import and power features | CSV import from Money Manager (pulled forward from Phase 9 because it is your current app), search, recurring entries, offline add queue                        | 3                    |
-| 6     | Mutual funds on real data               | Holdings and typed transactions, NAV from AMFI via an Edge Function (never from the browser), XIRR                                                              | 3                    |
-| 7     | Stocks on real data (new phase)         | Holdings and trades; quotes from a server-side provider you choose                                                                                              | 3, provider decision |
-| 8     | Reports and insights                    | Monthly, category, investment and net-worth reports with CSV export                                                                                             | 4–7                  |
-| 9     | Polish                                  | Motion, PWA install, notifications, JSON backup export                                                                                                          | —                    |
-| 10–12 | Hardening, performance, cutover         | Unchanged from the plan: threat-model tests, bundle ≤ 350 KiB, move the main domain, drop `user_workspaces` after a backup and 30 days                          | all                  |
+```mermaid
+flowchart LR
+  subgraph Now
+    A[3.3 Import old data]
+    B[Price setup live<br/>schedule + checks]
+  end
+  subgraph Next
+    C[Money Manager import<br/>recurring, search, offline]
+    D[Investments v2<br/>CAS import, capital gains, benchmarks]
+    E[Net worth: other assets<br/>FD, PPF, EPF, NPS, gold, loans, cards]
+    F[Goals and planning]
+  end
+  subgraph Later
+    G[Reports and insights]
+    H[Personal trackers<br/>habits, health, journal, documents]
+    I[Notifications, app lock, widgets]
+    J[Hardening and performance]
+  end
+  A --> C --> G
+  B --> D --> G
+  E --> F --> G
+  H --> I
+```
 
-## Phase 2 in steps
+## Now
 
-Each step is one PR that passes CI on its own.
+### 3.3: Import the old app's data (next PR)
 
-| Step           | What ships                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Needs from you                                                                                                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **2.1 (done)** | Supabase client with the secret-key guards ported from the Vite app; session kept in `sessionStorage` on web and SecureStore on phones; sign-in, forgot-password and reset-password screens; the dashboard requires a session **when Supabase is configured**, and stays in labelled preview mode when it is not; safe `?redirect=` handling; security headers (CSP, HSTS, frame blocking) on the Vercel project                                                                                                                                                                                                                                                                                                                      | Add `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the `devabalan-command-center` Vercel project; add the app's URLs to Supabase Auth → URL configuration |
-| **2.2 (done)** | Migration `202610080004_auth_hardening.sql`: `internal` schema, sign-up allowlist with a Before-User-Created hook, `profiles`, append-only `audit_logs`, `search_path` fixes on existing functions, legacy 4-argument RPC removed; portfolio owner gate and size limits; rollback script; database tests that run in CI (`supabase/tests/run.sh`)                                                                                                                                                                                                                                                                                                                                                                                     | Run the migration in the Supabase SQL editor (or CLI) after review; enable the Before User Created hook (`internal.before_user_created`). Steps in `SUPABASE_SETUP.md`              |
-| **2.3 (done)** | Two-step sign-in (TOTP): set up in Settings → Two-step sign-in (QR code or setup key, first code confirms it), 6-digit code screen after the password (`/verify-code`, also used by password-reset links), turn off with confirmation; "Sign out other devices"; "Keep me signed in on this device" (web: localStorage instead of the tab's sessionStorage; native always keeps it in the keystore); idle sign-out chosen per device (Auto, 15 min, 1 h, 8 h, Never; Auto is 30 minutes, or never on a kept device), with a 2-minute warning. **Not yet enforced in the database:** restrictive `aal2` RLS policies come with the Phase 3 tables, because the legacy Vite app (which reads `user_workspaces`) cannot ask for the code | Scan the QR code with an authenticator app; TOTP must be enabled under Authentication → Multi-Factor (it is by default)                                                             |
-| 2.4            | Error reporting with a scrubber that never sends amounts, notes or tokens (optional)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | A Sentry DSN, if you want it                                                                                                                                                        |
+The owner's history (transactions, accounts, categories, mutual funds and their purchases) is in
+`user_workspaces`. A one-time, owner-run import:
 
-## Phase 3 in steps
+- A `security invoker` RPC reads the caller's own `user_workspaces` row and creates accounts,
+  categories (with subcategories), transactions, funds (`mf_funds`, manual NAV from the last
+  snapshot) and purchases (`mf_transactions`, with stamp duty and units as recorded), keeping each
+  old id in a `legacy_id` column so running it twice changes nothing.
+- A **parity report** before anything is written: counts, totals per account, per category and per
+  fund, old versus new. The owner confirms; then the old row is marked imported (read-only).
+- Funds can then be linked to their AMFI scheme from Edit fund, so NAVs update automatically.
+- Needs from you: confirm the report. Decide whether historical category-type flips are reviewed
+  by hand (plan §3.5).
 
-| Step           | What ships                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Needs from you                      |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| **3.1 (done)** | Migration `202610080005_core_finance.sql`: `accounts`, `categories` (one sub-level, budgets), `people`, `transactions`, `transaction_splits`, `repayment_settles` and `notes`. Each table: owner defaults to the caller and cannot change, composite foreign keys so no row can point at another user's row, per-verb RLS, a restrictive policy requiring two-step sign-in (`aal2`) once it is on, CHECKs for every rule the app validates, audit entries without values. Rollback script; SQL tests in CI (isolation, cross-user links, every rule, cascades, `aal2`, audit)                                    | Run the migration in the SQL editor |
-| **3.2 (done)** | Migration `202610080006_ledger_sync.sql`: `load_ledger()` and `sync_ledger(jsonb)`, both `security invoker` (RLS, aal2 and every check still apply). The app loads the signed-in user's ledger and notes after sign-in (sample data is never shown as theirs), then sends the difference from the last saved copy as one atomic batch shortly after each change; offline and server errors retry with back-off, refused changes are rolled back by reloading; sync stops before sign-out clears the stores. Save status replaces the preview badge; an empty ledger offers starter categories and a Cash account | Run the migration in the SQL editor |
-| 3.3            | Import from the legacy `user_workspaces` row with a parity report (counts and balances must match), then old saves are switched off                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Confirm the parity report           |
+### Price updates live
 
-Receipt photos stay on the device until private storage arrives (Phase 5).
+- Deploy `market-refresh` and add the daily schedule (steps in
+  [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#prices-the-market-refresh-function)).
+- First run from the app (**Update prices**), then check `market_refresh_runs`. If the NSE
+  download is blocked from Supabase's servers, the BSE fallback or manual prices keep values
+  current; a paid provider is the long-term option (decision below).
+
+## Next
+
+### Money Manager import and everyday power features
+
+- CSV import from Money Manager (your current app): upload → map columns → preview with duplicate
+  detection → import. Runs in an Edge Function; the file is not kept.
+- Recurring entries (rent, salary, subscriptions) with "record now" reminders.
+- Search across entries and notes; saved filters.
+- Offline add queue on phones (entries made without a connection are sent later).
+
+### Investments v2
+
+- **Consolidated account statement (CAS) import** from CAMS/KFintech PDFs: every fund and
+  transaction in one go. Parsed on the server; the PDF password is used once and never stored.
+- **Broker tradebook import** (CSV from Zerodha, Groww, Upstox and others) for stocks.
+- **Capital gains by financial year**: FIFO lots, short/long term by holding period, grandfathered
+  cost for older equity; tax estimates only with rates that name their source and year.
+- **Dividends and corporate actions** calendar; prompts when a held share has a bonus or split.
+- **Benchmark comparison**: your XIRR against an index fund or index over the same cash flows.
+- **Portfolio health**: overlap between funds, expense ratio drag (direct vs regular), category
+  concentration, top holdings across funds (from AMFI/AMC portfolio disclosures).
+- **SIP autopilot** (opt-in): records each instalment at the published NAV after the allotment
+  date; you only confirm.
+- **Live prices** behind the same tables if a provider is chosen (decision below).
+
+### Net worth: everything you own and owe
+
+- Fixed and recurring deposits (interest accrual and maturity), PPF, EPF, NPS (contributions plus
+  statement value), gold and silver (sovereign gold bonds, physical), real estate (manual
+  valuations), cash in hand.
+- Loans with EMI schedules and a prepayment calculator; credit cards with statement cycles and due
+  dates.
+- Insurance policies: cover, premium and renewal dates.
+- A daily **net worth snapshot** (server job) for a true net-worth-over-time chart.
+
+### Goals and planning
+
+- Goals with a target amount and date (house, car, education, emergency fund, retirement), linked
+  to accounts, funds and stocks.
+- Progress and the monthly SIP needed, with return assumptions **you** enter (no hard-coded
+  returns), and a range from cautious to hopeful.
+- Emergency fund (months of expenses covered) and retirement corpus calculators.
+
+## Later
+
+### Reports and insights
+
+- Monthly review: income, spending by category, savings rate, net worth change, investment
+  performance; exportable CSV and PDF.
+- Rule-based insights first: unusual spending, budget pace, idle cash, SIPs missed, FD maturing,
+  card due, insurance renewal.
+- Optional AI summaries, **off by default**: only with explicit opt-in (`user_preferences`), only
+  aggregates (never raw notes or account numbers), and never required for any feature.
+
+### Personal trackers (beyond money)
+
+One generic **tracker engine** instead of a new module per idea: a tracker is a definition
+(name, type: number, yes/no, duration, 1–5 scale or text; unit; goal; schedule) plus dated entries.
+Streaks, charts and reminders are shared. On top of it, ready-made trackers:
+
+| Tracker              | What it covers                                                                            |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| Habits               | Daily or weekly habits with streaks and reminders                                         |
+| Health               | Weight, sleep, workouts, steps, water (manual first; Apple Health / Health Connect later) |
+| Journal and mood     | Daily note with mood and tags; optional end-to-end encryption                             |
+| Documents            | Private, encrypted storage for IDs, policies and warranties, with expiry reminders        |
+| Important dates      | Birthdays, anniversaries, renewals, warranties                                            |
+| Vehicle              | Fuel, service log and reminders (spending links to the ledger)                            |
+| Reading and learning | Books, courses, progress                                                                  |
+
+A daily **Today** view brings them together: tasks due, habits to tick, bills and SIPs due, and a
+quick add for anything.
+
+### Platform
+
+- **Notifications**: push (Expo) and email from an Edge Function and schedule: SIP due, bill or
+  card due, budget limit, price alert, document expiry, weekly review.
+- **App lock** with Face ID / fingerprint on phones; **privacy mode** that hides amounts.
+- Installable web app; home-screen widgets on phones.
+- **Incremental sync** (changes since a cursor) and per-area loading when data grows; offline cache.
+- Backup and export (JSON and CSV), scheduled encrypted backups, account deletion.
+
+### Hardening and performance
+
+- Threat-model review with tests for each control; SQL tests for every migration run before it
+  ships (and back in CI if the owner wants them in the repository).
+- Route-level code splitting (web bundle to ≤ 350 KiB); performance budgets per screen.
+- Error reporting with a scrubber that never sends amounts, notes or tokens (optional Sentry).
+- Retire `user_workspaces` after the import, a verified backup and 30 days; delete the old Vercel
+  project.
+
+## What premium apps do, and how we do it
+
+| Feature                       | Common in                        | Here                                                                 | When         |
+| ----------------------------- | -------------------------------- | -------------------------------------------------------------------- | ------------ |
+| Net worth across all assets   | INDmoney, Kuvera, Monarch        | Ledger + funds + stocks today; other assets and daily snapshots next | Next         |
+| Fund import from CAS          | INDmoney, Kuvera, Value Research | Server-side PDF parsing, password used once                          | Next         |
+| XIRR per fund and portfolio   | Kuvera, Groww, Zerodha Console   | Done                                                                 | Done         |
+| Capital gains report          | Kuvera, Zerodha Console          | FIFO lots ready; report next                                         | Next         |
+| Fund overlap and expense drag | Value Research, INDmoney         | From AMFI/AMC disclosures                                            | Next         |
+| Budgets and category trends   | YNAB, Money Manager              | Done                                                                 | Done         |
+| Recurring and bill reminders  | Monarch, Copilot                 | Recurring entries + notifications                                    | Next / Later |
+| Goals with projections        | Kuvera, Monarch                  | Your own return assumptions, ranges                                  | Next         |
+| Shared expenses and settle-up | Splitwise                        | Done (people, splits, repayments)                                    | Done         |
+| Habits, health, journal       | Streaks, Daylio                  | Generic tracker engine                                               | Later        |
+| Document vault                | DigiLocker-style apps            | Encrypted private storage with expiry reminders                      | Later        |
+| AI assistant                  | Copilot, Monarch                 | Off by default; aggregates only; rules first                         | Later        |
 
 ## Decisions needed from you
 
-These change Phases 3, 6 and 7; none blocks Phase 2.1.
-
-1. Stamp duty in mutual fund cost basis? (recommended: yes)
-2. Review historical category-type flips by hand during import? (plan §3.5, F4)
-3. AMFI as the first NAV provider?
-4. Phone app stores, or web plus an installable web app first?
-5. Should the public portfolio keep showing phone and email?
-6. **New:** which stock-quote provider (it must be called from an Edge Function, and its terms must allow personal use)?
-
-> **October 2026:** the old Vite app was removed from the repository (the last commit that has it is `efc04a9`); its data stays in Supabase until 3.3 imports it.
->
-> Migrations 0005 and 0006 stay in `supabase/migrations`; the older migrations, rollbacks and SQL tests were removed in October 2026 after being applied and are in Git history at commit `224176d`. New database changes in later phases will add their own migration files again.
+1. Phase 3.3: confirm the parity report when it is ready; review category-type flips by hand?
+2. Live share prices: stay end of day (free), or pick a provider (paid feed or a broker API) whose
+   terms allow personal use? Its key would live only in a function secret.
+3. Phone app stores, or the installable web app first?
+4. Which "Next" track first after 3.3: Money Manager import, Investments v2, or other assets?
+5. Tax estimates: show only gains and holding periods, or estimate tax with dated, sourced rates?
+6. Personal trackers: which three matter most to you (habits, health, journal, documents, dates)?
 
 ## Rules that hold for every phase
 
 - No service-role or secret keys in the app; only the publishable key, protected by RLS.
-- Authorization is enforced in the database (RLS, checks, RPCs); screens and route guards are only convenience.
+- Authorization is enforced in the database (RLS, checks, RPCs); screens and route guards are only
+  convenience.
+- Market data and other third-party data are fetched on the server, never from the browser, and
+  never hard-coded.
 - No financial data or tokens in logs; no financial data sent to external AI services by default.
-- No hard-coded market data or personal balances; sample data stays clearly labelled until replaced.
+- No hard-coded personal balances; sample data stays clearly labelled and only in preview mode.
 - We do not claim the app cannot be hacked; we reduce risk and test the controls.

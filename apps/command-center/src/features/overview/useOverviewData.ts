@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { comparisonLabel } from '@/features/expenses/format';
 import { useLedger } from '@/features/expenses/hooks/useLedger';
-import { portfolioTotals, sampleValueSeries } from '@/features/preview/sampleInvestments';
-import { sampleStocks, stockPortfolio } from '@/features/preview/sampleStocks';
+import { useFundsView, useStocksView } from '@/features/investments/hooks/useInvestments';
 import {
   accountBalances,
   budgetStatus,
@@ -20,12 +19,13 @@ import {
 } from '@/lib/domain/expenses';
 
 /**
- * Overview figures. Cash flow, spending and accounts come from the expense
- * ledger (the same numbers as the expense manager); fund and stock values
- * are still labelled samples until the investments phase.
+ * Overview figures. Cash flow, spending and accounts come from the expense ledger,
+ * funds and stocks from the investment pages (the same numbers in both places).
  */
 export function useOverviewData() {
   const { accounts, categories, transactions } = useLedger();
+  const fundsView = useFundsView();
+  const stocksView = useStocksView();
   return useMemo(() => {
     const today = todayIso();
     const month = monthOf(today);
@@ -43,8 +43,8 @@ export function useOverviewData() {
       .filter((account) => !investmentIds.has(account.id))
       .map((account) => ({ account, balance: balances.get(account.id) ?? 0 }));
     const cash = everyday.reduce((sum, item) => sum + item.balance, 0);
-    const funds = portfolioTotals();
-    const stocks = stockPortfolio();
+    const funds = fundsView.totals;
+    const stocks = stocksView.totals;
     const budget = budgetStatus(categories, transactions, month);
     const sorted = [...transactions].sort(
       (a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt,
@@ -71,15 +71,19 @@ export function useOverviewData() {
       budget: { spent: budget.spentInBudgeted, total: budget.totalBudget },
       topCategories: categoryBreakdown(transactions, categories, 'expense', range).slice(0, 3),
       recent: sorted.slice(0, 6),
-      funds: { ...funds, series: sampleValueSeries().value },
-      stocks: {
-        ...stocks,
-        series: sampleStocks[0].history.map((_, index) =>
-          sampleStocks.reduce((sum, stock) => sum + stock.history[index] * stock.quantity, 0),
-        ),
-      },
+      funds: { ...funds, series: held(fundsView.series.value) },
+      stocks: { ...stocks, series: held(stocksView.series.value) },
     };
-  }, [accounts, categories, transactions]);
+  }, [accounts, categories, transactions, fundsView, stocksView]);
 }
+
+/** Drops the months before anything was held, so the sparkline starts at the first value. */
+const held = (values: number[]) =>
+  values.slice(
+    Math.max(
+      0,
+      values.findIndex((value) => value > 0),
+    ),
+  );
 
 export type OverviewData = ReturnType<typeof useOverviewData>;

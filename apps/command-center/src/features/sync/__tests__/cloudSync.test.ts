@@ -1,12 +1,17 @@
 import { useSession } from '@/features/auth/sessionStore';
 import { useExpenseStore } from '@/features/expenses/state/expenseStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
+import { usePortfolioStore } from '@/features/investments/state/portfolioStore';
+import { useMarketStore } from '@/features/investments/state/marketStore';
 import { loadCloudData, saveChanges, type CloudData } from '@/lib/data/ledgerRepository';
+import { loadMarket } from '@/lib/data/marketRepository';
+import { EMPTY_MARKET, EMPTY_PORTFOLIO } from '@/lib/domain/investments';
 import { RpcError } from '@/lib/data/rpc';
 import { flushCloudSync, startCloudSync, stopCloudSync } from '../cloudSync';
 import { addStarterLedger } from '../starter';
 import { useSyncStatus } from '../syncStatus';
 
+jest.mock('@/lib/data/marketRepository', () => ({ loadMarket: jest.fn() }));
 jest.mock('@/lib/data/ledgerRepository', () => ({
   ...jest.requireActual('@/lib/data/ledgerRepository'),
   loadCloudData: jest.fn(),
@@ -19,6 +24,7 @@ const cloud = (): CloudData => ({
   people: [],
   transactions: [],
   notes: [],
+  portfolio: EMPTY_PORTFOLIO,
 });
 
 beforeEach(() => {
@@ -28,6 +34,7 @@ beforeEach(() => {
   useSession.setState({ status: 'signedIn', email: 'me@example.com', recovery: false });
   jest.mocked(loadCloudData).mockResolvedValue(cloud());
   jest.mocked(saveChanges).mockResolvedValue(undefined);
+  jest.mocked(loadMarket).mockResolvedValue(EMPTY_MARKET);
 });
 afterEach(() => {
   stopCloudSync();
@@ -129,5 +136,31 @@ describe('starter ledger', () => {
         .every((c) => categories.some((p) => p.id === c.parentId)),
     ).toBe(true);
     expect(accounts).toEqual([expect.objectContaining({ name: 'Cash', openingBalance: 0 })]);
+  });
+});
+
+describe('investments', () => {
+  it('replaces the sample portfolio and saves fund changes in the same batch', async () => {
+    usePortfolioStore.getState().resetPreview();
+    expect(usePortfolioStore.getState().funds.length).toBeGreaterThan(0);
+    await startCloudSync();
+    expect(usePortfolioStore.getState().funds).toEqual([]);
+    expect(useMarketStore.getState().mode).toBe('cloud');
+    expect(loadMarket).toHaveBeenCalled();
+    usePortfolioStore.getState().saveFund({
+      schemeCode: null,
+      name: 'My fund',
+      category: '',
+      fundHouse: '',
+      folio: '',
+      manualNav: 10,
+      manualNavDate: '2026-10-01',
+      note: '',
+    });
+    await settle();
+    const changes = jest.mocked(saveChanges).mock.calls.at(-1)?.[0];
+    expect(changes?.mf_funds).toEqual([
+      expect.objectContaining({ name: 'My fund', manual_nav: 10 }),
+    ]);
   });
 });

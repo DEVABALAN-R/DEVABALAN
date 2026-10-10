@@ -76,6 +76,7 @@ export { default as PinOff } from 'lucide-react-native/icons/pin-off';
 export { default as Plane } from 'lucide-react-native/icons/plane';
 export { default as Plus } from 'lucide-react-native/icons/plus';
 export { default as Receipt } from 'lucide-react-native/icons/receipt';
+export { default as RefreshCw } from 'lucide-react-native/icons/refresh-cw';
 export { default as ReceiptText } from 'lucide-react-native/icons/receipt-text';
 export { default as Repeat } from 'lucide-react-native/icons/repeat';
 export { default as RotateCcw } from 'lucide-react-native/icons/rotate-ccw';

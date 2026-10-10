@@ -9,14 +9,16 @@
  * for regressions. Phase 2.1 added Supabase Auth: first the whole supabase-js
  * (~70 KiB gzip), then only @supabase/auth-js (~35 KiB less, no unused realtime or
  * storage clients). With people, photos and Notes the bundle is ~450 KiB, so the
- * ceiling is 470 KiB. Phase 11 target from the plan: ≤ 350 KiB (route-level code
+ * ceiling is 470 KiB. Mutual funds and stocks on real data (holdings, trades, SIPs,
+ * FIFO gains, XIRR, AMFI search, five forms) added ~20 KiB: the bundle is ~480 KiB and
+ * the ceiling 495 KiB. Phase 11 target from the plan: ≤ 350 KiB (route-level code
  * splitting). Raise the ceiling only deliberately, in the same PR that explains why.
  */
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const CEILING_KIB = 470;
+const CEILING_KIB = 495;
 const TARGET_KIB = 350;
 // npm scripts run from the package root.
 const dir = path.join(process.cwd(), 'dist', '_expo', 'static', 'js', 'web');

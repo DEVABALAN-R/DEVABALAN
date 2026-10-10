@@ -1,46 +1,68 @@
-import { useState } from 'react';
+import { View } from 'react-native';
 import { TrendLineChart } from '@/components/charts';
-import { Card, CardHeader, SegmentedControl } from '@/components/ui';
-import { sampleValueSeries } from '@/features/preview/sampleInvestments';
+import { Card, CardHeader, SegmentedControl, Text } from '@/components/ui';
+import { monthLabel } from '@/lib/domain/expenses';
+import type { ValueSeries } from '@/lib/domain/investments';
 import { formatAxisMoney, formatMoneyWhole } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 
-type Range = '6M' | '1Y';
+export type GrowthRange = 12 | 36 | 'all';
 
-/** Portfolio value against the amount invested over time. */
-export function GrowthCard({ style }: { style?: object }) {
+/** Month-end value (line) against the cost of what was held (dashed). */
+export function GrowthCard({
+  series,
+  range,
+  onRange,
+  title = 'Growth',
+  style,
+}: {
+  series: ValueSeries;
+  range: GrowthRange;
+  onRange: (range: GrowthRange) => void;
+  title?: string;
+  style?: object;
+}) {
   const theme = useTheme();
-  const [range, setRange] = useState<Range>('1Y');
-  const series = sampleValueSeries();
-  const take = range === '6M' ? 6 : 12;
-  const labels = series.labels.slice(-take);
-  const value = series.value.slice(-take);
-  const invested = series.invested.slice(-take);
+  const { months, value, invested } = series;
+  const last = value.length - 1;
   return (
     <Card index={5} style={[{ gap: theme.space[2] }, style]}>
       <CardHeader
-        title="Growth"
-        subtitle="Value (line) vs amount invested (dashed)"
+        title={title}
+        subtitle="Value (line) vs cost of what you held (dashed)"
         action={
           <SegmentedControl
             size="sm"
             fill={false}
             accessibilityLabel="Range"
-            value={range}
-            onChange={setRange}
+            value={String(range)}
+            onChange={(next) => onRange(next === 'all' ? 'all' : (Number(next) as 12 | 36))}
             segments={[
-              { value: '6M', label: '6M' },
-              { value: '1Y', label: '1Y' },
+              { value: '12', label: '1Y' },
+              { value: '36', label: '3Y' },
+              { value: 'all', label: 'All' },
             ]}
           />
         }
       />
-      <TrendLineChart
-        points={labels.map((label, index) => ({ label, value: value[index], name: label }))}
-        compare={{ name: 'Invested', values: invested }}
-        formatValue={formatAxisMoney}
-        accessibilityLabel={`Portfolio value grew from ${formatMoneyWhole(value[0])} to ${formatMoneyWhole(value[value.length - 1])} over ${range === '6M' ? 'six months' : 'one year'}, against ${formatMoneyWhole(invested[invested.length - 1])} invested.`}
-      />
+      {months.length >= 2 && value.some(Boolean) ? (
+        <TrendLineChart
+          points={months.map((month, index) => ({
+            label: monthLabel(month, 'short'),
+            value: value[index],
+            name: monthLabel(month),
+          }))}
+          compare={{ name: 'Cost', values: invested }}
+          formatValue={formatAxisMoney}
+          accessibilityLabel={`Value went from ${formatMoneyWhole(value[0])} to ${formatMoneyWhole(value[last])}, against ${formatMoneyWhole(invested[last])} cost.`}
+        />
+      ) : (
+        <View style={{ flex: 1, minHeight: 120, justifyContent: 'center' }}>
+          <Text variant="caption" color="textTertiary" align="center">
+            The chart fills in as you add transactions.
+          </Text>
+        </View>
+      )}
     </Card>
   );
 }
