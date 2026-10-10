@@ -105,6 +105,15 @@ Take a backup first (Database → Backups) if you might want them again; there i
 
 Your own data in the Command Center (entries, notes, funds, stocks) is not touched by it.
 
+## Everything up to now in one file
+
+[`supabase/one-time/20261010_update_all.sql`](supabase/one-time/20261010_update_all.sql) is
+migration 0007, migration 0008 and the Zerodha load below, in that order, so one run brings the
+database up to date. It is safe whether or not 0007 or 0008 were already run, stops at once if
+0005 or 0006 are missing, and leaves entries, accounts, categories, people and notes as they are.
+Run it once; do not run it again after any later migration (it holds the 0007 versions of the load
+and save functions). To reload funds and stocks later, run the Zerodha file on its own.
+
 ## Your funds and stocks from Zerodha (one-time)
 
 [`supabase/one-time/20261010_investments_zerodha.sql`](supabase/one-time/20261010_investments_zerodha.sql)
