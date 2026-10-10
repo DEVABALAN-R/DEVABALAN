@@ -12,7 +12,7 @@ Live web app: **devabalan-command-center.vercel.app**
 apps/command-center/   The app (Expo Router, React Native Web). Its README covers running,
                        checks, deployment and connecting to Supabase
 supabase/migrations/   Ledger and notes (0005), load/save (0006), mutual funds, stocks and
-                       market data (0007)
+                       market data (0007), import of the old app's data (0008)
 supabase/functions/    market-refresh: fetches NAVs and closing prices on the server
 docs/architecture/     ARCHITECTURE.md, ROADMAP.md, decision records, expense manager flows
 docs/features/         How features work (INVESTMENTS.md)
@@ -53,8 +53,9 @@ Supabase side: [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md).
 
 Done: sign-in with two-step codes; the expense manager, Notes, **mutual funds and stocks**
 (holdings, SIPs, FIFO gains, XIRR, AMFI NAVs and end-of-day share prices) saved to Supabase; the
-Overview's net worth includes them. Next: import the older data from `user_workspaces`
-(Phase 3.3). The full plan, including goals, other assets and personal trackers:
+Overview's net worth includes them; the old app's data can be imported from **Settings → Old
+app's data** (migration 0008, with a check report first). Next: the PF / EPF tracker, then salary
+payslips. The full plan, including goals, other assets and personal trackers:
 [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md). How it is built:
 [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
 
@@ -62,7 +63,8 @@ To get automatic prices, run migration 0007 and deploy the price function
 ([`SUPABASE_SETUP.md`](SUPABASE_SETUP.md#prices-the-market-refresh-function)).
 
 The earlier Vite app was removed in October 2026; it is in Git history (last commit before
-removal: `efc04a9`). Its saved data is still in Supabase until Phase 3.3 imports it.
+removal: `efc04a9`). Its saved data stays in Supabase (`user_workspaces`) until you have
+imported it and kept a backup.
 
 ## Security
 

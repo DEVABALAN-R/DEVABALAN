@@ -8,20 +8,21 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 > **History.** Migrations 0001–0004 (the old app's workspace, conflict-safe saves, mutual funds,
 > and auth hardening) have been applied and were removed from the repository with their rollback
 > scripts and SQL tests; they are in Git history at commit `224176d`. The old Vite app itself was
-> removed in October 2026. Migrations 0005, 0006 and 0007, which the Command Center depends on,
-> are in `supabase/migrations/`. New database changes add new numbered files there.
+> removed in October 2026. Migrations 0005–0008, which the Command Center depends on, are in
+> `supabase/migrations/`. New database changes add new numbered files there.
 
 ## What is in the database
 
-| Part                                               | From                | Used by                                                                     |
-| -------------------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
-| Sign-up allowlist and its Before User Created hook | 0004                | Every new account (only allowlisted emails can sign up)                     |
-| `profiles`, `user_preferences`, `audit_logs`       | 0004                | Created per account; `audit_logs` records changes by column name, no values |
-| Finance and notes tables                           | 0005                | The Command Center                                                          |
-| `load_ledger()` and `sync_ledger(jsonb)`           | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
-| Mutual fund and stock tables                       | 0007                | Mutual funds and Stocks pages                                               |
-| Market data tables and their functions             | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
-| `user_workspaces`, `public_portfolios`             | 0001–0003 (old app) | Nothing now. Holds your older data until Phase 3.3 imports it               |
+| Part                                                 | From                | Used by                                                                     |
+| ---------------------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
+| Sign-up allowlist and its Before User Created hook   | 0004                | Every new account (only allowlisted emails can sign up)                     |
+| `profiles`, `user_preferences`, `audit_logs`         | 0004                | Created per account; `audit_logs` records changes by column name, no values |
+| Finance and notes tables                             | 0005                | The Command Center                                                          |
+| `load_ledger()` and `sync_ledger(jsonb)`             | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
+| Mutual fund and stock tables                         | 0007                | Mutual funds and Stocks pages                                               |
+| Market data tables and their functions               | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
+| `import_legacy_workspace(boolean)`, `legacy_imports` | 0008                | Settings → Old app's data: imports `user_workspaces` after a check report   |
+| `user_workspaces`, `public_portfolios`               | 0001–0003 (old app) | Read by the import only. Keep until imported and backed up                  |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
 reachable from the browser.
@@ -29,8 +30,9 @@ reachable from the browser.
 ## One-time setup checklist
 
 1. **Migrations applied, in order:** 0001–0004 (done earlier), then
-   `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql` and
-   `202610090007_investments.sql` from `supabase/migrations/` (SQL Editor → paste → Run).
+   `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
+   `202610090007_investments.sql` and `202610100008_legacy_import.sql` from
+   `supabase/migrations/` (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
    second layer.
@@ -94,6 +96,52 @@ Run `202610090007_investments.sql` after 0006. It adds:
 - `load_ledger()` and `sync_ledger(jsonb)` are replaced to carry the new tables (same rules).
 
 The file ends with a commented rollback.
+
+## Importing the old app's data (migration 0008)
+
+Run `202610100008_legacy_import.sql` after 0007. It adds `import_legacy_workspace(p_commit)` and a
+small `legacy_imports` table (when you imported, and how many rows; never names or amounts).
+
+**In the app:** Settings → **Old app's data** → **Check old data**. The check does the whole
+import inside the database, builds a report from the rows it wrote, then undoes everything:
+nothing is saved. **View report** shows, for each account, the old app's balance next to the new
+one and why they differ; category totals; each fund's invested amount and units; and anything
+that cannot be brought over, with the reason. **Import** saves your waiting changes, runs the same
+import for real, and reloads.
+
+| Old app                                                 | Becomes                                                                                      |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Bank account, opening balance                           | Bank account (same opening balance)                                                          |
+| Credit card, opening balance owed                       | Card account; what you owe is shown as a negative balance                                    |
+| Category with subcategories, monthly budget             | Category and subcategories (icon picked from the name), budget on expense ones               |
+| Expense / income                                        | Expense / income in the same category and subcategory; description · note as note            |
+| Payment (card bill)                                     | Transfer: the paying account goes down, the card's debt goes down                            |
+| Mutual fund (name, category, folio, NAV, expense ratio) | Fund entered by hand with the last NAV and its date; expense ratio and exit load in its note |
+| Fund purchase                                           | Purchase on the execution (NAV) date with the amount paid, stamp duty, units and NAV         |
+
+- **Same name, no duplicate:** an account, category or fund with the same name as one already in
+  the app is used as it is (its own opening balance is kept; the report says so).
+- **Run it again safely:** every imported row gets an id derived from the old one, so a second
+  import adds only what is missing (for example an entry you deleted since).
+- **Why balances can differ:** the old app did not take card payments out of the paying account
+  (and ignored refunds on a card); the new app does. The report shows that amount separately, so
+  "Matches" means everything else agrees.
+- **Left out on purpose:** the old personal profile page (`portfolio`, not money), older NAV
+  snapshots (the latest is kept; link the fund to its AMFI scheme from Edit fund for full
+  history), and rows the database would refuse (no date, zero amount, missing account), which
+  are listed in the report.
+- **Takes about a second** for a few thousand entries. If it ever says the database took too
+  long, run it from the SQL Editor as yourself (same rules; find your user id under
+  Authentication → Users):
+
+  ```sql
+  begin;
+  select set_config('request.jwt.claims',
+    '{"sub":"<your user id>","role":"authenticated","aal":"aal2"}', true);
+  set local role authenticated;
+  select public.import_legacy_workspace(false);  -- the check; true imports
+  commit;
+  ```
 
 ## Prices: the market-refresh function
 
@@ -183,10 +231,10 @@ asks for your password and then the 6-digit code.
 
 ## Older data (`user_workspaces`)
 
-Your finances saved by the old app are still in `user_workspaces` (and the portfolio in
-`public_portfolios`). Removing the old app's code did not touch them. Phase 3.3 imports them into
-the new tables with a parity report (counts and balances must match). Do not drop these tables
-before that import is confirmed and a backup is taken.
+Your finances saved by the old app are still in `user_workspaces` (and the profile page in
+`public_portfolios`). The import above copies them; it never changes or deletes them. Keep them
+until the import is confirmed and you have a backup (Database → Backups, or export the row from
+the Table Editor); retiring them is a later, separate migration.
 
 ## Security boundaries
 

@@ -12,6 +12,7 @@ stays, marked "Superseded by …").
 | [0004](0004-market-data-on-the-server.md)         | Market data fetched on the server from official end-of-day files                    | Accepted |
 | [0005](0005-money-units-and-dates.md)             | Money in integer paise, units and NAVs as exact 4-decimal values, calendar dates    | Accepted |
 | [0006](0006-fifo-gains-and-xirr.md)               | Gains by first-in-first-out lots; returns as XIRR                                   | Accepted |
+| [0007](0007-import-inside-the-database.md)        | Import the old app's data inside the database, checked before it is kept            | Accepted |
 
 ## Template
 

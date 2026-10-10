@@ -23,9 +23,11 @@ Phase 3.3, importing the older data from `user_workspaces`.
 - **Stocks**: buys, sells, dividends, bonus issues and splits; FIFO P&L, XIRR, sectors, day
   change and price charts at end-of-day exchange prices.
 - **Overview** reads the same ledger and portfolio; net worth includes funds and stocks.
+- **Settings → Old app's data** brings over the previous app's entries, accounts, categories,
+  funds and purchases after a check report (migration 0008).
 - Goals, Insights and Reports are labelled placeholders.
 
-**Signed in** (migrations 0005–0007 applied), every page loads and saves **your own** data, and
+**Signed in** (migrations 0005–0008 applied), every page loads and saves **your own** data, and
 the badge by the page title reads Saved / Saving… / Offline · will retry. Prices come from the
 `market-refresh` Edge Function (see [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#prices-the-market-refresh-function)).
 **Without the Supabase settings** the app runs as a labelled preview on sample data, and a
