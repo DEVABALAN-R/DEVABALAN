@@ -7,32 +7,35 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 
 ## Where we are
 
-| Area                        | Status          | Notes                                                                                                                                        |
-| --------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Expo app, design system, CI | Done            | Web on Vercel (`devabalan-command-center`); iOS/Android from the same code                                                                   |
-| Sign-in and security        | Done            | Allowlisted sign-up, two-step sign-in (TOTP, aal2 in the database), sessions, idle sign-out                                                  |
-| Expense manager             | Done, saved     | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts on device                                          |
-| Notes                       | Done, saved     | Text and checklists, colours, pins, labels, archive                                                                                          |
-| Mutual funds                | **Done, saved** | AMFI search, purchases/SIPs/redemptions/dividends, SIP plans with due and missed instalments, FIFO cost, XIRR, allocation, growth, AMFI NAVs |
-| Stocks                      | **Done, saved** | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
-| Overview                    | Done            | Net worth includes funds and stocks                                                                                                          |
-| Old app's data              | Waiting         | Still in `user_workspaces`; Phase 3.3 imports it                                                                                             |
-| Goals, Insights, Reports    | Placeholders    | Labelled "Planned"                                                                                                                           |
+| Area                        | Status           | Notes                                                                                                                                        |
+| --------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Expo app, design system, CI | Done             | Web on Vercel (`devabalan-command-center`); iOS/Android from the same code                                                                   |
+| Sign-in and security        | Done             | Allowlisted sign-up, two-step sign-in (TOTP, aal2 in the database), sessions, idle sign-out                                                  |
+| Expense manager             | Done, saved      | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts on device                                          |
+| Notes                       | Done, saved      | Text and checklists, colours, pins, labels, archive                                                                                          |
+| Mutual funds                | **Done, saved**  | AMFI search, purchases/SIPs/redemptions/dividends, SIP plans with due and missed instalments, FIFO cost, XIRR, allocation, growth, AMFI NAVs |
+| Stocks                      | **Done, saved**  | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
+| Overview                    | Done             | Net worth includes funds and stocks                                                                                                          |
+| Old app's data              | **Import ready** | Settings → Old app's data, after migration 0008: a check report first, then import                                                           |
+| Goals, Insights, Reports    | Placeholders     | Labelled "Planned"                                                                                                                           |
 
 > **October 2026:** the old Vite app was removed from the repository (the last commit that has it
-> is `efc04a9`); its data stays in Supabase until 3.3 imports it. Migrations 0001–0004, their
-> rollbacks and SQL tests were removed after being applied (in history at `224176d`); 0005–0007
-> are in `supabase/migrations`.
+> is `efc04a9`); its data stays in Supabase (`user_workspaces`) until it is imported and backed
+> up. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
+> history at `224176d`); 0005–0008 are in `supabase/migrations`.
 
 ## The plan in one picture
 
 ```mermaid
 flowchart LR
   subgraph Now
-    A[3.3 Import old data]
+    A[3.3 Import old data<br/>check, then import]
     B[Price setup live<br/>schedule + checks]
+    P[PF / EPF tracker]
+    S[Salary payslips]
   end
   subgraph Next
+    X[Excel tracker import<br/>funds, equity, gold, PF history]
     C[Money Manager import<br/>recurring, search, offline]
     D[Investments v2<br/>CAS import, capital gains, benchmarks]
     E[Net worth: other assets<br/>FD, PPF, EPF, NPS, gold, loans, cards]
@@ -44,7 +47,8 @@ flowchart LR
     I[Notifications, app lock, widgets]
     J[Hardening and performance]
   end
-  A --> C --> G
+  A --> X --> C --> G
+  S --> P --> E
   B --> D --> G
   E --> F --> G
   H --> I
@@ -52,20 +56,24 @@ flowchart LR
 
 ## Now
 
-### 3.3: Import the old app's data (next PR)
+### 3.3: Import the old app's data (built; your turn)
 
-The owner's history (transactions, accounts, categories, mutual funds and their purchases) is in
-`user_workspaces`. A one-time, owner-run import:
+Migration 0008 and **Settings → Old app's data** (details in
+[`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#importing-the-old-apps-data-migration-0008)):
 
-- A `security invoker` RPC reads the caller's own `user_workspaces` row and creates accounts,
-  categories (with subcategories), transactions, funds (`mf_funds`, manual NAV from the last
-  snapshot) and purchases (`mf_transactions`, with stamp duty and units as recorded), keeping each
-  old id in a `legacy_id` column so running it twice changes nothing.
-- A **parity report** before anything is written: counts, totals per account, per category and per
-  fund, old versus new. The owner confirms; then the old row is marked imported (read-only).
-- Funds can then be linked to their AMFI scheme from Edit fund, so NAVs update automatically.
-- Needs from you: confirm the report. Decide whether historical category-type flips are reviewed
-  by hand (plan §3.5).
+- `import_legacy_workspace` runs as you and reads only your own `user_workspaces` row. **Check**
+  does the whole import inside the database, builds the report from the rows it wrote, then undoes
+  it; **Import** keeps them. Accounts, categories with subcategories and budgets, entries (card
+  payments become transfers), funds with their last NAV, and purchases with stamp duty and units.
+- The **check report** puts the old app's numbers next to the new ones: balance per account (with
+  the card payments the old app left out shown separately), totals per category, invested amount
+  and units per fund, and every row that cannot come over with its reason.
+- Running it again adds only what is missing. Instead of a `legacy_id` column on five tables, each
+  new row's id is derived from the old id. Categories are matched by type and name, so a name the
+  old app used for both income and expense becomes one category of each type (no manual review of
+  type flips needed).
+- **Your steps:** run migration 0008; Check old data → View report → Import; link each fund to its
+  AMFI scheme from Edit fund; keep `user_workspaces` until you have a backup.
 
 ### Price updates live
 
@@ -75,7 +83,35 @@ The owner's history (transactions, accounts, categories, mutual funds and their 
   download is blocked from Supabase's servers, the BSE fallback or manual prices keep values
   current; a paid provider is the long-term option (decision below).
 
+### PF / EPF tracker (next PR)
+
+Your first personal tracker (chosen October 2026), replacing the spreadsheet's PF sheet:
+
+- Monthly contributions: your share, VPF, and the employer's split between EPF and the pension
+  scheme (EPS), entered per month or carried over from the payslip.
+- Interest is added once a year at the rate EPFO declares for that year, which you enter with the
+  year it applies to (no rate built into the app). It counts only once credited, not before.
+- Withdrawals and advances; employer changes under one UAN; a passbook check against the figures
+  on your EPFO passbook.
+- Statutory figures (contribution rates, wage ceiling) are settings with the date they apply from,
+  not hidden constants. EPF counts in net worth.
+
+### Salary payslips (after PF)
+
+- The full payslip each month: earnings (basic, HRA, allowances, bonus), deductions (EPF, VPF,
+  professional tax, TDS and others), net pay and the employer's contributions.
+- Net pay records the salary income entry in one step; the EPF lines feed the PF tracker.
+- Totals by financial year: gross, deductions and tax deducted so far. Payslip files wait for
+  private storage.
+
 ## Next
+
+### Excel tracker import
+
+Brings in the rest of your old spreadsheet: fund transactions, equity trades, gold, PF history and
+salary rows, with a preview that fixes what the review found (swapped dates, average cost as total
+cost ÷ units, realised gains on units already sold). Sheets with passwords or identity numbers are
+never read or stored; the file is processed on the server and not kept.
 
 ### Money Manager import and everyday power features
 
@@ -185,13 +221,21 @@ quick add for anything.
 
 ## Decisions needed from you
 
-1. Phase 3.3: confirm the parity report when it is ready; review category-type flips by hand?
+1. Phase 3.3: run the check and confirm the report (Settings → Old app's data).
 2. Live share prices: stay end of day (free), or pick a provider (paid feed or a broker API) whose
    terms allow personal use? Its key would live only in a function secret.
 3. Phone app stores, or the installable web app first?
-4. Which "Next" track first after 3.3: Money Manager import, Investments v2, or other assets?
+4. After PF / EPF and salary: Money Manager import, Investments v2, or the other assets first?
 5. Tax estimates: show only gains and holding periods, or estimate tax with dated, sourced rates?
 6. Personal trackers: which three matter most to you (habits, health, journal, documents, dates)?
+
+### Decided (October 2026)
+
+- Import the old app's data first; then the PF / EPF tracker; then salary as full payslips; the
+  Excel importer after those.
+- Parents' finances stay out of the app.
+- Passwords are never stored in the app (use a password manager and two-step sign-in on those
+  accounts).
 
 ## Rules that hold for every phase
 

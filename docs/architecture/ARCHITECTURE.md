@@ -113,7 +113,7 @@ needed ([ROADMAP](ROADMAP.md) Platform track).
 | Ledger      | `accounts`, `categories`, `people`, `transactions`, `transaction_splits`, `repayment_settles`, `notes` | The owner, own rows only                                      |
 | Investments | `mf_funds`, `mf_sips`, `mf_transactions`, `stocks`, `stock_trades`                                     | The owner, own rows only                                      |
 | Market data | `mf_schemes`, `mf_nav_history`, `securities`, `security_prices`, `market_refresh_runs`                 | Only the `market-refresh` function (service role); users read |
-| Legacy      | `user_workspaces`, `public_portfolios`                                                                 | Nothing new; imported in Phase 3.3, then retired              |
+| Legacy      | `user_workspaces`, `public_portfolios`; `legacy_imports`                                               | Read once by `import_legacy_workspace` (0008), then retired   |
 
 Every user-owned table uses one template (`internal.secure_user_table`): owner defaults to the
 caller and cannot change, composite foreign keys (a row can never point at another user's row),
