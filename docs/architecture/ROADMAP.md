@@ -28,7 +28,7 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 ```mermaid
 flowchart LR
   subgraph Now
-    A[Fresh start<br/>empty ledger + Excel funds and shares]
+    A[Fresh start<br/>empty ledger + Zerodha funds and shares]
     M[Import and export<br/>from your current app's file]
     B[Price setup live<br/>schedule + checks]
   end
@@ -63,11 +63,11 @@ You chose not to bring the old app's data over. Instead:
   `public_portfolios`) and the functions that wrote them. The planned import (a check report,
   then import) was built and then withdrawn before it was ever run
   ([ADR 0008](decisions/0008-start-from-scratch.md)).
-- **A one-time SQL file**
-  ([`supabase/one-time/20261010_fresh_start.sql`](../../supabase/one-time/20261010_fresh_start.sql),
-  committed at your request) empties everything you had saved in the app, then loads your three
-  SIP funds (58 purchases, on the 1st of each month after the first) and your shares and ETFs
-  (11 trades) from the Excel tracker, with its totals checked against the sheet.
+- **Funds and shares from Zerodha**
+  ([`supabase/one-time/20261010_investments_zerodha.sql`](../../supabase/one-time/20261010_investments_zerodha.sql),
+  committed at your request): every SIP instalment, buy and sale from your Zerodha tradebooks,
+  checked against your Kite holdings (units, invested and shares match). It replaced a first load
+  from the Excel tracker, which lacked trades the tradebooks have.
 - The expense manager starts empty: **Add starter categories** sets up the usual categories and a
   Cash account in one tap.
 
@@ -111,8 +111,8 @@ PF sheet:
 
 ### The rest of the Excel tracker
 
-Fund and equity history is already loaded. PF history, salary rows and digital gold come in with
-the PF tracker, the payslips and the other-assets module. Sheets with passwords or identity numbers
+Fund and equity history now comes from Zerodha. PF history, salary rows and digital gold come in
+with the PF tracker, the payslips and the other-assets module. Sheets with passwords or identity numbers
 are never read or stored.
 
 ### Everyday power features
@@ -230,8 +230,8 @@ quick add for anything.
 
 ### Decided (October 2026)
 
-- Start from scratch: the old app's data is not imported and is deleted. Funds and shares from the
-  Excel tracker are loaded once, directly in the database.
+- Start from scratch: the old app's data is not imported and is deleted. Funds and shares are
+  loaded once from the Zerodha tradebooks, directly in the database.
 - Then import and export built around the export of the app you use today; then the PF / EPF
   tracker; then salary as full payslips.
 - Parents' finances stay out of the app.
