@@ -24,6 +24,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 | Market data tables and their functions             | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
 | Portfolio tables, functions and `portfolio-media`  | 0010                | Dashboard → Portfolio, and the public portfolio site                        |
 | `transactions.receipt`, private `receipts` bucket  | 0011                | Receipt photos on entries (only you can see them)                           |
+| `recurring_entries`, `load_ledger`/`sync_ledger`   | 0012                | Recurring entries (rent, subscriptions, EMIs)                               |
 | `user_workspaces`, `public_portfolios`             | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
@@ -34,8 +35,8 @@ reachable from the browser.
 1. **Migrations applied, in order:** 0001–0004 (done earlier), then
    `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
    `202610090007_investments.sql`, `202610100008_retire_old_app.sql`,
-   `202610110009_fund_isin.sql`, `202610120010_portfolio.sql` and `202610120011_receipts.sql`
-   from `supabase/migrations/` (SQL Editor → paste → Run).
+   `202610110009_fund_isin.sql`, `202610120010_portfolio.sql`, `202610120011_receipts.sql`
+   and `202610130012_recurring.sql` from `supabase/migrations/` (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
    second layer.
@@ -172,6 +173,21 @@ the top of the file.
 - **Before this migration** the app could not keep photos: a photo added while signed in
   disappeared on reload. Until it is applied, adding a photo shows "Could not upload the photo"
   (there is no bucket to put it in); entries without photos save as before.
+
+## Recurring entries (migration 0012)
+
+Run `202610130012_recurring.sql` after 0011. Safe to run again; the rollback is in the comment
+at the top of the file.
+
+- **Table:** `recurring_entries` (type, amount, accounts, category, note, how often, first date
+  and next date), with the same rules as entries (own rows, two-step sign-in, checks, audit by
+  column name). An account a recurring entry uses cannot be deleted; deleting a category clears
+  it from recurring entries.
+- **Functions:** `load_ledger` returns them and `sync_ledger` saves them; nothing else in either
+  function changes.
+- **Nothing is added by itself:** due dates wait on Expenses → Transactions to be added (amount
+  can be changed) or skipped.
+- **Before this migration** the app hides **Repeat** and the recurring list while signed in.
 
 ## Everything up to now in one file
 

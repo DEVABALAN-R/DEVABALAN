@@ -9,6 +9,7 @@ import type {
   ValidTransaction,
 } from '@/lib/domain/expenses';
 import { newId } from '@/lib/ids';
+import { useRecurringStore } from './recurringStore';
 import { seedAccounts, seedCategories } from './seedCatalog';
 import { seedPeople, withSampleSplits } from './seedPeople';
 import { seedTransactions } from './seedTransactions';
@@ -203,9 +204,11 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   },
 
   deleteAccount: (id) => {
-    const used = get().transactions.some(
-      (item) => item.accountId === id || item.toAccountId === id,
-    );
+    const used =
+      get().transactions.some((item) => item.accountId === id || item.toAccountId === id) ||
+      useRecurringStore
+        .getState()
+        .rules.some((rule) => rule.accountId === id || rule.toAccountId === id);
     if (used) return false;
     set((state) => ({ accounts: state.accounts.filter((item) => item.id !== id) }));
     return true;

@@ -1,10 +1,11 @@
 import { useSession } from '@/features/auth/sessionStore';
 import { cleanUnusedReceipts } from '@/features/expenses/photos/receipts';
 import { getLedger, useExpenseStore } from '@/features/expenses/state/expenseStore';
+import { useRecurringStore } from '@/features/expenses/state/recurringStore';
 import { useMarketStore } from '@/features/investments/state/marketStore';
 import { getPortfolio, usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
-import { EMPTY_PORTFOLIO, type Portfolio } from '@/lib/domain/investments';
+import { EMPTY_PORTFOLIO } from '@/lib/domain/investments';
 import {
   buildChanges,
   loadCloudData,
@@ -12,6 +13,7 @@ import {
   type CloudData,
 } from '@/lib/data/ledgerRepository';
 import { RpcError } from '@/lib/data/rpc';
+import { addsHoldings } from './holdings';
 import { watchLifecycle } from './lifecycle';
 import { useSyncStatus } from './syncStatus';
 
@@ -41,28 +43,27 @@ let loadedAt = 0;
 const snapshot = (): CloudData => {
   const { accounts, categories, people, transactions } = getLedger();
   const notes = useNotesStore.getState().notes;
-  return { accounts, categories, people, transactions, notes, portfolio: getPortfolio() };
-};
-
-/**
- * Prices come only for holdings already saved (load_market), so a newly saved fund
- * linked to an AMFI scheme, or a share with an ISIN, needs one more price load.
- */
-const holdingKeys = (portfolio: Portfolio) => [
-  ...portfolio.funds.flatMap((fund) => (fund.schemeCode ? [`f${fund.schemeCode}`] : [])),
-  ...portfolio.stocks.flatMap((stock) => (stock.isin ? [`s${stock.isin}`] : [])),
-];
-const addsHoldings = (before: Portfolio, after: Portfolio) => {
-  const known = new Set(holdingKeys(before));
-  return holdingKeys(after).some((key) => !known.has(key));
+  const { rules, available } = useRecurringStore.getState();
+  const recurring = available ? rules : undefined;
+  return {
+    accounts,
+    categories,
+    people,
+    transactions,
+    notes,
+    portfolio: getPortfolio(),
+    recurring,
+  };
 };
 
 const setStatus = (status: Parameters<ReturnType<typeof useSyncStatus.getState>['set']>[0]) =>
   useSyncStatus.getState().set(status);
 
 function applyToStores(data: CloudData) {
-  const { notes, portfolio, ...ledger } = data;
+  const { notes, portfolio, recurring, ...ledger } = data;
   useExpenseStore.setState(ledger);
+  // Without migration 0012 there is nowhere to keep recurring entries: Repeat is hidden.
+  useRecurringStore.setState({ rules: recurring ?? [], available: recurring !== undefined });
   useNotesStore.setState({ notes });
   usePortfolioStore.setState(portfolio);
 }
@@ -115,6 +116,7 @@ export async function startCloudSync(): Promise<void> {
     useExpenseStore.subscribe(() => schedule()),
     useNotesStore.subscribe(() => schedule()),
     usePortfolioStore.subscribe(() => schedule()),
+    useRecurringStore.subscribe(() => schedule()),
     // A change made just before the app is hidden is sent at once (phones often close
     // hidden tabs without warning); leaving the page with a change unsaved asks first.
     watchLifecycle({

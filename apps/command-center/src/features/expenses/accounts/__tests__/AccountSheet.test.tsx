@@ -40,7 +40,7 @@ describe('AccountSheet', () => {
     );
     expect(
       screen.getByText(
-        'Accounts with entries cannot be deleted. Move or delete their entries first.',
+        'Accounts with entries or recurring entries cannot be deleted. Move or delete them first.',
       ),
     ).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Delete' }));

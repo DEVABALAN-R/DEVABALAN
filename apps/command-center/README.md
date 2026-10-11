@@ -14,6 +14,8 @@ ledger starts from scratch; next is importing from the export of the app you use
 - **People and splits:** split an expense with friends; Stats and budgets count your share, and
   Expenses › People tracks who owes you and records repayments. Notes are suggested as you type,
   and entries can carry a receipt photo (stored privately once migration 0011 is applied).
+  Entries can repeat (recurring, migration 0012), the amount accepts sums like `120+45`, and the
+  search button finds entries across months and exports them as CSV.
 - **Notes** (Google Keep style): text notes and checklists with colours, pins, labels, archive
   and search.
 - **Mutual funds**: funds from the AMFI list or entered by hand; purchases (stamp duty and units
@@ -29,7 +31,7 @@ ledger starts from scratch; next is importing from the export of the app you use
   served as this site's home page by `api/site.mjs` (built by `npm run build:site`); how it
   works: [`docs/features/PORTFOLIO.md`](../../docs/features/PORTFOLIO.md).
 
-**Signed in** (migrations 0005–0011 applied), every page loads and saves **your own** data, and
+**Signed in** (migrations 0005–0012 applied), every page loads and saves **your own** data, and
 the badge by the page title reads Saved / Saving… / Offline · will retry. Prices come from the
 `market-refresh` Edge Function (see [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#prices-the-market-refresh-function)).
 **Without the Supabase settings** the app runs as a labelled preview on sample data, and a

@@ -9,6 +9,7 @@ import { DailyView } from '../components/DailyView';
 import { DayPanel } from '../components/DayPanel';
 import { ExpensesHeader } from '../components/ExpensesHeader';
 import { MonthlyView } from '../components/MonthlyView';
+import { RecurringDueCard } from '../recurring/RecurringDueCard';
 import { SummaryStrip } from '../components/SummaryStrip';
 import { useActiveView, ViewToolbar } from '../components/ViewToolbar';
 import { YearPanel } from '../components/YearPanel';
@@ -36,6 +37,7 @@ export function TransactionsScreen() {
     <Screen fit>
       <ExpensesHeader />
       <SummaryStrip />
+      <RecurringDueCard />
       <BentoRow stackBelow="desktop" fill={1}>
         <BentoCell flex={8}>
           <Card index={1} padding={4} style={[{ gap: theme.space[3] }, grow]}>

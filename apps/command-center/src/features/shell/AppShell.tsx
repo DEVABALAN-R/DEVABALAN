@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import { IdleWarning } from '@/features/auth/IdleWarning';
 import { useIdleSignOut } from '@/features/auth/useIdleSignOut';
 import { TransactionSheet } from '@/features/expenses/entry/TransactionSheet';
+import { SearchSheet } from '@/features/expenses/search/SearchSheet';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { layout, useTheme } from '@/theme';
 import { DesktopHeader } from './DesktopHeader';
@@ -55,6 +56,7 @@ export function AppShell() {
             </View>
           </View>
         )}
+        <SearchSheet />
         <TransactionSheet />
       </Tabs>
       <IdleWarning visible={idle.phase === 'warning'} onStay={idle.markActive} />
