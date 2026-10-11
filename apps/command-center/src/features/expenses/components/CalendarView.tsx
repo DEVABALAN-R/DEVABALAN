@@ -16,8 +16,9 @@ const NARROW_GAP = 3;
 
 /**
  * Month grid in the style of Money Manager's calendar: each day shows what
- * came in and what went out. Tapping a day selects it (the day panel shows its
- * entries) and opens "Add" on that date; closing the sheet leaves the day selected.
+ * came in and what went out. Tapping a day selects it. An empty day, or the day
+ * already selected, also opens "Add" on that date: a day with entries shows them
+ * first in the day panel (which has its own Add), so browsing days stays one tap.
  */
 export function CalendarView({ fill }: { fill: boolean }) {
   const theme = useTheme();
@@ -65,8 +66,9 @@ export function CalendarView({ fill }: { fill: boolean }) {
                 selected={day.date === focusDay}
                 isToday={day.date === today}
                 onPress={() => {
+                  const opensAdd = day.count === 0 || day.date === focusDay;
                   selectDate(day.date);
-                  openNew({ date: day.date });
+                  if (opensAdd) openNew({ date: day.date });
                 }}
               />
             ))}
@@ -103,7 +105,11 @@ function DayCell({ day, compact, narrow, selected, isToday, onPress }: DayCellPr
     <Pressable
       role="button"
       accessibilityLabel={`${dayLabel(day.date)}${isToday ? ', today' : ''}: ${parts.join(', ') || 'no entries'}`}
-      accessibilityHint="Adds an entry on this day"
+      accessibilityHint={
+        day.count && !selected
+          ? 'Shows this day; tap again to add an entry'
+          : 'Adds an entry on this day'
+      }
       accessibilityState={{ selected }}
       onPress={onPress}
       {...handlers}
