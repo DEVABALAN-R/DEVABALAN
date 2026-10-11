@@ -35,6 +35,8 @@ export function portfolioFromRemote(raw: RemotePortfolio): Portfolio {
       archived: row.archived === true,
       order: num(row.sort_order),
       createdAt: time(row.created_at),
+      expenseRatio: numOrNull(row.expense_ratio),
+      goalId: strOrNull(row.goal_id),
     })),
     sips: (raw.mf_sips ?? []).map((row) => ({
       id: str(row.id),
@@ -46,6 +48,7 @@ export function portfolioFromRemote(raw: RemotePortfolio): Portfolio {
       active: row.active !== false,
       note: str(row.note),
       createdAt: time(row.created_at),
+      stepUpPct: num(row.step_up_pct),
     })),
     fundTxns: (raw.mf_transactions ?? []).map((row) => ({
       id: str(row.id),
@@ -104,6 +107,9 @@ const fundRow = (f: Fund) => ({
   note: f.note,
   archived: f.archived,
   sort_order: f.order,
+  // Migration 0013; an older database ignores these keys.
+  expense_ratio: f.expenseRatio ?? null,
+  goal_id: f.goalId ?? null,
   created_at: isoTime(f.createdAt),
 });
 const sipRow = (s: Sip) => ({
@@ -115,6 +121,7 @@ const sipRow = (s: Sip) => ({
   end_date: s.endDate,
   active: s.active,
   note: s.note,
+  step_up_pct: s.stepUpPct ?? 0,
   created_at: isoTime(s.createdAt),
 });
 const txnRow = (t: FundTxn) => ({

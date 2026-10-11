@@ -10,3 +10,6 @@ export * from './tradeForms';
 export * from './importAdditions';
 export * from './importPlan';
 export * from './tradebook';
+export * from './capitalGains';
+export * from './goals';
+export * from './costs';

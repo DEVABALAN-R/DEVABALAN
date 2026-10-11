@@ -89,7 +89,11 @@ export function StockDetailSheet({
               tone: 'auto',
               note: formatPercent(gainPct),
             },
-            { label: 'XIRR', text: row.xirr === null ? '—' : formatPercent(row.xirr * 100) },
+            {
+              label: 'XIRR',
+              text: row.xirr === null ? '—' : formatPercent(row.xirr * 100),
+              note: row.xirr === null && row.position.invested ? 'after a year' : undefined,
+            },
             { label: 'Shares', text: String(position.quantity) },
             {
               label: 'Average cost',

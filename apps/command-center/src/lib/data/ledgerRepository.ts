@@ -1,11 +1,11 @@
 import type { Account, Category, Person, RecurringEntry, Transaction } from '@/lib/domain/expenses';
-import type { Portfolio } from '@/lib/domain/investments';
+import type { Goal, Portfolio } from '@/lib/domain/investments';
 import type { Note } from '@/lib/domain/notes';
 import { diffById, isEmptyDiff } from '@/lib/domain/sync';
 import { accountRow, categoryRow, noteRow, personRow } from './ledgerRows';
 import { portfolioChanges, portfolioFromRemote, type RemotePortfolio } from './portfolioRows';
 import { receiptPhoto, receiptRow } from './receiptRows';
-import { recurringChanges, recurringFromRemote, recurringRow } from './recurringRows';
+import { extrasChanges, extrasFromRemote } from './extrasRows';
 import { callRpc } from './rpc';
 
 /** Everything the app keeps in the cloud for one user. */
@@ -19,41 +19,21 @@ export type CloudData = {
   portfolio: Portfolio;
   /** Recurring entries (migration 0012); undefined while the database does not have them. */
   recurring?: RecurringEntry[];
+  /** Investment goals (migration 0013); undefined while the database does not have them. */
+  goals?: Goal[];
 };
 
 type InvestmentKey = 'mf_funds' | 'mf_sips' | 'mf_transactions' | 'stocks' | 'stock_trades';
+type LedgerKey = 'accounts' | 'categories' | 'people' | 'transactions' | 'notes';
+type ExtraKey = 'recurring' | 'goals';
 
 /** One batch for `sync_ledger`, in the database's column names. */
-export type LedgerChanges = Partial<Record<InvestmentKey, unknown[]>> & {
-  accounts?: unknown[];
-  categories?: unknown[];
-  people?: unknown[];
-  transactions?: unknown[];
-  notes?: unknown[];
-  recurring?: unknown[];
-  deleted?: Partial<
-    Record<
-      'accounts' | 'categories' | 'people' | 'transactions' | 'notes' | 'recurring' | InvestmentKey,
-      string[]
-    >
-  >;
+export type LedgerChanges = Partial<Record<InvestmentKey | LedgerKey | ExtraKey, unknown[]>> & {
+  deleted?: Partial<Record<InvestmentKey | LedgerKey | ExtraKey, string[]>>;
 };
 
 type Row = Record<string, unknown>;
-type Raw = RemotePortfolio &
-  Partial<
-    Record<
-      | 'accounts'
-      | 'categories'
-      | 'people'
-      | 'transactions'
-      | 'splits'
-      | 'settles'
-      | 'notes'
-      | 'recurring',
-      Row[]
-    >
-  >;
+type Raw = RemotePortfolio & Partial<Record<LedgerKey | ExtraKey | 'splits' | 'settles', Row[]>>;
 
 const str = (value: unknown) => (typeof value === 'string' ? value : '');
 const num = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : 0);
@@ -135,7 +115,7 @@ export function fromRemote(raw: Raw | null): CloudData {
       updatedAt: time(row.updated_at),
     })),
     portfolio: portfolioFromRemote(data),
-    recurring: recurringFromRemote(data.recurring),
+    ...extrasFromRemote(data),
   };
 }
 
@@ -164,9 +144,17 @@ export function buildChanges(previous: CloudData, next: CloudData): LedgerChange
   // Edit times alone are not changes; the server keeps its own.
   const notes = diffById(previous.notes, next.notes, noteRow);
   const portfolio = portfolioChanges(previous.portfolio, next.portfolio);
-  const recurring = recurringChanges(previous.recurring, next.recurring);
+  const extras = extrasChanges(previous, next);
   if (
-    isEmptyDiff([accounts, categories, people, transactions, notes, recurring, ...portfolio.diffs])
+    isEmptyDiff([
+      accounts,
+      categories,
+      people,
+      transactions,
+      notes,
+      ...extras.diffs,
+      ...portfolio.diffs,
+    ])
   ) {
     return null;
   }
@@ -177,14 +165,14 @@ export function buildChanges(previous: CloudData, next: CloudData): LedgerChange
     people: people.upserts.map(personRow),
     transactions: transactions.upserts.map(transactionRow),
     notes: notes.upserts.map(noteRow),
-    ...(recurring.upserts.length ? { recurring: recurring.upserts.map(recurringRow) } : {}),
+    ...extras.upserts,
     deleted: {
       accounts: accounts.deletes,
       categories: categories.deletes,
       people: people.deletes,
       transactions: transactions.deletes,
       notes: notes.deletes,
-      ...(recurring.deletes.length ? { recurring: recurring.deletes } : {}),
+      ...extras.deletes,
       ...portfolio.deletes,
     },
   };

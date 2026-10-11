@@ -2,6 +2,7 @@ import { useSession } from '@/features/auth/sessionStore';
 import { cleanUnusedReceipts } from '@/features/expenses/photos/receipts';
 import { getLedger, useExpenseStore } from '@/features/expenses/state/expenseStore';
 import { useRecurringStore } from '@/features/expenses/state/recurringStore';
+import { useGoalStore } from '@/features/investments/state/goalStore';
 import { useMarketStore } from '@/features/investments/state/marketStore';
 import { getPortfolio, usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
@@ -45,25 +46,21 @@ const snapshot = (): CloudData => {
   const notes = useNotesStore.getState().notes;
   const { rules, available } = useRecurringStore.getState();
   const recurring = available ? rules : undefined;
-  return {
-    accounts,
-    categories,
-    people,
-    transactions,
-    notes,
-    portfolio: getPortfolio(),
-    recurring,
-  };
+  const goalState = useGoalStore.getState();
+  const goals = goalState.available ? goalState.goals : undefined;
+  const portfolio = getPortfolio();
+  return { accounts, categories, people, transactions, notes, portfolio, recurring, goals };
 };
 
 const setStatus = (status: Parameters<ReturnType<typeof useSyncStatus.getState>['set']>[0]) =>
   useSyncStatus.getState().set(status);
 
 function applyToStores(data: CloudData) {
-  const { notes, portfolio, recurring, ...ledger } = data;
+  const { notes, portfolio, recurring, goals, ...ledger } = data;
   useExpenseStore.setState(ledger);
   // Without migration 0012 there is nowhere to keep recurring entries: Repeat is hidden.
   useRecurringStore.setState({ rules: recurring ?? [], available: recurring !== undefined });
+  useGoalStore.setState({ goals: goals ?? [], available: goals !== undefined });
   useNotesStore.setState({ notes });
   usePortfolioStore.setState(portfolio);
 }
@@ -117,6 +114,7 @@ export async function startCloudSync(): Promise<void> {
     useNotesStore.subscribe(() => schedule()),
     usePortfolioStore.subscribe(() => schedule()),
     useRecurringStore.subscribe(() => schedule()),
+    useGoalStore.subscribe(() => schedule()),
     // A change made just before the app is hidden is sent at once (phones often close
     // hidden tabs without warning); leaving the page with a change unsaved asks first.
     watchLifecycle({

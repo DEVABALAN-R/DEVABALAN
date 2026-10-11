@@ -1,4 +1,11 @@
-import { daysBetween, fromUnits4, toUnits4, unitsValue, xirr, type CashFlow } from './math';
+import {
+  daysBetween,
+  fromUnits4,
+  toUnits4,
+  unitsValue,
+  annualisedReturn,
+  type CashFlow,
+} from './math';
 import type { Fund, FundTxn, MarketData, Quote } from './types';
 
 /** Same order as the database check: by date, purchases, dividends, then redemptions. */
@@ -191,5 +198,5 @@ export const isEquityFund = (fund: Fund) => fundAssetClass(fund.category) === 'E
 export function fundXirr(position: FundPosition, asOf: string): number | null {
   const flows = [...position.flows];
   if (position.value) flows.push({ date: asOf, amount: position.value });
-  return xirr(flows);
+  return annualisedReturn(flows, asOf);
 }

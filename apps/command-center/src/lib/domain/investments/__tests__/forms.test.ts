@@ -94,7 +94,7 @@ describe('validateFundTxn', () => {
     expect(
       validateFundTxn(draft({ amountText: '', navText: 'x', date: '' }), []).errors,
     ).toMatchObject({
-      date: 'Pick a date.',
+      date: 'Pick a date from 1990 to 2100.',
       amount: 'Enter the amount, like 5,000.',
       nav: 'Enter the NAV, like 58.1234.',
     });
@@ -149,5 +149,15 @@ describe('validateTrade', () => {
     expect(
       validateTrade(tradeDraft({ kind: 'dividend', amountText: '120.50' }), []).value?.amount,
     ).toBe(12050);
+  });
+});
+
+describe('limits the database enforces', () => {
+  it('refuses dates outside 1990–2100, huge amounts and stamp duty over ₹10 lakh', () => {
+    const errors = (patch: Parameters<typeof draft>[0]) => validateFundTxn(draft(patch), []).errors;
+    expect(errors({ date: '1989-12-31' }).date).toBeDefined();
+    expect(errors({ amountText: '1000000001' }).amount).toBeDefined();
+    expect(errors({ amountText: '50000000', stampDutyText: '1000001' }).stampDuty).toBeDefined();
+    expect(errors({}).date).toBeUndefined();
   });
 });

@@ -6,10 +6,12 @@ import { Button } from '@/components/ui';
 import { TextField } from '@/features/expenses/components/TextField';
 import { DateField } from '@/features/investments/components/DateField';
 import { SwitchRow } from '@/features/investments/components/SwitchRow';
+import { useGoalStore } from '@/features/investments/state/goalStore';
 import { usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { amountToInput, isValidIsoDate, parseAmount, todayIso } from '@/lib/domain/expenses';
-import { parseWhole } from '@/lib/domain/investments';
+import { isValidInvestmentDate, MAX_SIP_AMOUNT, parseWhole } from '@/lib/domain/investments';
 import { useTheme } from '@/theme';
+import { parseStepUp, StepUpFields } from './StepUpFields';
 
 type Props = { fundId: string; sipId: string | null; onClose: () => void };
 
@@ -25,22 +27,46 @@ export function SipSheet({ fundId, sipId, onClose }: Props) {
   const [startDate, setStartDate] = useState(sip?.startDate ?? todayIso());
   const [endDate, setEndDate] = useState<string | null>(sip?.endDate ?? null);
   const [active, setActive] = useState(sip?.active ?? true);
-  const [errors, setErrors] = useState<{ amount?: string; day?: string; end?: string }>({});
+  // The step-up is saved from migration 0013 on (the goals flag marks it).
+  const stepUpAvailable = useGoalStore((state) => state.available);
+  const [stepText, setStepText] = useState(sip?.stepUpPct ? String(sip.stepUpPct) : '');
+  const [errors, setErrors] = useState<{
+    amount?: string;
+    day?: string;
+    start?: string;
+    end?: string;
+    step?: string;
+  }>({});
   if (!fund) return null;
   const save = () => {
     const amount = parseAmount(amountText);
     const day = parseWhole(dayText);
     const next = {
-      amount: amount && amount >= 100 ? undefined : 'Enter the instalment, like 5,000.',
+      amount:
+        amount && amount >= 100 && amount <= MAX_SIP_AMOUNT
+          ? undefined
+          : 'Enter the instalment, like 5,000.',
       day: day && day <= 28 ? undefined : 'Pick a day from 1 to 28.',
       end:
         endDate && (!isValidIsoDate(endDate) || endDate < startDate)
           ? 'The end must be after the start.'
           : undefined,
+      start: isValidInvestmentDate(startDate) ? undefined : 'Pick a date from 1990 to 2100.',
+      step: parseStepUp(stepText) === null ? 'Enter a yearly step-up from 0 to 100 %.' : undefined,
     };
-    if (next.amount || next.day || next.end || !amount || !day) return setErrors(next);
+    if (next.amount || next.day || next.end || next.start || next.step || !amount || !day)
+      return setErrors(next);
     store.saveSip(
-      { fundId, amount, day, startDate, endDate, active, note: sip?.note ?? '' },
+      {
+        fundId,
+        amount,
+        day,
+        startDate,
+        endDate,
+        active,
+        note: sip?.note ?? '',
+        stepUpPct: stepUpAvailable ? (parseStepUp(stepText) ?? 0) : (sip?.stepUpPct ?? 0),
+      },
       sipId,
     );
     toast.show({ message: sip ? 'SIP saved' : 'SIP added' });
@@ -92,7 +118,7 @@ export function SipSheet({ fundId, sipId, onClose }: Props) {
           hint="1 to 28. Upcoming and missed instalments are shown on the Mutual funds page."
           error={errors.day}
         />
-        <DateField label="Starts" value={startDate} onChange={setStartDate} />
+        <DateField label="Starts" value={startDate} onChange={setStartDate} error={errors.start} />
         <SwitchRow
           label="Has an end date"
           value={endDate !== null}
@@ -100,6 +126,17 @@ export function SipSheet({ fundId, sipId, onClose }: Props) {
         />
         {endDate !== null ? (
           <DateField label="Ends" value={endDate} onChange={setEndDate} error={errors.end} />
+        ) : null}
+        {stepUpAvailable ? (
+          <StepUpFields
+            amount={parseAmount(amountText)}
+            value={stepText}
+            onChange={(text) => {
+              setStepText(text);
+              setErrors({});
+            }}
+            error={errors.step}
+          />
         ) : null}
         <SwitchRow
           label="Active"

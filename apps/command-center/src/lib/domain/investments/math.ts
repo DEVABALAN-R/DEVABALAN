@@ -28,6 +28,21 @@ export const daysBetween = (from: string, to: string) =>
 
 export type CashFlow = { date: string; amount: number };
 
+/** A year of history before a return is annualised. */
+export const XIRR_MIN_DAYS = 365;
+
+/**
+ * XIRR once the first money went in at least a year before `asOf`; null before that.
+ * Annualising a few weeks blows small moves up (2 % in a month reads as 27 % a year),
+ * so, like fund statements, younger holdings show only their gain on cost.
+ */
+export function annualisedReturn(flows: CashFlow[], asOf: string): number | null {
+  const dated = flows.filter((flow) => flow.amount !== 0);
+  if (!dated.length) return null;
+  const first = dated.reduce((min, flow) => (flow.date < min ? flow.date : min), dated[0].date);
+  return daysBetween(first, asOf) >= XIRR_MIN_DAYS ? xirr(flows) : null;
+}
+
 /**
  * Annualised internal rate of return for irregular cash flows (XIRR), as a fraction
  * (0.12 = 12 %). Money paid in is negative, money out (and today's value) positive.

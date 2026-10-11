@@ -3,7 +3,7 @@ import { PanelScroll } from '@/components/layout/PanelScroll';
 import { Repeat } from '@/components/icons';
 import { Badge, Button, Card, CardHeader, Money, Text } from '@/components/ui';
 import { dayLabel } from '@/lib/domain/expenses';
-import { daysBetween, type Fund, type UpcomingSip } from '@/lib/domain/investments';
+import { daysBetween, sipAmountOn, type Fund, type UpcomingSip } from '@/lib/domain/investments';
 import { useTheme } from '@/theme';
 
 /** Instalments due but not recorded yet (with "Record"), then the next month's SIPs. */
@@ -47,7 +47,7 @@ export function SipCard({
           </Text>
         </View>
         <View style={{ alignItems: 'flex-end', gap: 4 }}>
-          <Money value={item.sip.amount} variant="label" />
+          <Money value={sipAmountOn(item.sip, item.date)} variant="label" />
           {due ? (
             <Button label="Record" size="sm" onPress={() => onRecord(item)} />
           ) : (

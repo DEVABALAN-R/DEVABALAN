@@ -13,19 +13,20 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 
 ## What is in the database
 
-| Part                                               | From                | Used by                                                                     |
-| -------------------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
-| Sign-up allowlist and its Before User Created hook | 0004                | Every new account (only allowlisted emails can sign up)                     |
-| `profiles`, `user_preferences`, `audit_logs`       | 0004                | Created per account; `audit_logs` records changes by column name, no values |
-| Finance and notes tables                           | 0005                | The Command Center                                                          |
-| `load_ledger()` and `sync_ledger(jsonb)`           | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
-| Mutual fund and stock tables                       | 0007                | Mutual funds and Stocks pages                                               |
-| `mf_funds.isin`, `sync_ledger` saving it           | 0009                | Matching tradebook imports to your funds                                    |
-| Market data tables and their functions             | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
-| Portfolio tables, functions and `portfolio-media`  | 0010                | Dashboard → Portfolio, and the public portfolio site                        |
-| `transactions.receipt`, private `receipts` bucket  | 0011                | Receipt photos on entries (only you can see them)                           |
-| `recurring_entries`, `load_ledger`/`sync_ledger`   | 0012                | Recurring entries (rent, subscriptions, EMIs)                               |
-| `user_workspaces`, `public_portfolios`             | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
+| Part                                                | From                | Used by                                                                     |
+| --------------------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
+| Sign-up allowlist and its Before User Created hook  | 0004                | Every new account (only allowlisted emails can sign up)                     |
+| `profiles`, `user_preferences`, `audit_logs`        | 0004                | Created per account; `audit_logs` records changes by column name, no values |
+| Finance and notes tables                            | 0005                | The Command Center                                                          |
+| `load_ledger()` and `sync_ledger(jsonb)`            | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
+| Mutual fund and stock tables                        | 0007                | Mutual funds and Stocks pages                                               |
+| `mf_funds.isin`, `sync_ledger` saving it            | 0009                | Matching tradebook imports to your funds                                    |
+| Market data tables and their functions              | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
+| Portfolio tables, functions and `portfolio-media`   | 0010                | Dashboard → Portfolio, and the public portfolio site                        |
+| `transactions.receipt`, private `receipts` bucket   | 0011                | Receipt photos on entries (only you can see them)                           |
+| `recurring_entries`, `load_ledger`/`sync_ledger`    | 0012                | Recurring entries (rent, subscriptions, EMIs)                               |
+| `investment_goals`, fund expense ratio, SIP step-up | 0013                | Mutual funds → Insights (goals, costs) and SIP step-up                      |
+| `user_workspaces`, `public_portfolios`              | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
 reachable from the browser.
@@ -36,7 +37,8 @@ reachable from the browser.
    `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
    `202610090007_investments.sql`, `202610100008_retire_old_app.sql`,
    `202610110009_fund_isin.sql`, `202610120010_portfolio.sql`, `202610120011_receipts.sql`
-   and `202610130012_recurring.sql` from `supabase/migrations/` (SQL Editor → paste → Run).
+   `202610130012_recurring.sql` and `202610140013_fund_goals.sql` from `supabase/migrations/`
+   (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
    second layer.
@@ -188,6 +190,20 @@ at the top of the file.
 - **Nothing is added by itself:** due dates wait on Expenses → Transactions to be added (amount
   can be changed) or skipped.
 - **Before this migration** the app hides **Repeat** and the recurring list while signed in.
+
+## Goals, expense ratio and SIP step-up (migration 0013)
+
+Run `202610140013_fund_goals.sql` after 0012. Safe to run again; the rollback is in the comment
+at the top of the file.
+
+- **Table:** `investment_goals` (name, target amount, target date, the yearly return you assume),
+  with the same protections as everything else (own rows, two-step sign-in, checks, audit).
+- **Columns:** `mf_funds.expense_ratio` (0–5 %), `mf_funds.goal_id` (deleting a goal unties its
+  funds) and `mf_sips.step_up_pct` (0–100 % a year).
+- **Functions:** `load_ledger` returns goals and `sync_ledger` saves them and the new columns;
+  nothing else changes.
+- **Before this migration** the app hides goals, costs, the expense ratio field and the step-up
+  while signed in; capital gains work without it.
 
 ## Everything up to now in one file
 

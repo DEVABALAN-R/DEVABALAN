@@ -5,6 +5,7 @@ import { needsSecondStep } from '@/lib/data/mfaRepository';
 import { isSupabaseConfigured } from '@/lib/data/supabaseClient';
 import { useExpenseStore } from '@/features/expenses/state/expenseStore';
 import { useRecurringStore } from '@/features/expenses/state/recurringStore';
+import { useGoalStore } from '@/features/investments/state/goalStore';
 import { useMarketStore } from '@/features/investments/state/marketStore';
 import { usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
@@ -50,6 +51,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         useNotesStore.getState().resetPreview();
         usePortfolioStore.getState().resetPreview();
         useRecurringStore.getState().resetPreview();
+        useGoalStore.getState().resetPreview();
         useMarketStore.getState().enterPreview();
         session.setSignedOut();
       }

@@ -1,4 +1,4 @@
-import { daysBetween, xirr, type CashFlow } from './math';
+import { annualisedReturn, daysBetween, type CashFlow } from './math';
 import type { MarketData, Quote, Stock, Trade } from './types';
 
 /**
@@ -179,5 +179,5 @@ export function stockQuote(stock: Stock, trades: Trade[], market: MarketData): Q
 export function stockXirr(position: StockPosition, asOf: string): number | null {
   const flows = [...position.flows];
   if (position.value) flows.push({ date: asOf, amount: position.value });
-  return xirr(flows);
+  return annualisedReturn(flows, asOf);
 }

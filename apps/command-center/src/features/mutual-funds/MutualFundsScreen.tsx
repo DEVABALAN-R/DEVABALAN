@@ -12,10 +12,12 @@ import { ImportTradebookButton } from '@/features/investments/import/ImportTrade
 import { useFundsView } from '@/features/investments/hooks/useInvestments';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
 import { amountToInput } from '@/lib/domain/expenses';
+import { sipAmountOn } from '@/lib/domain/investments';
 import { formatMoneyWhole, formatPercent } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { AllocationCard } from './AllocationCard';
 import { FundPanels, type FundPanel } from './FundPanels';
+import { InsightsButton } from './insights/InsightsSheet';
 import { GrowthCard, type GrowthRange } from './GrowthCard';
 import { HoldingsTable } from './HoldingsTable';
 import { SipCard } from './SipCard';
@@ -43,6 +45,7 @@ export function MutualFundsScreen() {
         <>
           <RefreshPricesButton />
           <ImportTradebookButton />
+          <InsightsButton />
           <Button
             label="Add fund"
             icon={Plus}
@@ -114,7 +117,9 @@ export function MutualFundsScreen() {
           label="XIRR"
           icon={Percent}
           value={totals.xirr === null ? '—' : formatPercent(totals.xirr * 100)}
-          caption="annualised, all cash flows"
+          caption={
+            totals.xirr === null ? 'shown after a year of investing' : 'annualised, all cash flows'
+          }
           index={3}
           style={{ flex: 1 }}
         />
@@ -165,7 +170,12 @@ export function MutualFundsScreen() {
                 type: 'txn',
                 fundId: sip.fundId,
                 txnId: null,
-                preset: { kind: 'buy', date, amountText: amountToInput(sip.amount), sipId: sip.id },
+                preset: {
+                  kind: 'buy',
+                  date,
+                  amountText: amountToInput(sipAmountOn(sip, date)),
+                  sipId: sip.id,
+                },
               })
             }
             style={fit ? { flex: 1 } : undefined}

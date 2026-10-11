@@ -28,7 +28,34 @@ date (or the last one before it on a holiday) from stored history.
 
 **SIP plans**: in a fund, **Add SIP**: monthly amount, day (1–28), start and optional end date;
 pause it with **Active**. The SIPs card lists instalments that are due but not recorded (with
-**Record**, pre-filled) and the next month's instalments.
+**Record**, pre-filled) and the next month's instalments. Any purchase of that fund within a few
+days of the date counts as the instalment, so purchases brought in by a tradebook import are not
+asked for again.
+
+**SIP step-up** (migration 0013): a yearly increase in percent. The instalment rises once for
+every full year since the start date (₹5,000 at 10 %: ₹5,500 in year two, ₹6,050 in year three);
+the SIPs card, **Record** and the monthly total use the stepped amount. The sheet also estimates
+ten years of it at a yearly return you type (not saved).
+
+**Insights** (button on the Mutual funds page):
+
+- **Capital gains**: every redemption split over the purchases it used (first in, first out),
+  by financial year (April–March), as the tax return groups them: equity short term (12 months
+  or less) and long term; debt bought from 1 April 2023 at your slab rate; older debt short or
+  long term (24 months, or 36 for sales before 23 July 2024); hybrid, index and other funds
+  listed **to check**, since that depends on how much of the fund is in Indian shares. It notes
+  the yearly equity long-term exemption (₹1.25 lakh from FY 2024-25, ₹1 lakh before) and
+  units bought before 1 February 2018 (grandfathering). **Export** gives a CSV for your CA. It
+  classifies gains; it does not compute tax. Check your CAMS/KFintech capital gains statement
+  before filing.
+- **Goals** (migration 0013): a name, amount, date and a yearly return you assume. Tie funds to
+  a goal in **Edit fund → Goal**; the goal shows their value against the target, the time left
+  and about how much a month would close the gap at that return (an estimate).
+- **Costs** (migration 0013): enter each fund's expense ratio (TER, from its factsheet) in
+  **Edit fund**; this shows what each fund and all of them cost per year at today's value.
+  **Similar funds** lists funds you hold in the same category, which often hold the same
+  shares; it is a hint from the category, not from the funds' actual holdings (which the app
+  does not have).
 
 ## Stocks
 
@@ -113,7 +140,9 @@ layout is read today.
   sold. Dividends are shown with realised gains.
 - **XIRR** is the annual rate that makes every purchase (money in), sale and dividend (money out)
   and today's value add up to zero, taking each date into account. It suits SIPs, where money goes
-  in at different times. A holding of a few weeks can show a large XIRR; read it with the gain.
+  in at different times. It is shown once the first money went in at least a year ago: before
+  that, annualising blows small moves up (2 % in a month would read as 27 % a year), so younger
+  holdings show only their gain on cost (as fund statements do).
 - **Day change** = holdings × (latest price − previous price), from AMFI history or the exchange's
   previous close.
 - **Allocation** groups funds by AMFI category (Equity, Debt, Hybrid, Index & ETF, Gold & silver,
@@ -123,9 +152,8 @@ layout is read today.
 
 ## Not yet
 
-- Capital-gains report by financial year (realised lots already carry buy and sell dates and
-  holding periods) and tax estimates (rates change by budget; they will come with a source and a
-  date, never hard-coded silently).
+- Tax amounts (rates change by budget; the capital gains report classifies gains only), capital
+  gains for shares, and real fund overlap (needs each fund's monthly portfolio).
 - Importing a CAMS/KFintech consolidated account statement, and tradebooks from other brokers
   (Zerodha tradebooks import today, [above](#import-a-tradebook-zerodha)).
 - Live share prices (needs a paid or broker data provider), price alerts, benchmark comparison.
