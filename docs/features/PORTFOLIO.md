@@ -1,8 +1,11 @@
 # Public portfolio
 
 A public developer site (`apps/portfolio`) whose content you manage in the dashboard
-(**Portfolio**), published when you choose, with no redeploy. Why it is built this way:
-[ADR 0010](../architecture/decisions/0010-public-portfolio-site.md).
+(**Portfolio**), published when you choose, with no redeploy. It is the **home page of the
+dashboard's address**: visitors land on the portfolio, and its **Dashboard** button opens
+`/dashboard`, which asks you to sign in. Why it is built this way:
+[ADR 0010](../architecture/decisions/0010-public-portfolio-site.md) and
+[ADR 0011](../architecture/decisions/0011-portfolio-at-the-dashboard-address.md).
 
 ```mermaid
 flowchart LR
@@ -12,7 +15,8 @@ flowchart LR
   dash -- "Publish" --> pub[(portfolio_publications<br/>one snapshot)]
   work -- built on the server --> pub
   dash -- "Preview (20 min link)" --> prev[(portfolio_preview_tokens)]
-  visitor([Visitor]) --> site[Portfolio site<br/>Vercel function renders HTML]
+  visitor([Visitor]) --> site[Portfolio at /<br/>Vercel function renders HTML]
+  site -- "Dashboard button" --> dash
   site -- "portfolio_public(handle)" --> pub
   site -- "portfolio_preview(token)" --> prev
   visitor -- contact form --> contact["portfolio_contact<br/>checks + limits"] --> msgs[(portfolio_messages)]
@@ -50,10 +54,10 @@ flowchart LR
 ## Preview and publish
 
 - The bar at the top shows **Changes not published** or **Up to date**, and the live version.
-- **Preview** opens `https://<your site>/preview#t=…`, a snapshot of your working copy, drafts
-  included and marked. The link works for 20 minutes and only on that browser tab's session;
-  the token sits after `#`, so it is never sent to a server log. Add the site URL under Profile
-  first.
+- **Preview** opens `/preview#t=…` on this site (or on the "Public site URL" from Profile, if
+  the portfolio runs elsewhere): a snapshot of your working copy, drafts included and marked. The
+  link works for 20 minutes and only on that browser tab's session; the token sits after `#`, so
+  it is never sent to a server log.
 - **Publish** replaces the live snapshot with your visible items. The site shows it within about
   a minute (pages are cached for 60 seconds and the page re-checks when older than 30 seconds).
   Images that nothing uses any more, and that are over an hour old, are then deleted.
@@ -65,6 +69,9 @@ flowchart LR
 - **Pages:** `/` (hero, work, stack, experience, about, credentials, beyond the code, contact),
   `/projects/<address>` (case study, with a link to the next project), `/preview`, `/sitemap.xml`,
   `/robots.txt`. Sections with no content, or hidden in Profile, are left out.
+- **Dashboard button:** a small "Dashboard" pill at the end of the header (phones: the last line
+  of the menu, and on the "nothing published yet" page) opens `/dashboard`. It is `nofollow`, and
+  dashboard pages send `noindex`, so search engines list only the portfolio.
 - **Rendered on the server** with title, description, canonical link, Open Graph and Twitter
   cards and JSON-LD (`Person`; `SoftwareSourceCode` or `CreativeWork` for projects). The page works before
   any script runs.
@@ -106,10 +113,12 @@ These limits make abuse slow and bounded, not impossible. Messages are visible o
 
 1. Run `supabase/migrations/202610120010_portfolio.sql` (see
    [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#public-portfolio-migration-0010)).
-2. Create the Vercel project for `apps/portfolio` and set its variables
-   ([`apps/portfolio/README.md`](../../apps/portfolio/README.md#deploy-on-vercel)).
+2. In the existing Vercel project (`devabalan-command-center`) add the variable
+   `PORTFOLIO_HANDLE` (e.g. `devabalan`) and redeploy. The portfolio uses the dashboard's own
+   Supabase settings ([`apps/portfolio/README.md`](../../apps/portfolio/README.md#deploy-on-vercel)).
 3. In the dashboard → Portfolio → Profile, set the site address (handle) to the same value as
-   `PORTFOLIO_HANDLE` and the public site URL; add content; Preview; Publish.
+   `PORTFOLIO_HANDLE`; add content; Preview; Publish. Leave "Public site URL" empty: the
+   portfolio is this site's home page.
 
 ## Not included (yet)
 

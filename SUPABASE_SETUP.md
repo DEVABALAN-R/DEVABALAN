@@ -143,9 +143,10 @@ in the comment at the top of the file.
   hosted project), create the bucket by hand with those settings and rerun the file.
 - **No email:** messages from the contact form appear under Portfolio → Messages only.
 
-After running it: deploy the site ([`apps/portfolio/README.md`](apps/portfolio/README.md)), then
-in Dashboard → Portfolio set the site address to the same handle as `PORTFOLIO_HANDLE`, add the
-site URL, use Preview, and Publish.
+After running it: add `PORTFOLIO_HANDLE` to the Vercel project and redeploy
+([`apps/portfolio/README.md`](apps/portfolio/README.md#deploy-on-vercel)); the portfolio is then
+the site's home page. In Dashboard → Portfolio set the site address to the same handle, add your
+content, use Preview, and Publish.
 
 ## Everything up to now in one file
 

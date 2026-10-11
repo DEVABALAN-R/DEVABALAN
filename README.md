@@ -2,18 +2,18 @@
 
 Personal finance and productivity app: expenses, accounts, budgets, people and splits, notes,
 mutual funds and stocks. Amounts are in Indian rupees (INR). One Expo codebase for web, iOS and
-Android, backed by Supabase. A separate public developer portfolio (`apps/portfolio`) is edited
-from the dashboard.
+Android, backed by Supabase. The site's home page is a public developer portfolio
+(`apps/portfolio`) edited from the dashboard; its **Dashboard** button opens the app.
 
-Live web app: **devabalan-command-center.vercel.app**
+Live site: **devabalan-command-center.vercel.app** (portfolio at `/`, the app at `/dashboard`)
 
 ## Repository map
 
 ```text
 apps/command-center/   The app (Expo Router, React Native Web). Its README covers running,
                        checks, deployment and connecting to Supabase
-apps/portfolio/        The public portfolio site (Vite + React, rendered by a Vercel function);
-                       its README covers settings and its own Vercel project
+apps/portfolio/        The public portfolio (Vite + React, server-rendered), served at / by the
+                       dashboard's Vercel project; its README covers settings and deployment
 supabase/migrations/   Ledger and notes (0005), load/save (0006), mutual funds, stocks and
                        market data (0007), retiring the old app's data (0008), fund ISINs (0009),
                        public portfolio (0010)
@@ -42,21 +42,22 @@ sign-in.
 ## Deploy (Vercel)
 
 The Vercel project **devabalan-command-center** builds `apps/command-center` (Root Directory)
-using its `vercel.json` (build `npm run build:web`, output `dist`, security headers).
+using its `vercel.json`: the Expo web export plus the portfolio (`npm run build:web && npm run
+build:site`), output `dist`, the portfolio's render function and security headers.
 
 1. Settings → Environment Variables: `EXPO_PUBLIC_SUPABASE_URL` and
    `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for **All Environments**.
 2. Redeploy with **Use existing build cache** unticked whenever they change (they are built into
    the bundle).
-3. The site should open on **Sign in**. If it shows "Preview · not saved", the build did not get
-   the variables.
+3. `/dashboard` should open on **Sign in**. If it shows "Preview · not saved", the build did not
+   get the variables.
+4. For the portfolio at `/`: add `PORTFOLIO_HANDLE` (e.g. `devabalan`) and keep **Include files
+   outside the root directory in the Build Step** on (Settings → Build and Deployment).
 
 Full steps: [`apps/command-center/README.md` → Sign-in](apps/command-center/README.md#sign-in-phase-2).
 Supabase side: [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md).
 
-The public portfolio is a **second Vercel project** with Root Directory `apps/portfolio` and four
-server-side variables (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `PORTFOLIO_HANDLE`, optional
-`SITE_URL`): [`apps/portfolio/README.md`](apps/portfolio/README.md#deploy-on-vercel).
+Portfolio details: [`apps/portfolio/README.md`](apps/portfolio/README.md#deploy-on-vercel).
 
 ## Status
 
