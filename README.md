@@ -12,7 +12,7 @@ Live web app: **devabalan-command-center.vercel.app**
 apps/command-center/   The app (Expo Router, React Native Web). Its README covers running,
                        checks, deployment and connecting to Supabase
 supabase/migrations/   Ledger and notes (0005), load/save (0006), mutual funds, stocks and
-                       market data (0007), retiring the old app's data (0008)
+                       market data (0007), retiring the old app's data (0008), fund ISINs (0009)
 supabase/one-time/     One-run update (0007 + 0008 + Zerodha funds and stocks) and the Zerodha load
 supabase/functions/    market-refresh: fetches NAVs and closing prices on the server
 docs/architecture/     ARCHITECTURE.md, ROADMAP.md, decision records, expense manager flows
@@ -54,7 +54,8 @@ Supabase side: [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md).
 
 Done: sign-in with two-step codes; the expense manager, Notes, **mutual funds and stocks**
 (holdings, SIPs, FIFO gains, XIRR, AMFI NAVs and end-of-day share prices) saved to Supabase; the
-Overview's net worth includes them. The ledger starts from scratch (the old app's data is
+Overview's net worth includes them; Zerodha tradebooks import after you review and approve each
+trade. The ledger starts from scratch (the old app's data is
 retired by migration 0008). Next: importing from the export of the app you use today, then the
 PF / EPF tracker and salary payslips. The full plan, including goals, other assets and personal
 trackers: [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md). How it is built:

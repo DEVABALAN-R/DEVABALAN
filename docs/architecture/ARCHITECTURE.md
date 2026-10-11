@@ -39,8 +39,10 @@ flowchart LR
 
 - The browser only ever holds the **publishable** key and the user's own session. Every read and
   write goes through Row Level Security as that user.
-- Anything that talks to a third party (market data today; notifications, statement parsing and
-  imports later) runs in an **Edge Function** on the server, never in the app.
+- Anything that talks to a third party (market data today; notifications and password-protected
+  statements later) runs in an **Edge Function** on the server, never in the app. Files you
+  already hold (broker tradebooks) are read on your device; only the trades you approve are saved,
+  through the same checks ([ADR 0009](decisions/0009-tradebook-import-on-device.md)).
 
 ## 3. The app (client)
 
@@ -51,6 +53,7 @@ src/features/<x>/   screens, sheets and hooks of one area (expenses, notes, mutu
 src/features/*/state  Zustand stores: the in-memory copy screens read and change
 src/lib/domain/<x>/ pure, tested rules: money, periods, budgets, FIFO, XIRR, SIPs (no React)
 src/lib/data/       the only code that talks to Supabase (auth, MFA, RPCs, row mapping)
+src/lib/files/      reading files on the device (.xlsx and .csv), no network
 src/components/     design system: ui, layout, charts, overlays, feedback, icons
 src/theme/          tokens, semantic colours (light/dark), motion, typography
 ```

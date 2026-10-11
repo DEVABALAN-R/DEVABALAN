@@ -5,6 +5,7 @@ let created = 0;
 export const fund = (patch: Partial<Fund> = {}): Fund => ({
   id: 'f1',
   schemeCode: 120465,
+  isin: null,
   name: 'Horizon Bluechip Fund - Direct - Growth',
   category: 'Equity Scheme - Large Cap Fund',
   fundHouse: 'Horizon Mutual Fund',

@@ -103,6 +103,7 @@ export function FundEditSheet({ fundId, onClose, onSaved }: Props) {
               name: match.name,
               category: match.category,
               fundHouse: match.fundHouse,
+              ...(match.isin ? { isin: match.isin } : {}),
             });
             setErrors({});
           }}

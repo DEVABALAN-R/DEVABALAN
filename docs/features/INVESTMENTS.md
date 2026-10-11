@@ -1,7 +1,7 @@
 # Mutual funds and stocks
 
 How the investment pages work: what you can record, where prices come from, and how every number
-is calculated. Server setup (migration 0007, the price function and its schedule) is in
+is calculated. Server setup (migrations 0007 and 0009, the price function and its schedule) is in
 [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#mutual-funds-and-stocks-migration-0007).
 
 ## Mutual funds
@@ -49,6 +49,43 @@ chart. A price entered by hand (with its date) is used when there is no newer cl
 Bonus issues and splits apply to the shares held before that day; whole shares only (fractions
 are paid in cash and rounded down). ETFs and listed bonds can be tracked as stocks.
 
+## Import a tradebook (Zerodha)
+
+Add new trades from the tradebooks Zerodha Console gives you, after checking them. Run migration
+0009 first ([`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#fund-isins-for-imports-migration-0009)).
+
+1. In Zerodha Console: **Reports → Tradebook**, segment **Equity** or **Mutual funds**, pick the
+   dates, download (`.xlsx` or `.csv`). Several files at once is fine; overlapping dates too.
+2. Mutual funds or Stocks → **Import** → **Choose files**.
+3. **Review.** The files are read on your device and nothing is uploaded. For each fund or share
+   you see:
+   - every trade it would add: date, buy or sell, units or shares, NAV or price, amount;
+   - how many of the file's trades are already in the app (they are not added again);
+   - units or shares and invested amount, now → after the import;
+   - "New fund" or "New stock" when it is not in the app yet.
+
+   Switch off any holding you do not want. **Cannot be added** lists what would not fit (below).
+
+4. **Approve and add N trades.** Only then is anything saved, in one batch, with the same checks
+   as trades typed by hand. **Cancel** keeps everything as it was.
+
+How it decides:
+
+- **Same holding**: by ISIN, otherwise the fund name (Direct/Regular, case and punctuation
+  ignored) or the share symbol.
+- **Already in the app**: same date, type, units (shares) and NAV (price). The same trade in two
+  files counts once.
+- **Amount** = units × NAV (shares × price) to the paisa, as Kite shows it. Tradebooks have no stamp
+  duty or charges; edit a trade afterwards to add them.
+- **Earlier sales left out**: a sale of units bought before the file starts cannot be added (the
+  app would hold fewer than zero). The fewest such trades are left out and listed; a holding that
+  only sells is under **Cannot be added**. An older tradebook that covers the purchases adds them.
+- A new fund is named from the file and has no AMFI scheme yet: edit it and pick the scheme to get
+  automatic NAVs. A new share uses the symbol from the file; its price comes with the next update.
+
+Choosing files works in the web app; the phone apps say so for now. Only Zerodha's tradebook
+layout is read today.
+
 ## Prices
 
 | What                  | Source                                                                      | When                                                       |
@@ -89,8 +126,8 @@ are paid in cash and rounded down). ETFs and listed bonds can be tracked as stoc
 - Capital-gains report by financial year (realised lots already carry buy and sell dates and
   holding periods) and tax estimates (rates change by budget; they will come with a source and a
   date, never hard-coded silently).
-- Importing a CAMS/KFintech consolidated account statement and broker tradebooks from the app.
-  (Your funds and shares were loaded once from your Zerodha tradebooks, directly in the database.)
+- Importing a CAMS/KFintech consolidated account statement, and tradebooks from other brokers
+  (Zerodha tradebooks import today, [above](#import-a-tradebook-zerodha)).
 - Live share prices (needs a paid or broker data provider), price alerts, benchmark comparison.
 
 See [`ROADMAP.md`](../architecture/ROADMAP.md) for when these arrive.

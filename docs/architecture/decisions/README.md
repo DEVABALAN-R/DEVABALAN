@@ -14,6 +14,7 @@ stays, marked "Superseded by …").
 | [0006](0006-fifo-gains-and-xirr.md)               | Gains by first-in-first-out lots; returns as XIRR                                   | Accepted           |
 | [0007](0007-import-inside-the-database.md)        | Import the old app's data inside the database, checked before it is kept            | Superseded by 0008 |
 | [0008](0008-start-from-scratch.md)                | Start from scratch: retire the old app's data, load investments once from Zerodha   | Accepted           |
+| [0009](0009-tradebook-import-on-device.md)        | Tradebooks read on the device, reviewed and approved before anything is saved       | Accepted           |
 
 ## Template
 
