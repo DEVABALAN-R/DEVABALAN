@@ -9,10 +9,19 @@ import { fundCategoryLabel } from '@/lib/domain/investments';
 import { useTheme } from '@/theme';
 
 /** Searches the AMFI scheme list (server side) and returns the scheme picked. */
-export function FundSearch({ onPick }: { onPick: (match: FundMatch) => void }) {
+export function FundSearch({
+  onPick,
+  initialQuery = '',
+  noMatchText = 'No match. Check the spelling, or enter the fund by hand below (the fund list fills in once prices are set up).',
+}: {
+  onPick: (match: FundMatch) => void;
+  /** Search shown on open (for example "nifty 50 index"). */
+  initialQuery?: string;
+  noMatchText?: string;
+}) {
   const theme = useTheme();
   const mode = useMarketStore((state) => state.mode);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [matches, setMatches] = useState<FundMatch[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   useEffect(() => {
@@ -24,11 +33,7 @@ export function FundSearch({ onPick }: { onPick: (match: FundMatch) => void }) {
         .then((found) => {
           if (!current) return;
           setMatches(found);
-          setMessage(
-            found.length
-              ? null
-              : 'No match. Check the spelling, or enter the fund by hand below (the fund list fills in once prices are set up).',
-          );
+          setMessage(found.length ? null : noMatchText);
         })
         .catch(
           () => current && setMessage('Search is unavailable right now. Enter the fund by hand.'),
@@ -38,7 +43,7 @@ export function FundSearch({ onPick }: { onPick: (match: FundMatch) => void }) {
       current = false;
       clearTimeout(timer);
     };
-  }, [query, mode]);
+  }, [query, mode, noMatchText]);
   if (mode !== 'cloud') {
     return (
       <Text variant="caption" color="textTertiary">

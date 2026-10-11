@@ -1,8 +1,10 @@
-import { parseAmount } from '../expenses/validation';
-import { isValidIsoDate } from '../expenses/dates';
-import { parseWhole } from './forms';
+import { parseLimitedAmount } from '../expenses/validation';
+import { isValidInvestmentDate, parseWhole } from './forms';
 import { sharesHeldOn, sortTrades } from './stocks';
 import type { Trade, TradeKind } from './types';
+
+/** Largest quantity the database keeps in one trade. */
+const MAX_SHARES = 1_000_000_000;
 
 export type TradeDraft = {
   kind: TradeKind;
@@ -27,7 +29,7 @@ export function validateTrade(
   others: Trade[],
 ): { value: ValidTrade | null; errors: TradeErrors } {
   const errors: TradeErrors = {};
-  if (!isValidIsoDate(draft.date)) errors.date = 'Pick a date.';
+  if (!isValidInvestmentDate(draft.date)) errors.date = 'Pick a date from 1990 to 2100.';
   const base = { kind: draft.kind, date: draft.date, note: draft.note.trim() };
   const empty = {
     quantity: null,
@@ -38,7 +40,7 @@ export function validateTrade(
     ratioTo: null,
   };
   if (draft.kind === 'dividend') {
-    const amount = parseAmount(draft.amountText);
+    const amount = parseLimitedAmount(draft.amountText);
     if (!amount) errors.amount = 'Enter the dividend received.';
     return Object.keys(errors).length || !amount
       ? { value: null, errors }
@@ -55,10 +57,10 @@ export function validateTrade(
       : covered({ ...base, ...empty, ratioFrom: from, ratioTo: to }, others, errors);
   }
   const quantity = parseWhole(draft.quantityText);
-  if (!quantity) errors.quantity = 'Enter the number of shares.';
-  const price = parseAmount(draft.priceText);
+  if (!quantity || quantity > MAX_SHARES) errors.quantity = 'Enter the number of shares.';
+  const price = parseLimitedAmount(draft.priceText);
   if (!price) errors.price = 'Enter the price per share.';
-  const charges = draft.chargesText.trim() ? parseAmount(draft.chargesText) : 0;
+  const charges = draft.chargesText.trim() ? parseLimitedAmount(draft.chargesText) : 0;
   if (charges === null) errors.charges = 'Enter the charges, or leave them empty.';
   if (draft.kind === 'sell' && quantity && !errors.date) {
     const held = sharesHeldOn(others, draft.date);

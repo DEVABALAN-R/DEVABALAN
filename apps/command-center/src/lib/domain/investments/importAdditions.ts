@@ -54,8 +54,11 @@ export function buildAdditions(
           .toUpperCase()
           .replace(/[^A-Z0-9&._-]/g, '')
           .slice(0, 30) || plan.isin;
+      // Prices follow the ISIN; when the file shows the share moving to a new ISIN (after a
+      // split, say), the stock takes the newer one.
+      const newerIsin = !existing?.isin || plan.isins.includes(existing.isin);
       const stock: Stock = existing
-        ? { ...existing, isin: existing.isin ?? plan.isin }
+        ? { ...existing, isin: newerIsin ? plan.isin : existing.isin }
         : {
             id: makeId(),
             isin: plan.isin,

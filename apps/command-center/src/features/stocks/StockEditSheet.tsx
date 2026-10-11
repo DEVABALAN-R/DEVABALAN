@@ -8,8 +8,8 @@ import { ChipField } from '@/features/investments/components/ChipField';
 import { DateField } from '@/features/investments/components/DateField';
 import { SwitchRow } from '@/features/investments/components/SwitchRow';
 import { usePortfolioStore, type StockInput } from '@/features/investments/state/portfolioStore';
-import { amountToInput, isValidIsoDate, parseAmount, todayIso } from '@/lib/domain/expenses';
-import { normaliseSymbol } from '@/lib/domain/investments';
+import { amountToInput, parseLimitedAmount, todayIso } from '@/lib/domain/expenses';
+import { isValidInvestmentDate, normaliseSymbol } from '@/lib/domain/investments';
 import { useTheme } from '@/theme';
 import { StockSearch } from './StockSearch';
 
@@ -59,7 +59,7 @@ export function StockEditSheet({ stockId, onClose, onSaved }: Props) {
   };
   const save = () => {
     const symbol = normaliseSymbol(input.symbol);
-    const price = priceText.trim() ? parseAmount(priceText) : null;
+    const price = priceText.trim() ? parseLimitedAmount(priceText) : null;
     const taken = store.stocks.some(
       (item) => item.id !== stockId && item.symbol === symbol && item.exchange === input.exchange,
     );
@@ -71,7 +71,7 @@ export function StockEditSheet({ stockId, onClose, onSaved }: Props) {
           : undefined,
       name: input.name.trim() ? undefined : 'Enter the company name.',
       price:
-        priceText.trim() && (!price || !isValidIsoDate(priceDate))
+        priceText.trim() && (!price || !isValidInvestmentDate(priceDate))
           ? 'Enter a price like 1,505.25.'
           : undefined,
     };

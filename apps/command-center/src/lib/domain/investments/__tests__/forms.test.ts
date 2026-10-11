@@ -160,4 +160,14 @@ describe('limits the database enforces', () => {
     expect(errors({ amountText: '50000000', stampDutyText: '1000001' }).stampDuty).toBeDefined();
     expect(errors({}).date).toBeUndefined();
   });
+
+  it('refuses trades the database would reject', () => {
+    const errors = (patch: Partial<TradeDraft>) => validateTrade(tradeDraft(patch), []).errors;
+    expect(errors({ date: '2101-01-01' }).date).toBeDefined();
+    expect(errors({ quantityText: '1000000001' }).quantity).toBeDefined();
+    expect(errors({ priceText: '1000000001' }).price).toBeDefined();
+    expect(errors({ chargesText: '1000000001' }).charges).toBeDefined();
+    expect(errors({ kind: 'dividend', amountText: '1000000001' }).amount).toBeDefined();
+    expect(errors({ quantityText: '1000000000', priceText: '1' })).toEqual({});
+  });
 });

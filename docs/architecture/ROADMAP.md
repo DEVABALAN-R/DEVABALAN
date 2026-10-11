@@ -23,10 +23,11 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 | Receipt photos              | **Done, saved** | Private Storage bucket, one-minute links; needs migration 0011                                                                               |
 | Expense extras              | **Done**        | Recurring entries (migration 0012), search with totals, CSV export, calculator in the amount; the calendar is the default view               |
 | Fund extras                 | **Done**        | Capital gains by financial year, goals, expense ratio and yearly cost, similar-fund hint, SIP step-up (migration 0013)                       |
+| Shares vs index             | **Done**        | Your shares against an index fund you choose (Nifty 50 to begin with), same money on the same dates (migration 0014)                         |
 
 > **October 2026:** the old Vite app was removed from the repository (the last commit that has it
 > is `efc04a9`); its saved data is not imported and migration 0008 deletes it. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
-> history at `224176d`); 0005–0013 are in `supabase/migrations`.
+> history at `224176d`); 0005–0014 are in `supabase/migrations`.
 
 ## The plan in one picture
 

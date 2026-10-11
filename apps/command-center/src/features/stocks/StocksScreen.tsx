@@ -20,6 +20,7 @@ import { useStocksView } from '@/features/investments/hooks/useInvestments';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
 import { formatMoneyWhole, formatPercent } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
+import { BenchmarkButton } from './benchmark/BenchmarkSheet';
 import { PriceChartCard } from './PriceChartCard';
 import { SectorCard } from './SectorCard';
 import { StockHoldings } from './StockHoldings';
@@ -51,6 +52,7 @@ export function StocksScreen() {
         <>
           <RefreshPricesButton />
           <ImportTradebookButton />
+          <BenchmarkButton />
           <Button
             label="Add stock"
             icon={Plus}
