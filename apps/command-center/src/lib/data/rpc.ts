@@ -3,7 +3,21 @@ import { supabaseConfig } from './supabaseConfig';
 
 /** The database functions the app may call (anything else is refused before sending). */
 export type RpcName =
-  'load_ledger' | 'sync_ledger' | 'load_market' | 'search_funds' | 'search_securities' | 'nav_on';
+  | 'load_ledger'
+  | 'sync_ledger'
+  | 'load_market'
+  | 'search_funds'
+  | 'search_securities'
+  | 'nav_on'
+  | 'portfolio_load'
+  | 'portfolio_save'
+  | 'portfolio_delete'
+  | 'portfolio_reorder'
+  | 'portfolio_mark_message'
+  | 'portfolio_media_paths'
+  | 'portfolio_publish'
+  | 'portfolio_unpublish'
+  | 'portfolio_preview_token';
 
 /** The Edge Functions the app may call. */
 export type FunctionName = 'market-refresh';
@@ -47,16 +61,27 @@ export async function callFunction<T>(name: FunctionName, body: Record<string, u
   return post<T>(`functions/v1/${name}`, body);
 }
 
-async function post<T>(path: string, body: Record<string, unknown>): Promise<T> {
+async function signedInSession() {
   const auth = getAuth();
   if (!auth || !supabaseConfig) throw new RpcError(0, 'not_configured');
-  let token: string | undefined;
   try {
-    token = (await auth.getSession()).data.session?.access_token;
+    return (await auth.getSession()).data.session;
   } catch {
     throw new RpcError(0, 'no_session');
   }
-  if (!token) throw new RpcError(401, 'no_session');
+}
+
+/** The signed-in user's access token and id (refreshed by Supabase Auth when needed). */
+export async function currentSession(): Promise<{ token: string; userId: string }> {
+  const session = await signedInSession();
+  const userId = session?.user?.id;
+  if (!session?.access_token || !userId) throw new RpcError(401, 'no_session');
+  return { token: session.access_token, userId };
+}
+
+async function post<T>(path: string, body: Record<string, unknown>): Promise<T> {
+  const token = (await signedInSession())?.access_token;
+  if (!token || !supabaseConfig) throw new RpcError(401, 'no_session');
   let response: Response;
   try {
     response = await fetch(`${supabaseConfig.url}/${path}`, {

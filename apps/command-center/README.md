@@ -23,9 +23,13 @@ ledger starts from scratch; next is importing from the export of the app you use
 - **Stocks**: buys, sells, dividends, bonus issues and splits; FIFO P&L, XIRR, sectors, day
   change and price charts at end-of-day exchange prices.
 - **Overview** reads the same ledger and portfolio; net worth includes funds and stocks.
+- **Portfolio** (public developer site): edit the profile, projects, skills, experience,
+  education, numbers and extra sections; drafts, reorder, image and résumé uploads (web), a
+  private preview link and Publish; read contact messages. The site itself is `apps/portfolio`;
+  how it works: [`docs/features/PORTFOLIO.md`](../../docs/features/PORTFOLIO.md).
 - Goals, Insights and Reports are labelled placeholders.
 
-**Signed in** (migrations 0005–0008 applied), every page loads and saves **your own** data, and
+**Signed in** (migrations 0005–0010 applied), every page loads and saves **your own** data, and
 the badge by the page title reads Saved / Saving… / Offline · will retry. Prices come from the
 `market-refresh` Edge Function (see [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#prices-the-market-refresh-function)).
 **Without the Supabase settings** the app runs as a labelled preview on sample data, and a
@@ -119,15 +123,17 @@ src/
                        (react-native-svg, no extra deps)
   features/            auth, shell (header, nav, rail, tab bar), overview, expenses, notes,
                        mutual-funds, stocks, investments (stores, hooks, shared parts),
-                       settings, sync, preview, dev-gallery
+                       portfolio-site, settings, sync, preview, dev-gallery
   features/expenses/   state/ (ledger store, seed, entry-form state) · entry/ (add/edit sheet)
                        · components/ (Transactions) · stats/ · budget/ · categories/ · accounts/
   lib/domain/expenses/ pure, tested money rules: balances, totals, breakdowns, budgets,
                        validation (no React, no storage)
   lib/domain/investments/ FIFO lots, XIRR, SIP schedules, splits and bonus, valuation, forms
+  lib/domain/site/     portfolio content: field definitions, checks and save payloads
   features/preview/    SAMPLE DATA for preview mode and the Mutual funds / Stocks designs
   features/sync/       cloud load/save, save status badge, starter setup
-  lib/data/            the only code that talks to Supabase (auth, MFA, RPCs, ledger)
+  lib/data/            the only code that talks to Supabase (auth, MFA, RPCs, ledger,
+                       portfolio, Storage)
   hooks/               useBreakpoint, useInteractionState
   lib/formatting/      display-only money/percent formatting (integer paise in)
   state/               small Zustand UI store (no financial data)

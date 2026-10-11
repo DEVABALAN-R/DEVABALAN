@@ -4,6 +4,7 @@ import {
   FileChartColumn,
   Flag,
   Landmark,
+  Globe,
   LayoutGrid,
   Lightbulb,
   Menu,
@@ -71,6 +72,13 @@ export const destinations: readonly Destination[] = [
     label: 'Reports',
     icon: FileChartColumn,
     placement: { desktop: 'top', mobile: 'more' },
+  },
+  {
+    name: 'portfolio',
+    href: '/dashboard/portfolio',
+    label: 'Portfolio',
+    icon: Globe,
+    placement: { desktop: 'rail', mobile: 'more' },
   },
   {
     name: 'accounts',
