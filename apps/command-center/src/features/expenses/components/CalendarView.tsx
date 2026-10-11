@@ -7,6 +7,7 @@ import { useTheme } from '@/theme';
 import { signedCompact, speakEntry } from '../format';
 import { useMonthView } from '../hooks/useMonthView';
 import { useExpenseUi } from '../state/expenseUi';
+import { useTransactionForm } from '../state/transactionForm';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const GAP = 4;
@@ -15,13 +16,14 @@ const NARROW_GAP = 3;
 
 /**
  * Month grid in the style of Money Manager's calendar: each day shows what
- * came in and what went out. Selecting a day fills the day panel and becomes
- * the default date for new entries.
+ * came in and what went out. Tapping a day selects it (the day panel shows its
+ * entries) and opens "Add" on that date; closing the sheet leaves the day selected.
  */
 export function CalendarView({ fill }: { fill: boolean }) {
   const theme = useTheme();
   const { weeks, focusDay, today } = useMonthView();
   const selectDate = useExpenseUi((state) => state.selectDate);
+  const openNew = useTransactionForm((state) => state.openNew);
   const [grid, setGrid] = useState<LayoutRectangle | null>(null);
   const rowHeight = fill && grid ? (grid.height - GAP * (weeks.length - 1)) / weeks.length : 60;
   const narrow = grid ? (grid.width - GAP * 6) / 7 < 64 : false;
@@ -62,7 +64,10 @@ export function CalendarView({ fill }: { fill: boolean }) {
                 narrow={narrow}
                 selected={day.date === focusDay}
                 isToday={day.date === today}
-                onPress={() => selectDate(day.date)}
+                onPress={() => {
+                  selectDate(day.date);
+                  openNew({ date: day.date });
+                }}
               />
             ))}
           </View>
@@ -98,6 +103,7 @@ function DayCell({ day, compact, narrow, selected, isToday, onPress }: DayCellPr
     <Pressable
       role="button"
       accessibilityLabel={`${dayLabel(day.date)}${isToday ? ', today' : ''}: ${parts.join(', ') || 'no entries'}`}
+      accessibilityHint="Adds an entry on this day"
       accessibilityState={{ selected }}
       onPress={onPress}
       {...handlers}

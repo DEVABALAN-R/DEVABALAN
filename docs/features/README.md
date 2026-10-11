@@ -51,7 +51,8 @@ and failure behaviour in [`../architecture/EDGE_CASES.md`](../architecture/EDGE_
   dates appear on Transactions: **Add** opens the sheet with the amount ready to change, **Skip**
   moves on, **Add all** adds those that can be added as they are; the repeat button lists and
   edits them. Nothing is added automatically. Needs migration 0012 when signed in.
-- **Default view:** the calendar, on every screen size.
+- **Default view:** the calendar, on every screen size. Tapping a day selects it and opens
+  **Add** on that date; closing the sheet shows that day's entries.
 - **Edge cases:** validation in the form and the database; a double tap on Save adds one entry.
   Flows in detail:
   [`../architecture/EXPENSE_MANAGER_FLOW.md`](../architecture/EXPENSE_MANAGER_FLOW.md).
