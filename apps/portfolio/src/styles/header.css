@@ -4,18 +4,35 @@
   z-index: 50;
   padding-top: env(safe-area-inset-top);
   border-bottom: 1px solid transparent;
-  transition:
-    background-color var(--t) var(--ease-out),
-    border-color var(--t) var(--ease-out),
-    backdrop-filter var(--t) var(--ease-out);
+  transition: border-color var(--t) var(--ease-out);
 }
 
 .site-header.is-scrolled,
 .site-header.is-open {
-  background: rgb(7 8 10 / 76%);
   border-bottom-color: var(--line);
-  backdrop-filter: blur(16px) saturate(140%);
+}
+
+/*
+ * The frosted background sits on a layer behind the bar, not on the header itself: a
+ * backdrop-filter on the header would make it the containing block of the fixed phone
+ * menu, which Safari then squeezes into the header's own height.
+ */
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgb(7 8 10 / 76%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  opacity: 0;
+  transition: opacity var(--t) var(--ease-out);
+  pointer-events: none;
+}
+
+.site-header.is-scrolled::before,
+.site-header.is-open::before {
+  opacity: 1;
 }
 
 .site-header__bar {
