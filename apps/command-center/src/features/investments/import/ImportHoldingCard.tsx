@@ -2,86 +2,39 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Badge, Text } from '@/components/ui';
 import { SwitchRow } from '@/features/investments/components/SwitchRow';
-import { parseIsoDate } from '@/lib/domain/expenses';
-import type { HoldingPlan, PlannedTrade } from '@/lib/domain/investments';
+import type { HoldingPlan } from '@/lib/domain/investments';
 import { formatMoney } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
+import { quantityText, TradeHeading, TradeRow } from './ImportTradeRow';
 
 const SHOWN = 6;
-// Tradebooks span years, so every trade shows its year.
-const tradeDay = new Intl.DateTimeFormat('en-IN', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-});
 
-export const quantityText = (plan: Pick<HoldingPlan, 'segment'>, quantity: number) =>
-  plan.segment === 'funds'
-    ? quantity.toLocaleString('en-IN', { minimumFractionDigits: 3, maximumFractionDigits: 4 })
-    : quantity.toLocaleString('en-IN');
-
-const priceText = (plan: HoldingPlan, price: number) =>
-  `₹${price.toLocaleString('en-IN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: plan.segment === 'funds' ? 4 : 2,
-  })}`;
-
-function TradeRow({
-  cells,
-  tone,
-}: {
-  cells: string[];
-  tone?: 'income' | 'expense' | 'textTertiary';
-}) {
-  const theme = useTheme();
-  const cell = { flex: 1, minWidth: 0 } as const;
-  const [date, kind, quantity, price, amount] = cells;
-  const heading = tone === 'textTertiary';
-  return (
-    <View style={{ flexDirection: 'row', gap: theme.space[2] }}>
-      <Text variant="caption" color={heading ? tone : undefined} style={cell}>
-        {date}
-      </Text>
-      <Text variant="caption" color={tone} style={{ width: 34 }}>
-        {kind}
-      </Text>
-      {[quantity, price, amount].map((text, index) => (
-        <Text
-          key={index}
-          variant="caption"
-          color={heading ? tone : undefined}
-          style={{ ...cell, textAlign: 'right' }}
-        >
-          {text}
-        </Text>
-      ))}
-    </View>
-  );
-}
-
-const tradeCells = (plan: HoldingPlan, trade: PlannedTrade) => [
-  tradeDay.format(parseIsoDate(trade.date)),
-  trade.kind === 'buy' ? 'Buy' : 'Sell',
-  quantityText(plan, trade.quantity),
-  priceText(plan, trade.price),
-  formatMoney(trade.amount),
-];
-
-/** One holding to review: the trades to add, and what it will hold afterwards. */
+/**
+ * One holding to review: the trades to add, each with a tick box (possible duplicates start
+ * unticked), and what it will hold with the ticked ones.
+ */
 export function ImportHoldingCard({
   plan,
-  on,
+  selected,
+  check,
   onToggle,
 }: {
   plan: HoldingPlan;
-  on: boolean;
-  onToggle: (on: boolean) => void;
+  selected: ReadonlySet<string>;
+  /** With the ticked trades; undefined when none is ticked. */
+  check: { held: number; invested: number; covered: boolean } | undefined;
+  onToggle: (ids: string[], on: boolean) => void;
 }) {
   const theme = useTheme();
   const [all, setAll] = useState(false);
   const unit = plan.segment === 'funds' ? 'Units' : 'Shares';
-  const trades = all ? plan.add : plan.add.slice(0, SHOWN);
+  // Possible duplicates are always shown, so none is hidden behind "Show all".
+  const trades = all ? plan.add : plan.add.filter((t, i) => i < SHOWN || t.duplicate);
   const isNew = !plan.existingId;
+  const ticked = plan.add.filter((trade) => selected.has(trade.id));
+  const on = ticked.length > 0;
+  const flagged = plan.add.filter((trade) => trade.duplicate).length;
+  const after = check ?? plan.before;
   return (
     <View
       style={{
@@ -89,7 +42,11 @@ export function ImportHoldingCard({
         padding: theme.space[3],
         borderRadius: theme.radius.md,
         borderWidth: 1,
-        borderColor: on ? theme.colors.accent : theme.colors.border,
+        borderColor: !on
+          ? theme.colors.border
+          : check && !check.covered
+            ? theme.colors.warning
+            : theme.colors.accent,
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}>
@@ -106,20 +63,35 @@ export function ImportHoldingCard({
         {plan.already ? ` · ${plan.already} already in the app` : ''}
       </Text>
       <SwitchRow
-        label={`Add ${plan.add.length} ${plan.add.length === 1 ? 'trade' : 'trades'}`}
+        label={
+          ticked.length === plan.add.length
+            ? `Add ${plan.add.length} ${plan.add.length === 1 ? 'trade' : 'trades'}`
+            : `Add ${ticked.length} of ${plan.add.length} trades`
+        }
+        hint={
+          flagged
+            ? `${flagged} possible ${flagged === 1 ? 'duplicate is' : 'duplicates are'} unticked: check before adding.`
+            : undefined
+        }
         value={on}
-        onChange={onToggle}
+        onChange={(next) =>
+          onToggle(
+            next
+              ? plan.add.filter((t) => !t.duplicate || flagged === plan.add.length).map((t) => t.id)
+              : plan.add.map((t) => t.id),
+            next,
+          )
+        }
       />
-      <View style={{ gap: 2 }}>
-        <TradeRow
-          tone="textTertiary"
-          cells={['Date', '', unit, plan.segment === 'funds' ? 'NAV' : 'Price', 'Amount']}
-        />
-        {trades.map((trade, index) => (
+      <View style={{ gap: 4 }}>
+        <TradeHeading plan={plan} />
+        {trades.map((trade) => (
           <TradeRow
-            key={`${trade.date}-${index}`}
-            tone={trade.kind === 'buy' ? 'income' : 'expense'}
-            cells={tradeCells(plan, trade)}
+            key={trade.id}
+            plan={plan}
+            trade={trade}
+            on={selected.has(trade.id)}
+            onToggle={(next) => onToggle([trade.id], next)}
           />
         ))}
         {plan.add.length > SHOWN ? (
@@ -131,9 +103,15 @@ export function ImportHoldingCard({
         ) : null}
       </View>
       <Text variant="caption" color="textSecondary">
-        {unit} {quantityText(plan, plan.before.held)} → {quantityText(plan, plan.after.held)} ·
-        Invested {formatMoney(plan.before.invested)} → {formatMoney(plan.after.invested)}
+        {unit} {quantityText(plan, plan.before.held)} → {quantityText(plan, after.held)} · Invested{' '}
+        {formatMoney(plan.before.invested)} → {formatMoney(after.invested)}
       </Text>
+      {check && !check.covered ? (
+        <Text variant="caption" color="warning" role="alert">
+          With these trades unticked, a sale is larger than what would be held. Tick the purchases
+          it sells, or untick the sale.
+        </Text>
+      ) : null}
       {plan.leftOut.length ? (
         <Text variant="caption" color="textTertiary">
           {plan.leftOut.length} earlier {plan.leftOut.length === 1 ? 'trade is' : 'trades are'} left
