@@ -143,6 +143,11 @@ in the comment at the top of the file.
   hosted project), create the bucket by hand with those settings and rerun the file.
 - **No email:** messages from the contact form appear under Portfolio → Messages only.
 
+**Starting content (optional):** [`supabase/one-time/20261011_portfolio_from_resume.sql`](supabase/one-time/20261011_portfolio_from_resume.sql)
+fills the portfolio from the résumé (profile, links, skills, projects, experience, education).
+Run it once after this migration; it stops without changing anything if the portfolio already has
+content, and nothing is public until you Publish.
+
 After running it: add `PORTFOLIO_HANDLE` to the Vercel project and redeploy
 ([`apps/portfolio/README.md`](apps/portfolio/README.md#deploy-on-vercel)); the portfolio is then
 the site's home page. In Dashboard → Portfolio set the site address to the same handle, add your

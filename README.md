@@ -17,7 +17,8 @@ apps/portfolio/        The public portfolio (Vite + React, server-rendered), ser
 supabase/migrations/   Ledger and notes (0005), load/save (0006), mutual funds, stocks and
                        market data (0007), retiring the old app's data (0008), fund ISINs (0009),
                        public portfolio (0010)
-supabase/one-time/     One-run update (0007 + 0008 + Zerodha funds and stocks) and the Zerodha load
+supabase/one-time/     One-run update (0007 + 0008 + Zerodha funds and stocks), the Zerodha load
+                       and the portfolio's starting content from the résumé
 supabase/functions/    market-refresh: fetches NAVs and closing prices on the server
 docs/architecture/     ARCHITECTURE.md, ROADMAP.md, decision records, expense manager flows
 docs/features/         How features work (INVESTMENTS.md, PORTFOLIO.md)
