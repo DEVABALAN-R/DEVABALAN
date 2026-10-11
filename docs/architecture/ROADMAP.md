@@ -111,6 +111,17 @@ and the file is not kept. Export from the Command Center comes with it, in the s
 
 ## Next
 
+### From the October 2026 audit
+
+Small, high-value engineering steps ([report](AUDIT_2026-10.md)):
+
+1. Reload data when the dashboard tab becomes visible again and nothing is waiting to be saved
+   (changes from another device appear without signing in again).
+2. Decide on the placeholders (Reports, Goals, Insights, Search, Data & privacy): hide them, or
+   build Search and Export first.
+3. Route-level code splitting to bring the web bundle towards its 350 KiB target.
+4. Load history by period instead of all at once, when the ledger grows large.
+
 ### PF / EPF tracker
 
 Your first personal tracker (chosen October 2026), after the import; it replaces the spreadsheet's
