@@ -86,7 +86,19 @@ describe('page handler', () => {
     expect(res.headers.get('Cache-Control')).toBe('no-store');
     expect(res.headers.get('X-Robots-Tag')).toContain('noindex');
     expect(res.headers.get('Referrer-Policy')).toBe('no-referrer');
+    expect(await res.text()).toContain('<meta name="referrer" content="no-referrer" />');
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('passes the dashboard link to the page only when it is safe', async () => {
+    const state = async (environment: Record<string, string>) => {
+      const { response, render } = serve('/', { environment });
+      await response;
+      return render.mock.calls[0]?.[0];
+    };
+    expect((await state({ ...env, DASHBOARD_URL: '/dashboard' }))?.dashboardUrl).toBe('/dashboard');
+    expect((await state({ ...env, DASHBOARD_URL: '//elsewhere' }))?.dashboardUrl).toBeNull();
+    expect((await state({ DASHBOARD_URL: '/dashboard' }))?.mode).toBe('unconfigured');
   });
 
   it('serves the sitemap and robots.txt', async () => {

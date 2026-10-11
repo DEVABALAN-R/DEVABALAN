@@ -22,6 +22,8 @@ export type InitialState = {
   /** The server's date (YYYY-MM-DD): durations render the same on both sides. */
   today: string;
   origin: string;
+  /** The owner's way into the dashboard (sign-in), when the site is set up with one. */
+  dashboardUrl: string | null;
 };
 
 export const STATE_ELEMENT_ID = 'portfolio-state';

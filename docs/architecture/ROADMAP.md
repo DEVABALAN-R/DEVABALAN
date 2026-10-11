@@ -17,7 +17,7 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 | Stocks                      | **Done, saved** | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
 | Tradebook import            | **Done**        | Zerodha tradebooks (.xlsx/.csv) read on the device; you review each trade and approve before anything is saved                               |
 | Overview                    | Done            | Net worth includes funds and stocks                                                                                                          |
-| Public portfolio            | **Built**       | Separate site (`apps/portfolio`) edited in Dashboard → Portfolio, published as a snapshot; needs migration 0010 and its own Vercel project   |
+| Public portfolio            | **Built**       | The site's home page, edited in Dashboard → Portfolio and published as a snapshot; Dashboard button opens the app; needs migration 0010      |
 | Old app's data              | Retired         | Not imported (your decision); migration 0008 deletes it. The ledger starts from scratch                                                      |
 | Goals, Insights, Reports    | Placeholders    | Labelled "Planned"                                                                                                                           |
 
@@ -33,7 +33,7 @@ flowchart LR
     A[Fresh start<br/>empty ledger + Zerodha funds and shares]
     M[Import and export<br/>from your current app's file]
     B[Price setup live<br/>schedule + checks]
-    W[Public portfolio live<br/>migration 0010 + Vercel project]
+    W[Public portfolio live<br/>migration 0010 + PORTFOLIO_HANDLE]
   end
   subgraph Next
     P[PF / EPF tracker]
@@ -88,10 +88,11 @@ A public developer site (`apps/portfolio`) whose content you manage under Dashbo
 **Portfolio**: profile, links, projects with case-study pages, skills, experience, education and
 certifications, numbers and highlights, "beyond the code" sections, and contact messages. Items
 can be drafts and reordered; **Preview** opens a private 20-minute link; **Publish** makes your
-changes live within about a minute, with no redeploy
-([ADR 0010](decisions/0010-public-portfolio-site.md); how it works:
-[`PORTFOLIO.md`](../features/PORTFOLIO.md)). To go live: run migration 0010, create the Vercel
-project for `apps/portfolio` ([its README](../../apps/portfolio/README.md#deploy-on-vercel)),
+changes live within about a minute, with no redeploy. It is the home page of the site, and its
+**Dashboard** button opens the app ([ADR 0010](decisions/0010-public-portfolio-site.md),
+[ADR 0011](decisions/0011-portfolio-at-the-dashboard-address.md); how it works:
+[`PORTFOLIO.md`](../features/PORTFOLIO.md)). To go live: run migration 0010, add
+`PORTFOLIO_HANDLE` to the Vercel project ([details](../../apps/portfolio/README.md#deploy-on-vercel)),
 add content, Preview, Publish. Later: email notification of new messages, analytics.
 
 ### Import and export (waiting for your export file)

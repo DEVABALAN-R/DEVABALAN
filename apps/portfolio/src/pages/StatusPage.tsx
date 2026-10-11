@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from '../app/router';
-import { Arrow } from '../components/Glyphs';
+import { Arrow, LockGlyph } from '../components/Glyphs';
 
 /** Full-page states: nothing published yet, not configured, offline, not found, preview problems. */
 export function StatusPage({
@@ -8,11 +8,14 @@ export function StatusPage({
   title,
   children,
   home,
+  dashboardUrl,
 }: {
   code: string;
   title: string;
   children?: ReactNode;
   home?: boolean;
+  /** Shown while there is no portfolio to see, so the owner can get to the dashboard. */
+  dashboardUrl?: string | null;
 }) {
   return (
     <section className="status-page" aria-labelledby="status-title">
@@ -27,6 +30,11 @@ export function StatusPage({
           <Link className="btn btn--ghost" href="/">
             <Arrow direction="left" /> Back to the start
           </Link>
+        ) : null}
+        {dashboardUrl ? (
+          <a className="btn btn--ghost" href={dashboardUrl} rel="nofollow">
+            <LockGlyph /> Dashboard
+          </a>
         ) : null}
       </div>
     </section>

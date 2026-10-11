@@ -16,6 +16,7 @@ const state = (patch: Partial<InitialState> = {}): InitialState => ({
   fetchedAt: Date.now(),
   today: '2026-10-11',
   origin: 'https://sam.example.com',
+  dashboardUrl: null,
   ...patch,
 });
 
@@ -159,5 +160,18 @@ describe('portfolio app', () => {
   it('says when nothing is published', () => {
     render(<App initial={state({ mode: 'unpublished', document: null })} />);
     expect(screen.getByRole('heading', { name: 'Nothing is published here yet' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /Dashboard/ })).toBeNull();
+  });
+
+  it('offers the way into the dashboard when one is set, even before publishing', () => {
+    const { unmount } = render(<App initial={state({ dashboardUrl: '/dashboard' })} />);
+    const links = screen.getAllByRole('link', { name: /Dashboard/, hidden: true });
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/dashboard', '/dashboard']);
+    expect(links.every((link) => link.getAttribute('rel') === 'nofollow')).toBe(true);
+    unmount();
+    render(
+      <App initial={state({ mode: 'unpublished', document: null, dashboardUrl: '/dashboard' })} />,
+    );
+    expect(screen.getByRole('link', { name: /Dashboard/ }).getAttribute('href')).toBe('/dashboard');
   });
 });

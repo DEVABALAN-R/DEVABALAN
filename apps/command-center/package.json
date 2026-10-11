@@ -50,7 +50,9 @@
     "test:ci": "jest --ci --coverage",
     "build:web": "expo export --platform web",
     "doctor": "expo-doctor",
-    "check:bundle": "node scripts/check-bundle-size.js"
+    "check:bundle": "node scripts/check-bundle-size.js",
+    "build:site": "node scripts/build-site.mjs",
+    "check:site": "node scripts/check-site.mjs"
   },
   "private": true,
   "engines": {

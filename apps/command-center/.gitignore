@@ -42,3 +42,6 @@ yarn-error.*
 
 # test coverage
 coverage/
+
+# Portfolio server bundle copied in by `npm run build:site`
+site-server/

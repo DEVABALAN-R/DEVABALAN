@@ -1,6 +1,6 @@
 # 0010. A separate public portfolio site, edited in the dashboard and published as a snapshot
 
-- Status: Accepted
+- Status: Accepted; where it is served: superseded by [0011](0011-portfolio-at-the-dashboard-address.md)
 - Date: 2026-10-11
 
 ## Context

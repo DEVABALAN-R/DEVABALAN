@@ -2,6 +2,8 @@
  * Settings for reaching the published portfolio. The page hands these to the browser,
  * so only values that are public by design are accepted: the project URL, the
  * publishable key and the handle. A secret or service-role key is refused outright.
+ * Served by the dashboard's project, the dashboard's own EXPO_PUBLIC_ Supabase values
+ * are used when SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY are not set.
  */
 export type SiteConfig = { supabaseUrl: string; key: string; handle: string };
 
@@ -22,8 +24,8 @@ function jwtRole(key: string): string | undefined {
 
 /** Null when not configured; throws when a value is set but unsafe. */
 export function readConfig(env: Record<string, string | undefined>): SiteConfig | null {
-  const url = env.SUPABASE_URL?.trim();
-  const key = env.SUPABASE_PUBLISHABLE_KEY?.trim();
+  const url = (env.SUPABASE_URL || env.EXPO_PUBLIC_SUPABASE_URL)?.trim();
+  const key = (env.SUPABASE_PUBLISHABLE_KEY || env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY)?.trim();
   const handle = env.PORTFOLIO_HANDLE?.trim().toLowerCase();
   if (!url || !key || !handle) return null;
   let parsed: URL;
@@ -56,6 +58,24 @@ export function siteOrigin(env: Record<string, string | undefined>, requestUrl: 
     }
   }
   return new URL(requestUrl).origin;
+}
+
+/**
+ * Where the header's Dashboard link goes: a path on this site (/dashboard, when the
+ * dashboard serves the portfolio at its root) or an https address. Anything else, or
+ * nothing, hides the link.
+ */
+export function dashboardUrl(env: Record<string, string | undefined>): string | null {
+  const value = env.DASHBOARD_URL?.trim();
+  if (!value) return null;
+  if (/^\/(?!\/)[A-Za-z0-9/_-]*$/.test(value)) return value;
+  try {
+    const url = new URL(value);
+    if (url.protocol === 'https:' || LOCAL.includes(url.hostname)) return url.href;
+  } catch {
+    // Not a usable address.
+  }
+  return null;
 }
 
 export const mediaUrl = (config: SiteConfig | null, path: string) =>

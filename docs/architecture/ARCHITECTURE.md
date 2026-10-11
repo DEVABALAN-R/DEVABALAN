@@ -9,8 +9,9 @@ the original audit is in [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) (histo
 A personal command center for one owner (Devabalan): expenses and budgets, people and splits,
 notes, mutual funds and stocks today; goals, other assets and personal trackers next. One Expo
 codebase runs on the web (Vercel), iOS and Android. Supabase provides sign-in, the Postgres
-database and server functions. A second, public site (`apps/portfolio`) shows the developer portfolio
-the owner edits in the dashboard ([§ 11](#11-public-portfolio)).
+database and server functions. The site's home page is a public developer portfolio
+(`apps/portfolio`) the owner edits in the dashboard; the app itself is under `/dashboard`
+([§ 11](#11-public-portfolio)).
 
 ## 2. System context
 
@@ -163,9 +164,11 @@ flowchart LR
 - No secrets in the client or the repository. The service role lives only in Edge Functions; the
   schedule secret only in function secrets and Vault.
 - Headers on Vercel: CSP (connect only to Supabase), HSTS, frame blocking, no referrer leaks.
-- The public portfolio runs on its own origin with no session, reads only the published
-  snapshot, and is the only place strangers can write (the contact form, checked and
-  rate-limited in the database).
+- The public portfolio (at `/`, same origin as the app) reads only the published snapshot,
+  renders only owner-written content as text, loads no third-party scripts and has its own
+  strict CSP; it is the only place strangers can write (the contact form, checked and
+  rate-limited in the database). Dashboard pages send `noindex`
+  ([ADR 0011](decisions/0011-portfolio-at-the-dashboard-address.md)).
 - Logs and audit entries never contain amounts, notes, tokens or keys.
 - We do not claim the app cannot be hacked; we reduce risk and test the controls (see the
   threat-model work in the Hardening track).
@@ -184,9 +187,8 @@ flowchart LR
 ## 9. Deployment
 
 - **Web:** Vercel project `devabalan-command-center`, root `apps/command-center`, `vercel.json`
-  (build, SPA rewrites, security headers). Public settings are the two `EXPO_PUBLIC_` variables.
-- **Portfolio:** a second Vercel project, root `apps/portfolio` (server-side variables only;
-  see its README).
+  (Expo export plus the portfolio build, the portfolio's render function `api/site.mjs`, rewrites,
+  security headers per part). Settings: the two `EXPO_PUBLIC_` variables and `PORTFOLIO_HANDLE`.
 - **Database:** SQL migrations in `supabase/migrations`, run in order in the SQL editor.
 - **Edge Functions:** `supabase/functions`, deployed by the `Deploy Edge Functions` workflow when
   its two secrets are set, or with the Supabase CLI.
@@ -210,12 +212,15 @@ without new patterns:
 Dashboard → Portfolio ──portfolio_save (as you, RLS)──► working copy tables
                       ──Publish──► portfolio_publications (snapshot built by a trigger)
                       ──Preview──► portfolio_preview_tokens (20 min, hash only)
-apps/portfolio (Vercel function) ──portfolio_public(handle)──► HTML + JSON for hydration
+/ , /projects/… (api/site.mjs) ──portfolio_public(handle)──► HTML + JSON for hydration
 visitor ──contact form──► portfolio_contact (checks, limits) ──► portfolio_messages ──► Dashboard
+visitor ──Dashboard button──► /dashboard (sign-in)
 ```
 
-- **Why separate:** a public, indexable site with input from strangers stays on its own origin,
-  away from the dashboard's session ([ADR 0010](decisions/0010-public-portfolio-site.md)).
+- **Where it runs:** its own app (`apps/portfolio`), built and served by the dashboard's Vercel
+  project at `/`; every other path is the dashboard
+  ([ADR 0010](decisions/0010-public-portfolio-site.md),
+  [ADR 0011](decisions/0011-portfolio-at-the-dashboard-address.md)).
 - **Site:** Vite + React, rendered by a Vercel function (SEO, social cards, JSON-LD, sitemap)
   then hydrated; motion with CSS, IntersectionObserver, one canvas and View Transitions; ~80 KiB
   of JavaScript. Tests: Vitest (parsing, Markdown, server responses, hydration, contact).

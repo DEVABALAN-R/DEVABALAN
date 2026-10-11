@@ -1,6 +1,12 @@
 import { STATE_ELEMENT_ID, type InitialState, type Mode } from '../app/state';
 import { fetchPublished } from '../lib/api';
-import { readConfig, siteOrigin, UnsafeConfigError, type SiteConfig } from '../lib/config';
+import {
+  dashboardUrl,
+  readConfig,
+  siteOrigin,
+  UnsafeConfigError,
+  type SiteConfig,
+} from '../lib/config';
 import { jsonForScript } from '../lib/escape';
 import { normalizeDocument } from '../lib/normalize';
 import { parseRoute } from '../lib/routes';
@@ -100,6 +106,7 @@ export async function handleRequest(request: Request, options: HandlerOptions): 
     fetchedAt: now.getTime(),
     today: now.toISOString().slice(0, 10),
     origin,
+    dashboardUrl: dashboardUrl(options.env),
   };
   const noindex = mode !== 'live' || status !== 200;
   const html = options.template
