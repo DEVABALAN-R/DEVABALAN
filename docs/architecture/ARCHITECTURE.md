@@ -110,6 +110,12 @@ sequenceDiagram
 - **Nothing is lost quietly.** A waiting change is sent as soon as the tab is hidden; leaving the
   page or signing out with a change still unsent asks first (`hasUnsavedChanges`). Saving a new
   fund or share with a scheme or ISIN loads its prices once.
+- **Other devices:** the last save of a row wins. Coming back to the app (tab shown, phone app
+  in front) reloads the ledger at most once a minute, never while an edit here is unsaved, and
+  an edit made during that reload wins (`refreshCloudData`, `lifecycle.ts`).
+- **Receipt photos** are files in the private `receipts` bucket (owner-only Storage policies,
+  two-step sign-in); the ledger stores only their path, which the database checks is in the
+  owner's folder. They are shown through one-minute signed links.
 - **The database decides.** CHECK constraints, triggers and deferred constraint triggers enforce
   every rule the app checks (amount ranges, transfer accounts, category kinds, split totals, units
   and shares never going negative, SIP and fund matching). A refused batch changes nothing.

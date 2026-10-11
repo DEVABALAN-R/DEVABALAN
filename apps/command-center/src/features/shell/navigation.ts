@@ -1,12 +1,9 @@
 import {
   ChartCandlestick,
   ChartPie,
-  FileChartColumn,
-  Flag,
   Landmark,
   Globe,
   LayoutGrid,
-  Lightbulb,
   Menu,
   Settings,
   StickyNote,
@@ -67,13 +64,6 @@ export const destinations: readonly Destination[] = [
     placement: { desktop: 'top', mobile: 'more' },
   },
   {
-    name: 'reports',
-    href: '/dashboard/reports',
-    label: 'Reports',
-    icon: FileChartColumn,
-    placement: { desktop: 'top', mobile: 'more' },
-  },
-  {
     name: 'portfolio',
     href: '/dashboard/portfolio',
     label: 'Portfolio',
@@ -85,20 +75,6 @@ export const destinations: readonly Destination[] = [
     href: '/dashboard/accounts',
     label: 'Accounts',
     icon: Landmark,
-    placement: { desktop: 'rail', mobile: 'more' },
-  },
-  {
-    name: 'goals',
-    href: '/dashboard/goals',
-    label: 'Goals',
-    icon: Flag,
-    placement: { desktop: 'rail', mobile: 'more' },
-  },
-  {
-    name: 'insights',
-    href: '/dashboard/insights',
-    label: 'Insights',
-    icon: Lightbulb,
     placement: { desktop: 'rail', mobile: 'more' },
   },
   {

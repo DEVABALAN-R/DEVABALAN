@@ -1,10 +1,8 @@
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search } from '@/components/icons';
-import { IconButton, Text } from '@/components/ui';
+import { Text } from '@/components/ui';
 import { previewProfile } from '@/features/preview/notice';
 import { greeting } from '@/lib/formatting/greeting';
-import { useUiStore } from '@/state/ui';
 import { useTheme } from '@/theme';
 import { BrandMark } from './BrandMark';
 import { ThemeToggle } from './ThemeToggle';
@@ -12,7 +10,6 @@ import { ThemeToggle } from './ThemeToggle';
 export function MobileHeader() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const openSearch = useUiStore((state) => state.openSearch);
   return (
     <View
       style={{
@@ -34,12 +31,6 @@ export function MobileHeader() {
           {previewProfile.name}
         </Text>
       </View>
-      <IconButton
-        icon={Search}
-        variant="surface"
-        accessibilityLabel="Search"
-        onPress={openSearch}
-      />
       <ThemeToggle />
     </View>
   );

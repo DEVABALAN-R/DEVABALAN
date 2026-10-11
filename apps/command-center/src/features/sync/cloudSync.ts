@@ -1,4 +1,5 @@
 import { useSession } from '@/features/auth/sessionStore';
+import { cleanUnusedReceipts } from '@/features/expenses/photos/receipts';
 import { getLedger, useExpenseStore } from '@/features/expenses/state/expenseStore';
 import { useMarketStore } from '@/features/investments/state/marketStore';
 import { getPortfolio, usePortfolioStore } from '@/features/investments/state/portfolioStore';
@@ -11,6 +12,7 @@ import {
   type CloudData,
 } from '@/lib/data/ledgerRepository';
 import { RpcError } from '@/lib/data/rpc';
+import { watchLifecycle } from './lifecycle';
 import { useSyncStatus } from './syncStatus';
 
 /**
@@ -18,10 +20,14 @@ import { useSyncStatus } from './syncStatus';
  * everything, then watches the stores: shortly after a change it sends the difference
  * from the last saved copy as one atomic batch (`sync_ledger`). Offline or server
  * errors are retried with back-off; a change the database refuses is rolled back by
- * reloading. Screens keep calling the same store actions as in preview mode.
+ * reloading. Coming back to the app reloads, so changes made on another device show up
+ * (the last save of a row wins). Screens keep calling the same store actions as in
+ * preview mode.
  */
 const DEBOUNCE_MS = 600;
 const MAX_BACKOFF_MS = 30_000;
+/** Coming back sooner than this after the last load does not reload. */
+export const REFRESH_AFTER_MS = 60_000;
 
 let generation = 0;
 let baseline: CloudData | null = null;
@@ -30,6 +36,7 @@ let timer: ReturnType<typeof setTimeout> | null = null;
 let inFlight: Promise<void> | null = null;
 let pending = false;
 let attempt = 0;
+let loadedAt = 0;
 
 const snapshot = (): CloudData => {
   const { accounts, categories, people, transactions } = getLedger();
@@ -97,42 +104,49 @@ export async function startCloudSync(): Promise<void> {
   }
   if (run !== generation) return;
   baseline = data;
+  loadedAt = Date.now();
   applyToStores(data);
   setStatus('saved');
   // Prices for the holdings load alongside (a failure only affects valuations).
   void useMarketStore.getState().load();
+  // Tidying Storage is best-effort; a failure changes nothing the user sees.
+  cleanUnusedReceipts(data.transactions).catch(() => undefined);
   unsubscribers = [
     useExpenseStore.subscribe(() => schedule()),
     useNotesStore.subscribe(() => schedule()),
     usePortfolioStore.subscribe(() => schedule()),
-    watchPageLifecycle(),
+    // A change made just before the app is hidden is sent at once (phones often close
+    // hidden tabs without warning); leaving the page with a change unsaved asks first.
+    watchLifecycle({
+      onHide: () => void flushCloudSync(),
+      onReturn: () => void refreshCloudData(),
+      hasUnsavedChanges,
+    }),
   ];
 }
 
 /**
- * Web: a change made just before the tab is hidden is sent at once (phones often
- * close hidden tabs without warning), and leaving or reloading the page while a
- * change is still unsaved asks first.
+ * Back in the app: loads again so changes made on another device show up. Skipped when
+ * the last load is under a minute old, and whenever an edit here is not saved yet (it is
+ * sent first; the next return picks up the rest). An edit made while this loads wins.
  */
-function watchPageLifecycle(): () => void {
-  // Phones (React Native) have a window object but no page events.
-  if (typeof document === 'undefined' || typeof window?.addEventListener !== 'function') {
-    return () => {};
+export async function refreshCloudData(): Promise<void> {
+  const run = generation;
+  if (!baseline || useSession.getState().status !== 'signedIn') return;
+  if (Date.now() - loadedAt < REFRESH_AFTER_MS || hasUnsavedChanges()) return;
+  loadedAt = Date.now();
+  let data: CloudData;
+  try {
+    data = await loadCloudData();
+  } catch {
+    return; // Offline: keep what is on screen.
   }
-  const onHide = () => {
-    if (document.visibilityState === 'hidden') void flushCloudSync();
-  };
-  const onLeave = (event: BeforeUnloadEvent) => {
-    if (!hasUnsavedChanges()) return;
-    event.preventDefault();
-    event.returnValue = '';
-  };
-  document.addEventListener('visibilitychange', onHide);
-  window.addEventListener('beforeunload', onLeave);
-  return () => {
-    document.removeEventListener('visibilitychange', onHide);
-    window.removeEventListener('beforeunload', onLeave);
-  };
+  if (run !== generation || !baseline || hasUnsavedChanges()) return;
+  if (!buildChanges(baseline, data)) return;
+  const newHoldings = addsHoldings(baseline.portfolio, data.portfolio);
+  baseline = data;
+  applyToStores(data);
+  if (newHoldings) void useMarketStore.getState().load();
 }
 
 /** Whether something the user changed has not reached the database yet. */
@@ -216,6 +230,7 @@ async function reload(run: number): Promise<void> {
     const data = await loadCloudData();
     if (run !== generation) return;
     baseline = data;
+    loadedAt = Date.now();
     applyToStores(data);
     useSyncStatus.getState().setRejected(true);
     setStatus('saved');

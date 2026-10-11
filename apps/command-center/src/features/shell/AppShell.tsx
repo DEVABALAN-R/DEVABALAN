@@ -11,7 +11,6 @@ import { FloatingTabBar } from './FloatingTabBar';
 import { LeftRail } from './LeftRail';
 import { MobileHeader } from './MobileHeader';
 import { destinations } from './navigation';
-import { PlaceholderSheets } from './PlaceholderSheets';
 
 /**
  * Adaptive frame on Expo Router's headless tabs. The hidden TabList declares
@@ -56,7 +55,6 @@ export function AppShell() {
             </View>
           </View>
         )}
-        <PlaceholderSheets />
         <TransactionSheet />
       </Tabs>
       <IdleWarning visible={idle.phase === 'warning'} onStay={idle.markActive} />

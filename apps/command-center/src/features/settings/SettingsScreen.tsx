@@ -1,9 +1,9 @@
 import { View } from 'react-native';
-import { Download, Monitor, Moon, Shield, Sun } from '@/components/icons';
+import { Monitor, Moon, Sun } from '@/components/icons';
 import { BentoCell, BentoRow } from '@/components/layout/Bento';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Screen } from '@/components/layout/Screen';
-import { Badge, Card, CardHeader, CategoryIcon, SegmentedControl, Text } from '@/components/ui';
+import { Card, CardHeader, CategoryIcon, SegmentedControl } from '@/components/ui';
 import { useUiStore, type ThemePreference } from '@/state/ui';
 import { useTheme, type ColorRoles } from '@/theme';
 import { useSession } from '@/features/auth/sessionStore';
@@ -25,10 +25,7 @@ export function SettingsScreen() {
   const signedIn = useSession((state) => state.status === 'signedIn');
   return (
     <Screen>
-      <PageHeader
-        title="Settings"
-        description="Appearance, your account, and data controls as they arrive."
-      />
+      <PageHeader title="Settings" description="Appearance, your account and this device." />
       <BentoRow>
         <BentoCell>
           <Card index={0} style={{ gap: theme.space[4] }}>
@@ -66,36 +63,8 @@ export function SettingsScreen() {
           <AccountCard index={1} />
           {signedIn ? <SecurityCard index={2} /> : null}
           {signedIn ? <DeviceSignInCard index={3} /> : null}
-          <Planned
-            index={4}
-            icon={Download}
-            tint={4}
-            title="Data & privacy"
-            phase={9}
-            body="CSV/JSON export, CSV import with preview and rollback, and account deletion."
-          />
         </BentoCell>
       </BentoRow>
     </Screen>
-  );
-}
-
-type PlannedProps = {
-  index: number;
-  icon: typeof Shield;
-  tint: number;
-  title: string;
-  phase: number;
-  body: string;
-};
-
-function Planned({ index, icon, tint, title, phase, body }: PlannedProps) {
-  const theme = useTheme();
-  return (
-    <Card index={index} style={{ gap: theme.space[3] }}>
-      <CardHeader title={title} action={<CategoryIcon icon={icon} tint={tint} size={40} />} />
-      <Badge label={`Planned · Phase ${phase}`} tone="warning" />
-      <Text color="textSecondary">{body}</Text>
-    </Card>
   );
 }

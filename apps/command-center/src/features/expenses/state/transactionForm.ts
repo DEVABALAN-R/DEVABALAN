@@ -1,9 +1,6 @@
 import { create } from 'zustand';
 import {
-  amountToInput,
-  inferSplitMode,
   rebalanceSplits,
-  splitTotal,
   DRAFT_FIELD_ORDER,
   todayIso,
   validateDraft,
@@ -13,6 +10,7 @@ import {
   type TransactionDraft,
   type TransactionKind,
 } from '@/lib/domain/expenses';
+import { editDraft } from './editDraft';
 import { getLedger, useExpenseStore } from './expenseStore';
 
 /** Field order for the auto-advancing entry flow (Money Manager style). */
@@ -41,14 +39,6 @@ export function nextField(draft: TransactionDraft, current: DraftField): DraftFi
   return rest.find((field) => isEmpty(draft, field)) ?? (current === 'note' ? null : 'note');
 }
 
-/** Split mode and your own share for an expense opened for editing. */
-function editSplitMode(transaction: Transaction) {
-  const shares = (transaction.splits ?? []).map((split) => split.amount);
-  const splitMode = inferSplitMode(transaction.amount, shares);
-  const mine = transaction.amount - splitTotal(transaction);
-  return { splitMode, myShareText: splitMode === 'custom' ? amountToInput(mine) || '0' : '' };
-}
-
 export type SubmitResult =
   | { ok: true; transaction: Transaction; created: boolean; previous: Transaction | null }
   | { ok: false };
@@ -60,6 +50,11 @@ type FormState = {
   active: DraftField | null;
   errors: DraftErrors;
   last: { kind: TransactionKind; accountId: string | null };
+  /** A receipt photo is being uploaded: saving waits for it. */
+  uploading: boolean;
+  /** Counts openings, so a slow upload never lands in a form opened later. */
+  opened: number;
+  setUploading: (uploading: boolean) => void;
   openNew: (defaults?: Partial<TransactionDraft>) => void;
   openEdit: (transaction: Transaction) => void;
   close: () => void;
@@ -111,12 +106,18 @@ export const useTransactionForm = create<FormState>((set, get) => ({
   active: null,
   errors: {},
   last: { kind: 'expense', accountId: null },
+  uploading: false,
+  opened: 0,
+
+  setUploading: (uploading) => set({ uploading }),
 
   openNew: (defaults) => {
-    const { last } = get();
+    const { last, opened } = get();
     const kind = defaults?.kind ?? last.kind;
     set({
       open: true,
+      opened: opened + 1,
+      uploading: false,
       editingId: null,
       errors: {},
       active: 'amount',
@@ -125,32 +126,17 @@ export const useTransactionForm = create<FormState>((set, get) => ({
   },
 
   openEdit: (transaction) =>
-    set({
+    set((state) => ({
       open: true,
+      opened: state.opened + 1,
+      uploading: false,
       editingId: transaction.id,
       errors: {},
       active: null,
-      draft: {
-        kind: transaction.kind,
-        date: transaction.date,
-        amountText: amountToInput(transaction.amount),
-        categoryId: transaction.categoryId,
-        accountId: transaction.accountId,
-        toAccountId: transaction.toAccountId,
-        feeText: transaction.fee ? amountToInput(transaction.fee) : '',
-        note: transaction.note,
-        splits: (transaction.splits ?? []).map((split) => ({
-          personId: split.personId,
-          amountText: amountToInput(split.amount),
-        })),
-        ...editSplitMode(transaction),
-        personId: transaction.personId ?? null,
-        settles: transaction.settles ?? [],
-        photo: transaction.photo ?? null,
-      },
-    }),
+      draft: editDraft(transaction),
+    })),
 
-  close: () => set({ open: false, active: null, errors: {} }),
+  close: () => set({ open: false, active: null, errors: {}, uploading: false }),
 
   setKind: (kind) =>
     set((state) => {
@@ -192,9 +178,10 @@ export const useTransactionForm = create<FormState>((set, get) => ({
   },
 
   submit: (mode) => {
-    const { draft, editingId, open } = get();
-    // A second tap while the sheet closes must not add the same entry again.
-    if (!open) return { ok: false };
+    const { draft, editingId, open, uploading } = get();
+    // A second tap while the sheet closes must not add the same entry again, and a
+    // photo still uploading would be left out.
+    if (!open || uploading) return { ok: false };
     const ledger = getLedger();
     const { errors, value } = validateDraft(draft, ledger);
     if (!value) {

@@ -23,6 +23,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 | `mf_funds.isin`, `sync_ledger` saving it           | 0009                | Matching tradebook imports to your funds                                    |
 | Market data tables and their functions             | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
 | Portfolio tables, functions and `portfolio-media`  | 0010                | Dashboard → Portfolio, and the public portfolio site                        |
+| `transactions.receipt`, private `receipts` bucket  | 0011                | Receipt photos on entries (only you can see them)                           |
 | `user_workspaces`, `public_portfolios`             | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
@@ -33,8 +34,8 @@ reachable from the browser.
 1. **Migrations applied, in order:** 0001–0004 (done earlier), then
    `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
    `202610090007_investments.sql`, `202610100008_retire_old_app.sql`,
-   `202610110009_fund_isin.sql` and `202610120010_portfolio.sql` from `supabase/migrations/`
-   (SQL Editor → paste → Run).
+   `202610110009_fund_isin.sql`, `202610120010_portfolio.sql` and `202610120011_receipts.sql`
+   from `supabase/migrations/` (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
    second layer.
@@ -79,7 +80,7 @@ everything in one request and save a batch of changes all at once (all or nothin
 
 Signed in, the app shows **your** data (empty at first) and saves changes automatically; the
 badge next to the page title reads **Saved**, **Saving…** or **Offline · will retry**. Receipt
-photos stay on the device until private storage arrives (Phase 5).
+photos are saved once migration 0011 is applied (see below).
 
 ## Mutual funds and stocks (migration 0007)
 
@@ -152,6 +153,25 @@ After running it: add `PORTFOLIO_HANDLE` to the Vercel project and redeploy
 ([`apps/portfolio/README.md`](apps/portfolio/README.md#deploy-on-vercel)); the portfolio is then
 the site's home page. In Dashboard → Portfolio set the site address to the same handle, add your
 content, use Preview, and Publish.
+
+## Receipt photos (migration 0011)
+
+Run `202610120011_receipts.sql` after 0010. Safe to run again; the rollback is in the comment at
+the top of the file.
+
+- **Storage:** the private bucket `receipts` (10 MB per file; JPEG, PNG, WebP, HEIC and HEIF only).
+  Only you can see, add or delete files, only in the folder named after your user id, and all of
+  it needs two-step sign-in when you have it turned on; files cannot be overwritten. Nobody can
+  open a receipt by its address: the app shows each one through a link that stops working after
+  a minute. Check under **Storage** that the bucket exists and is **not** public, and that
+  **Storage → Policies** lists `receipts_select`, `receipts_insert` and `receipts_delete`.
+- **Table:** `transactions.receipt` holds the stored file's path and size (the database refuses a
+  path outside your own folder). `sync_ledger` is replaced to save it; nothing else changes.
+- **Tidying:** a photo that was replaced or removed, or picked for an entry that was never saved,
+  is deleted by the app at a later sign-in once it is a day old.
+- **Before this migration** the app could not keep photos: a photo added while signed in
+  disappeared on reload. Until it is applied, adding a photo shows "Could not upload the photo"
+  (there is no bucket to put it in); entries without photos save as before.
 
 ## Everything up to now in one file
 

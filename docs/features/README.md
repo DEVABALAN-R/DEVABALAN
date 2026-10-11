@@ -3,7 +3,8 @@
 One section per feature: what it is for, where it lives in the code, what it reads and writes,
 and what to watch out for. Paths are under `apps/command-center/src/` unless noted. Every
 feature that saves data does so through the same sync (`features/sync/cloudSync.ts` →
-`load_ledger` / `sync_ledger`), except the Portfolio editor, which saves item by item. The
+`load_ledger` / `sync_ledger`; changes from another device are picked up when you come back to
+the app), except the Portfolio editor, which saves item by item. The
 Supabase calls are listed in [`../architecture/DATA_ACCESS.md`](../architecture/DATA_ACCESS.md),
 and failure behaviour in [`../architecture/EDGE_CASES.md`](../architecture/EDGE_CASES.md).
 
@@ -34,8 +35,12 @@ and failure behaviour in [`../architecture/EDGE_CASES.md`](../architecture/EDGE_
   `repayment_settles` through `load_ledger` / `sync_ledger`.
 - **State:** `useExpenseStore` holds the ledger; screens compute balances, totals and budgets
   from it (pure functions, tested).
-- **Edge cases:** validation in the form and the database; a double tap on Save adds one entry;
-  receipt photos stay on the device (`photos/`). Flows in detail:
+- **Receipt photos** (`photos/`): signed in, a photo is uploaded to the private `receipts`
+  bucket as soon as it is picked (re-encoded in the browser first, which drops location data),
+  and Save waits for it; it is shown through links that expire after a minute; unused files are
+  deleted at a later sign-in once a day old. In the preview it stays in memory. Needs migration 0011.
+- **Edge cases:** validation in the form and the database; a double tap on Save adds one entry.
+  Flows in detail:
   [`../architecture/EXPENSE_MANAGER_FLOW.md`](../architecture/EXPENSE_MANAGER_FLOW.md).
 
 ## Notes
@@ -71,8 +76,7 @@ and failure behaviour in [`../architecture/EDGE_CASES.md`](../architecture/EDGE_
   `apps/command-center/api/site.mjs` (serves the site at `/`).
 - **Guide:** [`PORTFOLIO.md`](PORTFOLIO.md).
 
-## Placeholders (not built)
+## Not built (hidden)
 
-Reports, Goals, Insights, the header Search and Settings → Data & privacy show a labelled
-"Planned" screen or sheet and touch no data (`features/shell/PlannedScreen.tsx`,
-`PlaceholderSheets.tsx`). See [`../PRODUCT.md`](../PRODUCT.md) for the recommendation.
+Reports, Goals, Insights, search and data export are not in the app (their "Planned"
+placeholders were removed in October 2026). See [`../PRODUCT.md`](../PRODUCT.md).

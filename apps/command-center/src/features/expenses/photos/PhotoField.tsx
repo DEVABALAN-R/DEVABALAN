@@ -7,21 +7,37 @@ import { FieldRow } from '../entry/FieldRow';
 import { useTransactionForm } from '../state/transactionForm';
 import { pickPhoto } from './pickPhoto';
 import { PhotoViewer } from './PhotoViewer';
+import { storeReceipt, useReceiptUri } from './receipts';
 
-/** "Photo" line of the entry form: take or upload a receipt, see it, or remove it. */
+/**
+ * "Photo" line of the entry form: take or upload a receipt, see it, or remove it. Signed
+ * in, the photo is uploaded privately as soon as it is picked; saving waits for it.
+ */
 export function PhotoField() {
   const theme = useTheme();
   const photo = useTransactionForm((state) => state.draft.photo);
   const update = useTransactionForm((state) => state.update);
+  const uploading = useTransactionForm((state) => state.uploading);
+  const shown = useReceiptUri(photo);
   const [error, setError] = useState<string | null>(null);
   const [viewing, setViewing] = useState(false);
   const choose = async (source: 'camera' | 'library') => {
     const result = await pickPhoto(source);
     if (!result) return;
-    if ('error' in result) setError(result.error);
-    else {
-      setError(null);
-      update({ photo: result.photo });
+    if ('error' in result) return setError(result.error);
+    setError(null);
+    const form = useTransactionForm.getState();
+    const opened = form.opened;
+    form.setUploading(true);
+    try {
+      const stored = await storeReceipt(result.photo);
+      if (useTransactionForm.getState().opened === opened) update({ photo: stored });
+    } catch {
+      if (useTransactionForm.getState().opened === opened) {
+        setError('Could not upload the photo. Check the connection and try again.');
+      }
+    } finally {
+      if (useTransactionForm.getState().opened === opened) form.setUploading(false);
     }
   };
   return (
@@ -34,14 +50,29 @@ export function PhotoField() {
               accessibilityLabel="View the receipt photo"
               onPress={() => setViewing(true)}
             >
-              <Image
-                source={{ uri: photo.uri }}
-                style={{ width: 44, height: 44, borderRadius: theme.radius.sm }}
-                accessibilityIgnoresInvertColors
-              />
+              {shown.uri ? (
+                <Image
+                  source={{ uri: shown.uri }}
+                  style={{ width: 44, height: 44, borderRadius: theme.radius.sm }}
+                  accessibilityIgnoresInvertColors
+                />
+              ) : (
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: theme.radius.sm,
+                    backgroundColor: theme.colors.surfaceMuted,
+                  }}
+                />
+              )}
             </Pressable>
             <Text variant="caption" color="textTertiary" style={{ flex: 1 }} numberOfLines={1}>
-              Not uploaded in the preview
+              {photo.path
+                ? shown.failed
+                  ? 'Saved privately · could not be shown now'
+                  : 'Saved privately'
+                : 'Not uploaded in the preview'}
             </Text>
             <Pressable
               role="button"
@@ -59,13 +90,15 @@ export function PhotoField() {
               icon={Camera}
               size="sm"
               variant="secondary"
+              disabled={uploading}
               onPress={() => choose('camera')}
             />
             <Button
-              label="Upload"
+              label={uploading ? 'Uploading…' : 'Upload'}
               icon={ImagePlus}
               size="sm"
               variant="secondary"
+              loading={uploading}
               onPress={() => choose('library')}
             />
           </View>

@@ -102,10 +102,11 @@ To get automatic prices, run migration 0007 and deploy the price function
 
 From the [October 2026 audit](docs/architecture/AUDIT_2026-10.md):
 
-- Edits made on two devices at the same moment: the last save of a row wins, and nothing made on
-  another device shows until you reload.
-- Reports, Goals, Insights, Search and Settings → Data & privacy are labelled placeholders.
-- Receipt photos stay on the device; there is no data export or account deletion in the app yet.
+- Edits made on two devices at the same moment: the last save of a row wins (as in most finance
+  apps). Changes from another device appear when you come back to the app.
+- There is no search, data export or account deletion in the app yet (unbuilt screens are hidden,
+  not shown as placeholders).
+- Receipt photos need migration 0011 (private storage); before it, a photo could not be kept.
 - The whole ledger loads at sign-in (fine at personal scale); the web bundle is above its target.
 
 The earlier Vite app was removed in October 2026; it is in Git history (last commit before

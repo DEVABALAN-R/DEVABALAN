@@ -170,7 +170,7 @@ Errors appear under the field and are announced to screen readers. On save, focu
 - A repayment can name the **expenses it was for** ("Mark paid" on one shared expense): those shares are settled first, and anything extra goes to the person's oldest open shares. A general payment ("Record payment") settles the **oldest shares first**. Each share shows Paid (amount struck out), part paid (original struck out above what is left) or a _Mark paid_ button.
 - Expenses › **People** lists everyone with what they owe; a person's page lists shared expenses and repayments (both open in the edit sheet).
 
-**Receipt photos.** Any expense or income can carry one photo, taken with the camera or uploaded (images only: JPEG, PNG, WebP, HEIC; up to 10 MB; compressed; no EXIF requested). Rows with a photo show a camera mark; the sheet shows a thumbnail and a full-size viewer. In the preview the photo stays in memory.
+**Receipt photos.** Any expense or income can carry one photo, taken with the camera or uploaded (images only: JPEG, PNG, WebP, HEIC; up to 10 MB; compressed; no EXIF requested). Rows with a photo show a camera mark; the sheet shows a thumbnail and a full-size viewer. In the preview the photo stays in memory; signed in, it is stored in the private `receipts` bucket (migration 0011) and shown through one-minute links.
 
 **Phones: pickers under their field.** On phones the picker for the active field (category grid, accounts, date, split, note suggestions) opens directly under that field instead of at the end of the form; wide screens keep the picker column beside the fields.
 
