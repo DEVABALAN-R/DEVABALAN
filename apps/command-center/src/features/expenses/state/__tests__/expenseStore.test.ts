@@ -54,10 +54,10 @@ describe('transactions', () => {
     expect(edited.createdAt).toBe(created.createdAt);
     expect(store().transactions.filter((item) => item.id === created.id)).toHaveLength(1);
 
-    const removed = store().deleteTransaction(created.id);
-    expect(removed?.amount).toBe(30_000);
+    const deleted = store().deleteTransaction(created.id);
+    expect(deleted?.removed.amount).toBe(30_000);
     expect(store().transactions.some((item) => item.id === created.id)).toBe(false);
-    store().restoreTransactions([removed!]);
+    store().restoreTransactions(deleted!.restore);
     expect(store().transactions.some((item) => item.id === created.id)).toBe(true);
   });
 });
@@ -158,5 +158,33 @@ describe('people', () => {
     expect(deletePerson(ravi.id)).toBe(false);
     store().deleteTransaction(repayment.id);
     expect(deletePerson(ravi.id)).toBe(true);
+  });
+
+  it('deleting an expense unlinks the repayment made for it, and undo links it again', () => {
+    const ravi = savePerson('Ravi') as { id: string };
+    const dinner = store().saveTransaction({
+      kind: 'expense',
+      date: '2026-10-05',
+      amount: 1_000,
+      accountId: 'cash',
+      toAccountId: null,
+      fee: 0,
+      categoryId: 'food',
+      note: 'Dinner',
+      splits: [{ personId: ravi.id, amount: 500 }],
+    });
+    const repayment = recordRepayment({
+      personId: ravi.id,
+      amount: 500,
+      accountId: 'cash',
+      settles: [dinner.id],
+    });
+    const deleted = store().deleteTransaction(dinner.id)!;
+    const find = (id: string) => store().transactions.find((item) => item.id === id);
+    // The database drops the link with the expense, so the app must not keep it.
+    expect(find(repayment.id)?.settles).toEqual([]);
+    store().restoreTransactions(deleted.restore);
+    expect(find(dinner.id)).toBeDefined();
+    expect(find(repayment.id)?.settles).toEqual([dinner.id]);
   });
 });

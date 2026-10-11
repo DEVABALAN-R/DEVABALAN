@@ -37,7 +37,11 @@ export type AccountInput = { name: string; group: AccountGroup; openingBalance: 
 
 type ExpenseStore = Ledger & {
   saveTransaction: (value: ValidTransaction, id?: string | null) => Transaction;
-  deleteTransaction: (id: string) => Transaction | null;
+  /**
+   * Removes an entry, and its link from repayments that were "for" it (the database
+   * drops those links too). `restore` puts everything back for an undo.
+   */
+  deleteTransaction: (id: string) => { removed: Transaction; restore: Transaction[] } | null;
   restoreTransactions: (items: Transaction[]) => void;
   saveCategory: (input: CategoryInput, id?: string | null) => Category;
   /** Removes a category (and its subcategories); returns the previous ledger for undo. */
@@ -80,10 +84,19 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   },
 
   deleteTransaction: (id) => {
-    const removed = get().transactions.find((item) => item.id === id) ?? null;
-    if (removed)
-      set((state) => ({ transactions: state.transactions.filter((item) => item.id !== id) }));
-    return removed;
+    const removed = get().transactions.find((item) => item.id === id);
+    if (!removed) return null;
+    const linked = get().transactions.filter((item) => item.settles?.includes(id));
+    set((state) => ({
+      transactions: state.transactions
+        .filter((item) => item.id !== id)
+        .map((item) =>
+          item.settles?.includes(id)
+            ? { ...item, settles: item.settles.filter((other) => other !== id) }
+            : item,
+        ),
+    }));
+    return { removed, restore: [removed, ...linked] };
   },
 
   restoreTransactions: (items) =>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '@/components/feedback';
-import type { Transaction, TransactionKind } from '@/lib/domain/expenses';
+import type { TransactionKind } from '@/lib/domain/expenses';
 import { formatEntry } from '../format';
 import { useExpenseStore } from '../state/expenseStore';
 import { useTransactionForm } from '../state/transactionForm';
@@ -46,15 +46,15 @@ export function useEntryActions() {
   const remove = () => {
     const { editingId, close } = useTransactionForm.getState();
     if (!editingId) return;
-    const removed: Transaction | null = useExpenseStore.getState().deleteTransaction(editingId);
+    const deleted = useExpenseStore.getState().deleteTransaction(editingId);
     close();
     setNotice(null);
-    if (removed)
+    if (deleted)
       toast.show({
-        message: `${kindLabel[removed.kind]} deleted · ${formatEntry(removed.amount)}`,
+        message: `${kindLabel[deleted.removed.kind]} deleted · ${formatEntry(deleted.removed.amount)}`,
         action: {
           label: 'Undo',
-          onPress: () => useExpenseStore.getState().restoreTransactions([removed]),
+          onPress: () => useExpenseStore.getState().restoreTransactions(deleted.restore),
         },
       });
   };

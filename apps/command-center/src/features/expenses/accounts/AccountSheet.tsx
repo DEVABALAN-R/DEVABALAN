@@ -8,7 +8,7 @@ import {
   ACCOUNT_TYPE_LABELS,
   amountToInput,
   MAX_NAME_LENGTH,
-  parseAmount,
+  parseLimitedAmount,
   touchesAccount,
   validateName,
   type Account,
@@ -44,7 +44,7 @@ export function AccountSheet({ account, onClose, onSaved }: AccountSheetProps) {
   const used = !!account && transactions.some((item) => touchesAccount(item, account.id));
   const save = () => {
     const nameError = validateName(name, accounts, account?.id) ?? undefined;
-    const amount = opening.trim() ? parseAmount(opening) : 0;
+    const amount = opening.trim() ? parseLimitedAmount(opening) : 0;
     const openingError =
       amount === null ? 'Enter an amount like 25,000, or leave it empty for zero.' : undefined;
     if (nameError || openingError) return setErrors({ name: nameError, opening: openingError });

@@ -2,6 +2,7 @@ import {
   amountToInput,
   MAX_AMOUNT,
   parseAmount,
+  parseLimitedAmount,
   validateDraft,
   validateName,
   type TransactionDraft,
@@ -47,6 +48,17 @@ const draft = (patch: Partial<TransactionDraft>): TransactionDraft => ({
   ...patch,
 });
 const context = { accounts, categories };
+
+describe('limits the database enforces', () => {
+  it('refuses amounts above ₹100 crore and dates outside 1900–2100', () => {
+    expect(parseLimitedAmount('1000000000')).toBe(MAX_AMOUNT);
+    expect(parseLimitedAmount('1000000000.01')).toBeNull();
+    expect(parseLimitedAmount('abc')).toBeNull();
+    expect(validateDraft(draft({ date: '1899-12-31' }), context).errors.date).toBeDefined();
+    expect(validateDraft(draft({ date: '2101-01-01' }), context).errors.date).toBeDefined();
+    expect(validateDraft(draft({ date: '2100-12-31' }), context).errors.date).toBeUndefined();
+  });
+});
 
 describe('validateDraft', () => {
   it('produces a clean transaction value', () => {
