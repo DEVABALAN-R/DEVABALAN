@@ -43,7 +43,13 @@ describe('fund portfolio', () => {
       dayChange: 10000,
       count: 1,
     });
-    expect(totals.xirr).toBeGreaterThan(1);
+    // Two months of history: a 20 % gain would read as over 100 % a year, so no XIRR yet.
+    expect(totals.xirr).toBeNull();
+    expect(rows[0].xirr).toBeNull();
+    // A year after the first purchase it is annualised.
+    const later = fundTotals(fundRows(portfolio, market, '2027-08-05'), '2027-08-05');
+    expect(later.xirr).toBeGreaterThan(0.2);
+    expect(later.xirr).toBeLessThan(0.3);
   });
 
   it('builds month-end values from NAV history', () => {

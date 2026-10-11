@@ -1,8 +1,18 @@
-import { parseAmount } from '../expenses/validation';
+import { parseLimitedAmount } from '../expenses/validation';
 import { isValidIsoDate } from '../expenses/dates';
 import { fromUnits4, roundTo, toUnits4 } from './math';
 import { sortFundTxns, unitsHeldOn } from './funds';
 import type { FundTxn, FundTxnKind } from './types';
+
+/** The database keeps fund and share dates from 1990 to 2100. */
+export const isValidInvestmentDate = (date: string) =>
+  isValidIsoDate(date) && date >= '1990-01-01' && date <= '2100-12-31';
+
+/** Largest stamp duty the database accepts (₹10 lakh). */
+const MAX_STAMP_DUTY = 100_000_000;
+
+/** Largest SIP instalment the database accepts (₹10 crore). */
+export const MAX_SIP_AMOUNT = 10_000_000_000;
 
 /** Parses a positive decimal with up to `places` decimals ("1,234.5678"), else null. */
 export function parseDecimal(input: string, places: number): number | null {
@@ -62,8 +72,8 @@ export function validateFundTxn(
   others: FundTxn[],
 ): { value: ValidFundTxn | null; errors: FundTxnErrors } {
   const errors: FundTxnErrors = {};
-  if (!isValidIsoDate(draft.date)) errors.date = 'Pick a date.';
-  const amount = parseAmount(draft.amountText);
+  if (!isValidInvestmentDate(draft.date)) errors.date = 'Pick a date from 1990 to 2100.';
+  const amount = parseLimitedAmount(draft.amountText);
   if (!amount) errors.amount = 'Enter the amount, like 5,000.';
   if (draft.kind === 'dividend') {
     if (Object.keys(errors).length || !amount) return { value: null, errors };
@@ -82,8 +92,11 @@ export function validateFundTxn(
     };
   }
   const stampDuty =
-    draft.kind === 'buy' && draft.stampDutyText.trim() ? parseAmount(draft.stampDutyText) : 0;
-  if (stampDuty === null) errors.stampDuty = 'Enter the stamp duty, or leave it empty.';
+    draft.kind === 'buy' && draft.stampDutyText.trim()
+      ? parseLimitedAmount(draft.stampDutyText)
+      : 0;
+  if (stampDuty === null || stampDuty > MAX_STAMP_DUTY)
+    errors.stampDuty = 'Enter the stamp duty, or leave it empty.';
   else if (amount && stampDuty >= amount)
     errors.stampDuty = 'Stamp duty must be less than the amount.';
   const nav = parseDecimal(draft.navText, 4);

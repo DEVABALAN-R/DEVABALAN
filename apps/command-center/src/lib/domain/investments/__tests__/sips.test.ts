@@ -36,6 +36,17 @@ describe('SIP schedule', () => {
     ).toEqual(['2026-10-05']);
   });
 
+  it('counts an imported purchase of the fund as the instalment, but not another fund', () => {
+    const imported = buy('2026-10-06', 500000, 1, 1);
+    expect(pendingSipInstalments([sip()], [imported], '2026-10-08').map((i) => i.date)).toEqual([
+      '2026-09-05',
+    ]);
+    const otherFund = buy('2026-10-06', 500000, 1, 1, { fundId: 'f2' });
+    expect(pendingSipInstalments([sip()], [otherFund], '2026-10-08')).toHaveLength(2);
+    const otherSip = buy('2026-10-06', 500000, 1, 1, { sipId: 's2' });
+    expect(pendingSipInstalments([sip()], [otherSip], '2026-10-08')).toHaveLength(2);
+  });
+
   it('totals active plans per month', () => {
     expect(
       monthlySipTotal(

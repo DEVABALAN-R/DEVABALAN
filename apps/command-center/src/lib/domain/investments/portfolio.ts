@@ -6,7 +6,7 @@ import {
   fundXirr,
   type FundPosition,
 } from './funds';
-import { unitsValue, xirr, type CashFlow } from './math';
+import { annualisedReturn, unitsValue, type CashFlow } from './math';
 import { stockPosition, stockQuote, stockXirr, type StockPosition } from './stocks';
 import type { Fund, FundTxn, MarketData, Portfolio, Quote, Stock, Trade } from './types';
 
@@ -114,7 +114,7 @@ export function totalsOf(rows: Positioned[], today: string, dayChange: number): 
     realised: rows.reduce((sum, row) => sum + row.position.realised, 0),
     dividends: rows.reduce((sum, row) => sum + row.position.dividends, 0),
     dayChange,
-    xirr: xirr(flows),
+    xirr: annualisedReturn(flows, today),
     count: rows.filter(held).length,
   };
 }

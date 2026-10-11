@@ -8,8 +8,8 @@ import { ChipField } from '@/features/investments/components/ChipField';
 import { DateField } from '@/features/investments/components/DateField';
 import { SwitchRow } from '@/features/investments/components/SwitchRow';
 import { usePortfolioStore, type FundInput } from '@/features/investments/state/portfolioStore';
-import { isValidIsoDate, todayIso } from '@/lib/domain/expenses';
-import { fundAssetClass, parseDecimal } from '@/lib/domain/investments';
+import { todayIso } from '@/lib/domain/expenses';
+import { fundAssetClass, isValidInvestmentDate, parseDecimal } from '@/lib/domain/investments';
 import { useTheme } from '@/theme';
 import { FundSearch } from './FundSearch';
 
@@ -53,7 +53,7 @@ export function FundEditSheet({ fundId, onClose, onSaved }: Props) {
     const next = {
       name: name ? undefined : 'Enter the fund name.',
       nav:
-        navText.trim() && (!nav || !isValidIsoDate(navDate))
+        navText.trim() && (!nav || !isValidInvestmentDate(navDate))
           ? 'Enter a NAV like 58.1234.'
           : undefined,
     };

@@ -35,8 +35,10 @@ export function upcomingSips(sips: Sip[], today: string, days = 31): UpcomingSip
 }
 
 /**
- * Instalments due in the last `lookbackDays` that have no purchase linked to the SIP
- * near that date (NAV allotment can take a few days): the "record it" list.
+ * Instalments due in the last `lookbackDays` with no purchase of that fund near the date
+ * (NAV allotment can take a few days): the "record it" list. A purchase counts whether or
+ * not it is linked to the SIP, so instalments brought in by a tradebook import are not
+ * asked for again.
  */
 export function pendingSipInstalments(
   sips: Sip[],
@@ -48,7 +50,11 @@ export function pendingSipInstalments(
   const pending: UpcomingSip[] = [];
   for (const sip of sips) {
     if (!sip.active) continue;
-    const linked = txns.filter((txn) => txn.sipId === sip.id && txn.kind === 'buy');
+    const linked = txns.filter(
+      (txn) =>
+        txn.kind === 'buy' &&
+        (txn.sipId === sip.id || (txn.sipId === null && txn.fundId === sip.fundId)),
+    );
     for (const date of sipDates(sip, from, today)) {
       const covered = linked.some(
         (txn) => txn.date >= addDays(date, -5) && txn.date <= addDays(date, 10),

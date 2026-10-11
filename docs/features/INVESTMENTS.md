@@ -28,7 +28,9 @@ date (or the last one before it on a holiday) from stored history.
 
 **SIP plans**: in a fund, **Add SIP**: monthly amount, day (1–28), start and optional end date;
 pause it with **Active**. The SIPs card lists instalments that are due but not recorded (with
-**Record**, pre-filled) and the next month's instalments.
+**Record**, pre-filled) and the next month's instalments. Any purchase of that fund within a few
+days of the date counts as the instalment, so purchases brought in by a tradebook import are not
+asked for again.
 
 ## Stocks
 
@@ -113,7 +115,9 @@ layout is read today.
   sold. Dividends are shown with realised gains.
 - **XIRR** is the annual rate that makes every purchase (money in), sale and dividend (money out)
   and today's value add up to zero, taking each date into account. It suits SIPs, where money goes
-  in at different times. A holding of a few weeks can show a large XIRR; read it with the gain.
+  in at different times. It is shown once the first money went in at least a year ago: before
+  that, annualising blows small moves up (2 % in a month would read as 27 % a year), so younger
+  holdings show only their gain on cost (as fund statements do).
 - **Day change** = holdings × (latest price − previous price), from AMFI history or the exchange's
   previous close.
 - **Allocation** groups funds by AMFI category (Equity, Debt, Hybrid, Index & ETF, Gold & silver,

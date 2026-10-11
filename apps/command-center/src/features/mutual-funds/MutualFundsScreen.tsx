@@ -114,7 +114,9 @@ export function MutualFundsScreen() {
           label="XIRR"
           icon={Percent}
           value={totals.xirr === null ? '—' : formatPercent(totals.xirr * 100)}
-          caption="annualised, all cash flows"
+          caption={
+            totals.xirr === null ? 'shown after a year of investing' : 'annualised, all cash flows'
+          }
           index={3}
           style={{ flex: 1 }}
         />

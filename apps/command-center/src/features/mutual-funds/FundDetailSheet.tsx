@@ -69,7 +69,11 @@ export function FundDetailSheet({
               tone: 'auto',
               note: formatPercent(gainPct),
             },
-            { label: 'XIRR', text: row.xirr === null ? '—' : formatPercent(row.xirr * 100) },
+            {
+              label: 'XIRR',
+              text: row.xirr === null ? '—' : formatPercent(row.xirr * 100),
+              note: row.xirr === null && position.invested ? 'after a year' : undefined,
+            },
             { label: 'Units', text: fromUnits4(position.units4).toFixed(3) },
             {
               label: 'Average cost',
