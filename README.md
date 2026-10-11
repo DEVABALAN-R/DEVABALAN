@@ -2,7 +2,8 @@
 
 Personal finance and productivity app: expenses, accounts, budgets, people and splits, notes,
 mutual funds and stocks. Amounts are in Indian rupees (INR). One Expo codebase for web, iOS and
-Android, backed by Supabase.
+Android, backed by Supabase. A separate public developer portfolio (`apps/portfolio`) is edited
+from the dashboard.
 
 Live web app: **devabalan-command-center.vercel.app**
 
@@ -11,14 +12,17 @@ Live web app: **devabalan-command-center.vercel.app**
 ```text
 apps/command-center/   The app (Expo Router, React Native Web). Its README covers running,
                        checks, deployment and connecting to Supabase
+apps/portfolio/        The public portfolio site (Vite + React, rendered by a Vercel function);
+                       its README covers settings and its own Vercel project
 supabase/migrations/   Ledger and notes (0005), load/save (0006), mutual funds, stocks and
-                       market data (0007), retiring the old app's data (0008), fund ISINs (0009)
+                       market data (0007), retiring the old app's data (0008), fund ISINs (0009),
+                       public portfolio (0010)
 supabase/one-time/     One-run update (0007 + 0008 + Zerodha funds and stocks) and the Zerodha load
 supabase/functions/    market-refresh: fetches NAVs and closing prices on the server
 docs/architecture/     ARCHITECTURE.md, ROADMAP.md, decision records, expense manager flows
-docs/features/         How features work (INVESTMENTS.md)
+docs/features/         How features work (INVESTMENTS.md, PORTFOLIO.md)
 SUPABASE_SETUP.md      Supabase side: migrations, price function and schedule, sign-in, security
-.github/workflows/     CI (app checks, Edge Function checks) and Edge Function deployment
+.github/workflows/     CI (app, portfolio site and Edge Function checks) and Edge Function deployment
 ```
 
 ## Quick start
@@ -50,13 +54,18 @@ using its `vercel.json` (build `npm run build:web`, output `dist`, security head
 Full steps: [`apps/command-center/README.md` → Sign-in](apps/command-center/README.md#sign-in-phase-2).
 Supabase side: [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md).
 
+The public portfolio is a **second Vercel project** with Root Directory `apps/portfolio` and four
+server-side variables (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `PORTFOLIO_HANDLE`, optional
+`SITE_URL`): [`apps/portfolio/README.md`](apps/portfolio/README.md#deploy-on-vercel).
+
 ## Status
 
 Done: sign-in with two-step codes; the expense manager, Notes, **mutual funds and stocks**
 (holdings, SIPs, FIFO gains, XIRR, AMFI NAVs and end-of-day share prices) saved to Supabase; the
 Overview's net worth includes them; Zerodha tradebooks import after you review and approve each
-trade. The ledger starts from scratch (the old app's data is
-retired by migration 0008). Next: importing from the export of the app you use today, then the
+trade; a public developer portfolio is edited, previewed and published from the dashboard
+([`docs/features/PORTFOLIO.md`](docs/features/PORTFOLIO.md)). The ledger starts from scratch
+(the old app's data is retired by migration 0008). Next: importing from the export of the app you use today, then the
 PF / EPF tracker and salary payslips. The full plan, including goals, other assets and personal
 trackers: [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md). How it is built:
 [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md).
@@ -69,8 +78,9 @@ removal: `efc04a9`). Its saved data is deleted by migration 0008.
 
 ## Security
 
-- The app uses only the Supabase **publishable** key. Never put a secret or service-role key, a
-  database password or any other secret in an `EXPO_PUBLIC_` variable, or commit one.
+- The app and the portfolio site use only the Supabase **publishable** key. Never put a secret or
+  service-role key, a database password or any other secret in an `EXPO_PUBLIC_` variable, in the
+  portfolio's variables, or in the repository.
 - Keep `.env.local` private (ignored by Git; `.env.example` holds placeholders only).
 - New accounts are blocked server-side except for allowlisted emails (see `SUPABASE_SETUP.md`).
 - Row Level Security and the database checks are the security boundary; screens and route guards

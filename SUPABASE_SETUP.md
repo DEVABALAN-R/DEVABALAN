@@ -8,7 +8,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 > **History.** Migrations 0001–0004 (the old app's workspace, conflict-safe saves, mutual funds,
 > and auth hardening) have been applied and were removed from the repository with their rollback
 > scripts and SQL tests; they are in Git history at commit `224176d`. The old Vite app itself was
-> removed in October 2026. Migrations 0005–0009, which the Command Center depends on, are in
+> removed in October 2026. Migrations 0005–0010, which the Command Center depends on, are in
 > `supabase/migrations/`. New database changes add new numbered files there.
 
 ## What is in the database
@@ -22,6 +22,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 | Mutual fund and stock tables                       | 0007                | Mutual funds and Stocks pages                                               |
 | `mf_funds.isin`, `sync_ledger` saving it           | 0009                | Matching tradebook imports to your funds                                    |
 | Market data tables and their functions             | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
+| Portfolio tables, functions and `portfolio-media`  | 0010                | Dashboard → Portfolio, and the public portfolio site                        |
 | `user_workspaces`, `public_portfolios`             | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
@@ -31,8 +32,9 @@ reachable from the browser.
 
 1. **Migrations applied, in order:** 0001–0004 (done earlier), then
    `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
-   `202610090007_investments.sql`, `202610100008_retire_old_app.sql` and
-   `202610110009_fund_isin.sql` from `supabase/migrations/` (SQL Editor → paste → Run).
+   `202610090007_investments.sql`, `202610100008_retire_old_app.sql`,
+   `202610110009_fund_isin.sql` and `202610120010_portfolio.sql` from `supabase/migrations/`
+   (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
    second layer.
@@ -116,6 +118,34 @@ it changes) and `search_funds` also returns each scheme's ISIN. Safe to run agai
 with a commented rollback.
 
 How the import itself works: [`docs/features/INVESTMENTS.md`](docs/features/INVESTMENTS.md#import-a-tradebook-zerodha).
+
+## Public portfolio (migration 0010)
+
+Run `202610120010_portfolio.sql` after 0009. It adds the portfolio you edit under Dashboard →
+Portfolio and publish to the public site (`apps/portfolio`); how it works:
+[`docs/features/PORTFOLIO.md`](docs/features/PORTFOLIO.md). Safe to run again; the rollback is
+in the comment at the top of the file.
+
+- **Tables:** the working copy (profile, links, numbers and highlights, skill areas and skills,
+  projects, experience, education, extra sections) with the same rules as the ledger (own rows,
+  two-step sign-in, checks, audit by column name); `portfolio_publications` (the published
+  snapshot), `portfolio_preview_tokens` (20-minute preview links, hash only) and
+  `portfolio_messages` (contact form). Rate-limit data is in `internal`.
+- **Functions anyone may call:** `portfolio_public(handle)` (the published snapshot only),
+  `portfolio_preview(token)` (a valid preview link only) and `portfolio_contact(…)` (checks,
+  limits, stores the message). Everything else needs your signed-in session.
+- **Storage:** the file creates the public bucket `portfolio-media` (5 MB per file; WebP, JPEG,
+  PNG, AVIF and PDF only) and its policies. Anyone can open a file by its address. Only you can
+  list, add or delete files, only in the folder named after your user id, and adding or deleting
+  needs two-step sign-in; files cannot be overwritten. Check under **Storage** that the bucket
+  exists and that **Storage → Policies** lists `portfolio_media_select`, `portfolio_media_insert`
+  and `portfolio_media_delete`. If the SQL Editor refuses the `storage` part (it should not on a
+  hosted project), create the bucket by hand with those settings and rerun the file.
+- **No email:** messages from the contact form appear under Portfolio → Messages only.
+
+After running it: deploy the site ([`apps/portfolio/README.md`](apps/portfolio/README.md)), then
+in Dashboard → Portfolio set the site address to the same handle as `PORTFOLIO_HANDLE`, add the
+site URL, use Preview, and Publish.
 
 ## Everything up to now in one file
 

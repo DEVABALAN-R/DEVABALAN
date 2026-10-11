@@ -9,15 +9,18 @@ the original audit is in [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) (histo
 A personal command center for one owner (Devabalan): expenses and budgets, people and splits,
 notes, mutual funds and stocks today; goals, other assets and personal trackers next. One Expo
 codebase runs on the web (Vercel), iOS and Android. Supabase provides sign-in, the Postgres
-database and server functions.
+database and server functions. A second, public site (`apps/portfolio`) shows the developer portfolio
+the owner edits in the dashboard ([§ 11](#11-public-portfolio)).
 
 ## 2. System context
 
 ```mermaid
 flowchart LR
   owner([Owner: browser / phone])
+  visitor([Visitor])
   subgraph Vercel
     web[Command Center web app<br/>static Expo export]
+    site[Portfolio site<br/>server-rendered function]
   end
   subgraph Supabase
     auth[Auth<br/>password + TOTP, sign-up allowlist]
@@ -35,6 +38,8 @@ flowchart LR
   cron --> fn
   fn -- service role --> db
   fn --> amfi & nse & mfapi
+  visitor --> site
+  site -- "published snapshot, contact form<br/>(publishable key, no session)" --> db
 ```
 
 - The browser only ever holds the **publishable** key and the user's own session. Every read and
@@ -116,6 +121,7 @@ needed ([ROADMAP](ROADMAP.md) Platform track).
 | Ledger      | `accounts`, `categories`, `people`, `transactions`, `transaction_splits`, `repayment_settles`, `notes` | The owner, own rows only                                      |
 | Investments | `mf_funds`, `mf_sips`, `mf_transactions`, `stocks`, `stock_trades`                                     | The owner, own rows only                                      |
 | Market data | `mf_schemes`, `mf_nav_history`, `securities`, `security_prices`, `market_refresh_runs`                 | Only the `market-refresh` function (service role); users read |
+| Portfolio   | `portfolio_*` working copy; `portfolio_publications`, `portfolio_preview_tokens`, `portfolio_messages` | The owner; visitors only through three narrow functions       |
 
 Every user-owned table uses one template (`internal.secure_user_table`): owner defaults to the
 caller and cannot change, composite foreign keys (a row can never point at another user's row),
@@ -157,6 +163,9 @@ flowchart LR
 - No secrets in the client or the repository. The service role lives only in Edge Functions; the
   schedule secret only in function secrets and Vault.
 - Headers on Vercel: CSP (connect only to Supabase), HSTS, frame blocking, no referrer leaks.
+- The public portfolio runs on its own origin with no session, reads only the published
+  snapshot, and is the only place strangers can write (the contact form, checked and
+  rate-limited in the database).
 - Logs and audit entries never contain amounts, notes, tokens or keys.
 - We do not claim the app cannot be hacked; we reduce risk and test the controls (see the
   threat-model work in the Hardening track).
@@ -170,12 +179,14 @@ flowchart LR
 | Data mapping and sync | Jest tests with mocked fetch                                                                                                     |
 | Edge Functions        | `deno test` with the network and database replaced by fakes; `deno check`, `deno lint`                                           |
 | Database              | SQL tests run against a fresh Postgres before a migration ships (kept out of the repository by the owner's choice, October 2026) |
-| Delivery              | CI on every PR: typecheck, lint, format, tests, web build, bundle ceiling, Deno checks                                           |
+| Delivery              | CI on every PR: typecheck, lint, format, tests, builds, bundle ceilings (app and portfolio), Deno                                |
 
 ## 9. Deployment
 
 - **Web:** Vercel project `devabalan-command-center`, root `apps/command-center`, `vercel.json`
   (build, SPA rewrites, security headers). Public settings are the two `EXPO_PUBLIC_` variables.
+- **Portfolio:** a second Vercel project, root `apps/portfolio` (server-side variables only;
+  see its README).
 - **Database:** SQL migrations in `supabase/migrations`, run in order in the SQL editor.
 - **Edge Functions:** `supabase/functions`, deployed by the `Deploy Edge Functions` workflow when
   its two secrets are set, or with the Supabase CLI.
@@ -192,3 +203,23 @@ without new patterns:
 3. Row mapping in `src/lib/data`, a store in the feature's `state/`, and its sample seed.
 4. Screens built from the design system; a route file under `src/app/dashboard`.
 5. Docs: a feature page under `docs/features/`, an ADR for any new decision, the roadmap updated.
+
+## 11. Public portfolio
+
+```text
+Dashboard → Portfolio ──portfolio_save (as you, RLS)──► working copy tables
+                      ──Publish──► portfolio_publications (snapshot built by a trigger)
+                      ──Preview──► portfolio_preview_tokens (20 min, hash only)
+apps/portfolio (Vercel function) ──portfolio_public(handle)──► HTML + JSON for hydration
+visitor ──contact form──► portfolio_contact (checks, limits) ──► portfolio_messages ──► Dashboard
+```
+
+- **Why separate:** a public, indexable site with input from strangers stays on its own origin,
+  away from the dashboard's session ([ADR 0010](decisions/0010-public-portfolio-site.md)).
+- **Site:** Vite + React, rendered by a Vercel function (SEO, social cards, JSON-LD, sitemap)
+  then hydrated; motion with CSS, IntersectionObserver, one canvas and View Transitions; ~80 KiB
+  of JavaScript. Tests: Vitest (parsing, Markdown, server responses, hydration, contact).
+- **Dashboard module:** `features/portfolio-site` with one schema-driven form for every kind of
+  item (`lib/domain/site`: field definitions, checks, payloads), saves per item through
+  `portfolio_*` RPCs (not the ledger batch), uploads to the `portfolio-media` bucket.
+- **Guide:** [`docs/features/PORTFOLIO.md`](../features/PORTFOLIO.md).

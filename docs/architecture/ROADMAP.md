@@ -17,12 +17,13 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 | Stocks                      | **Done, saved** | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
 | Tradebook import            | **Done**        | Zerodha tradebooks (.xlsx/.csv) read on the device; you review each trade and approve before anything is saved                               |
 | Overview                    | Done            | Net worth includes funds and stocks                                                                                                          |
+| Public portfolio            | **Built**       | Separate site (`apps/portfolio`) edited in Dashboard → Portfolio, published as a snapshot; needs migration 0010 and its own Vercel project   |
 | Old app's data              | Retired         | Not imported (your decision); migration 0008 deletes it. The ledger starts from scratch                                                      |
 | Goals, Insights, Reports    | Placeholders    | Labelled "Planned"                                                                                                                           |
 
 > **October 2026:** the old Vite app was removed from the repository (the last commit that has it
 > is `efc04a9`); its saved data is not imported and migration 0008 deletes it. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
-> history at `224176d`); 0005–0009 are in `supabase/migrations`.
+> history at `224176d`); 0005–0010 are in `supabase/migrations`.
 
 ## The plan in one picture
 
@@ -32,6 +33,7 @@ flowchart LR
     A[Fresh start<br/>empty ledger + Zerodha funds and shares]
     M[Import and export<br/>from your current app's file]
     B[Price setup live<br/>schedule + checks]
+    W[Public portfolio live<br/>migration 0010 + Vercel project]
   end
   subgraph Next
     P[PF / EPF tracker]
@@ -79,6 +81,18 @@ app would add (with units and invested amount before → after, and what is alre
 switch off any holding, then **Approve and add**. Files are read on the device and nothing is saved
 before you approve ([ADR 0009](decisions/0009-tradebook-import-on-device.md); how it works:
 [`INVESTMENTS.md`](../features/INVESTMENTS.md#import-a-tradebook-zerodha)). Needs migration 0009.
+
+### Public portfolio (October 2026)
+
+A public developer site (`apps/portfolio`) whose content you manage under Dashboard →
+**Portfolio**: profile, links, projects with case-study pages, skills, experience, education and
+certifications, numbers and highlights, "beyond the code" sections, and contact messages. Items
+can be drafts and reordered; **Preview** opens a private 20-minute link; **Publish** makes your
+changes live within about a minute, with no redeploy
+([ADR 0010](decisions/0010-public-portfolio-site.md); how it works:
+[`PORTFOLIO.md`](../features/PORTFOLIO.md)). To go live: run migration 0010, create the Vercel
+project for `apps/portfolio` ([its README](../../apps/portfolio/README.md#deploy-on-vercel)),
+add content, Preview, Publish. Later: email notification of new messages, analytics.
 
 ### Import and export (waiting for your export file)
 

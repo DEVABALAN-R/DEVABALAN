@@ -11,14 +11,17 @@
  * storage clients). With people, photos and Notes the bundle is ~450 KiB, so the
  * ceiling is 470 KiB. Mutual funds and stocks on real data (holdings, trades, SIPs,
  * FIFO gains, XIRR, AMFI search, five forms) added ~20 KiB: the bundle is ~480 KiB and
- * the ceiling 495 KiB. Phase 11 target from the plan: ≤ 350 KiB (route-level code
- * splitting). Raise the ceiling only deliberately, in the same PR that explains why.
+ * the ceiling 495 KiB. The Portfolio editor (content for the public site: eight kinds
+ * of items with one schema-driven form, uploads, reorder, preview and publish) added
+ * enough to pass that: the bundle is ~506 KiB and the ceiling 520 KiB. Phase 11
+ * target from the plan: ≤ 350 KiB (route-level code splitting). Raise the ceiling only
+ * deliberately, in the same PR that explains why.
  */
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const CEILING_KIB = 495;
+const CEILING_KIB = 520;
 const TARGET_KIB = 350;
 // npm scripts run from the package root.
 const dir = path.join(process.cwd(), 'dist', '_expo', 'static', 'js', 'web');
