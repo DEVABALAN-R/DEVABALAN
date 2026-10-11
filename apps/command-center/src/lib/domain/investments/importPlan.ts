@@ -25,7 +25,10 @@ export type PlannedTrade = {
 export type HoldingPlan = {
   key: string;
   segment: TradebookSegment;
+  /** The ISIN of the newest trade (a split or bonus can give a share a new ISIN). */
   isin: string;
+  /** Every ISIN the holding's trades carry, oldest first. */
+  isins: string[];
   name: string;
   symbol: string;
   exchange: 'NSE' | 'BSE';
@@ -99,12 +102,20 @@ function mainExchange(trades: TradebookTrade[]): 'NSE' | 'BSE' {
 export function planImport(trades: TradebookTrade[], portfolio: Portfolio): HoldingPlan[] {
   const groups = new Map<string, TradebookTrade[]>();
   for (const trade of trades) {
-    const key = `${trade.segment}:${trade.isin}`;
+    // Shares are grouped by symbol: a split often gives the share a new ISIN, and one
+    // holding must not become two stocks with the same symbol (the database refuses it).
+    const key =
+      trade.segment === 'equity'
+        ? `equity:${trade.symbol.toUpperCase()}`
+        : `${trade.segment}:${trade.isin}`;
     groups.set(key, [...(groups.get(key) ?? []), trade]);
   }
   const plans: HoldingPlan[] = [];
-  for (const [key, group] of groups) {
-    const { segment, isin } = group[0];
+  for (const [key, unsorted] of groups) {
+    const group = [...unsorted].sort((a, b) => a.date.localeCompare(b.date));
+    const { segment } = group[0];
+    const isin = group[group.length - 1].isin;
+    const isins = [...new Set(group.map((trade) => trade.isin))];
     const symbol = group[group.length - 1].symbol;
     if (segment === 'funds') {
       const byName = portfolio.funds.filter(
@@ -128,6 +139,7 @@ export function planImport(trades: TradebookTrade[], portfolio: Portfolio): Hold
         key,
         segment,
         isin,
+        isins,
         name: fund?.name ?? titleCase(symbol),
         symbol,
         exchange: mainExchange(group),
@@ -143,9 +155,11 @@ export function planImport(trades: TradebookTrade[], portfolio: Portfolio): Hold
         },
       });
     } else {
-      const bySymbol = portfolio.stocks.filter((s) => !s.isin && s.symbol === symbol.toUpperCase());
+      const exchange = mainExchange(group);
+      const bySymbol = portfolio.stocks.filter((s) => s.symbol === symbol.toUpperCase());
       const stock =
-        portfolio.stocks.find((s) => s.isin === isin) ??
+        portfolio.stocks.find((s) => !!s.isin && isins.includes(s.isin)) ??
+        bySymbol.find((s) => s.exchange === exchange) ??
         (bySymbol.length === 1 ? bySymbol[0] : undefined);
       const existing = stock ? portfolio.trades.filter((t) => t.stockId === stock.id) : [];
       const known = existing.filter((t) => t.kind === 'buy' || t.kind === 'sell').map(stockKey);
@@ -162,9 +176,10 @@ export function planImport(trades: TradebookTrade[], portfolio: Portfolio): Hold
         key,
         segment,
         isin,
+        isins,
         name: stock?.name ?? symbol,
         symbol: stock?.symbol ?? symbol,
-        exchange: stock?.exchange ?? mainExchange(group),
+        exchange: stock?.exchange ?? exchange,
         existingId: stock?.id ?? null,
         add: fresh.slice(skip).map(planned),
         already,

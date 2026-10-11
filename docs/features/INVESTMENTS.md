@@ -100,6 +100,8 @@ How it decides:
 
 - **Same holding**: by ISIN, otherwise the fund name (Direct/Regular, case and punctuation
   ignored) or the share symbol.
+- **Shares** are grouped by symbol, so trades from before and after a split or face-value change
+  (which gives the share a new ISIN) stay one holding; it keeps the newest ISIN.
 - **Already in the app**: same date, type, units (shares) and NAV (price). The same trade in two
   files counts once.
 - **Amount** = units × NAV (shares × price) to the paisa, as Kite shows it. Tradebooks have no stamp
