@@ -71,7 +71,7 @@ export function ImportTradebookSheet({ onClose }: { onClose: () => void }) {
                     ? `Approve and add ${plural(flow.tradeCount, 'trade')}`
                     : 'Nothing to add'
                 }
-                disabled={!flow.tradeCount}
+                disabled={!flow.tradeCount || flow.uncovered.length > 0}
                 onPress={approve}
               />
             </>
@@ -121,8 +121,9 @@ export function ImportTradebookSheet({ onClose }: { onClose: () => void }) {
                 <ImportHoldingCard
                   key={plan.key}
                   plan={plan}
-                  on={flow.approved.has(plan.key)}
-                  onToggle={(on) => flow.toggle(plan.key, on)}
+                  selected={flow.selected}
+                  check={flow.checks.get(plan.key)}
+                  onToggle={flow.toggle}
                 />
               ))}
               <Text variant="caption" color="textTertiary">

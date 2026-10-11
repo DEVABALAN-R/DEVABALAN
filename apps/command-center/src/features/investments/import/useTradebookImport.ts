@@ -2,8 +2,11 @@ import { useCallback, useState } from 'react';
 import { usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import {
   buildAdditions,
+  defaultSelection,
   mergeTradebooks,
   planImport,
+  selectionCheck,
+  selectTrades,
   type HoldingPlan,
 } from '@/lib/domain/investments';
 import { newId } from '@/lib/ids';
@@ -19,14 +22,15 @@ const portfolioNow = () => {
 
 /**
  * Choose tradebooks → review what would change → approve. Nothing reaches the portfolio
- * (or the cloud) until `approve`, and then only the holdings left switched on.
+ * (or the cloud) until `approve`, and then only the trades left ticked. Possible
+ * duplicates start unticked.
  */
 export function useTradebookImport() {
   const [phase, setPhase] = useState<ImportPhase>('choose');
   const [files, setFiles] = useState<string[]>([]);
   const [plans, setPlans] = useState<HoldingPlan[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
-  const [approved, setApproved] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const choose = useCallback(async () => {
     const picked = await pickFiles();
@@ -37,15 +41,18 @@ export function useTradebookImport() {
     setFiles(picked.map((file) => file.name));
     setPlans(next);
     setProblems(merged.problems);
-    setApproved(new Set(next.filter((plan) => plan.add.length).map((plan) => plan.key)));
+    setSelected(defaultSelection(next));
     setPhase('review');
   }, []);
 
-  const toggle = useCallback((key: string, on: boolean) => {
-    setApproved((previous) => {
+  /** Ticks or unticks trades: one, or a whole holding's. */
+  const toggle = useCallback((ids: string[], on: boolean) => {
+    setSelected((previous) => {
       const next = new Set(previous);
-      if (on) next.add(key);
-      else next.delete(key);
+      for (const id of ids) {
+        if (on) next.add(id);
+        else next.delete(id);
+      }
       return next;
     });
   }, []);
@@ -55,24 +62,30 @@ export function useTradebookImport() {
     setFiles([]);
     setPlans([]);
     setProblems([]);
-    setApproved(new Set());
+    setSelected(new Set());
   }, []);
 
-  /** Adds the approved trades; returns how many trades and holdings were added. */
-  const approve = useCallback(() => {
-    const additions = buildAdditions(plans, approved, portfolioNow(), newId);
-    usePortfolioStore.getState().importPortfolio(additions);
-    const holdings = plans.filter((plan) => approved.has(plan.key) && plan.add.length).length;
-    return { trades: additions.fundTxns.length + additions.trades.length, holdings };
-  }, [plans, approved]);
+  const chosen = selectTrades(plans, selected).filter((plan) => plan.add.length);
+  const checks = new Map(chosen.map((plan) => [plan.key, selectionCheck(plan, portfolioNow())]));
+  const uncovered = chosen.filter((plan) => !checks.get(plan.key)?.covered);
 
-  const chosen = plans.filter((plan) => approved.has(plan.key));
+  /** Adds the ticked trades; returns how many trades and holdings were added. */
+  const approve = useCallback(() => {
+    const keys = new Set(chosen.map((plan) => plan.key));
+    const additions = buildAdditions(chosen, keys, portfolioNow(), newId);
+    usePortfolioStore.getState().importPortfolio(additions);
+    return { trades: additions.fundTxns.length + additions.trades.length, holdings: keys.size };
+  }, [chosen]);
+
   return {
     phase,
     files,
     plans,
     problems,
-    approved,
+    selected,
+    /** Per holding with ticked trades: what it would hold, and whether every sale is covered. */
+    checks,
+    uncovered,
     tradeCount: chosen.reduce((sum, plan) => sum + plan.add.length, 0),
     choose,
     toggle,

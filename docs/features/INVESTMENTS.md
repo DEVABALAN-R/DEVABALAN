@@ -108,7 +108,11 @@ Add new trades from the tradebooks Zerodha Console gives you, after checking the
    - units or shares and invested amount, now → after the import;
    - "New fund" or "New stock" when it is not in the app yet.
 
-   Switch off any holding you do not want. **Cannot be added** lists what would not fit (below).
+   Every trade has a tick box; the holding's switch ticks or unticks all of it. A trade that
+   may already be in the app under other figures is marked **Possible duplicate** and starts
+   unticked (below). If unticking a purchase leaves a later sale with nothing to sell, the
+   holding says so and **Approve** waits until you tick it back or untick the sale. **Cannot be
+   added** lists what would not fit (below).
 
 4. **Approve and add N trades.** Only then is anything saved, in one batch, with the same checks
    as trades typed by hand. **Cancel** keeps everything as it was.
@@ -120,7 +124,11 @@ How it decides:
 - **Shares** are grouped by symbol, so trades from before and after a split or face-value change
   (which gives the share a new ISIN) stay one holding; it keeps the newest ISIN.
 - **Already in the app**: same date, type, units (shares) and NAV (price). The same trade in two
-  files counts once.
+  files counts once. A file covering a whole year when one month is missing adds only that month.
+- **Possible duplicate** (unticked, you decide): a trade in the app on the same day and side that
+  no file trade matched exactly, because its price differs (corrected or rounded), because
+  several fills in the file add up to it (one order executed in parts), or simply because there
+  is one that day. Changing an imported trade's charges does not affect matching.
 - **Amount** = units × NAV (shares × price) to the paisa, as Kite shows it. Tradebooks have no stamp
   duty or charges; edit a trade afterwards to add them.
 - **Earlier sales left out**: a sale of units bought before the file starts cannot be added (the
