@@ -1,13 +1,18 @@
+import { evaluateAmount } from './calculator';
 import { isValidIsoDate } from './dates';
 import { formatMoney } from '@/lib/formatting/currency';
 import { equalShares, splitsError, type SplitMode } from './people';
 import type { Photo } from './photos';
+import type { RecurringFrequency } from './recurring';
 import type { Account, Category, Person, Split, Transaction, TransactionKind } from './types';
 
 /** ₹100 crore in paise — a sanity ceiling for a personal ledger. */
 export const MAX_AMOUNT = 100_000_000_000;
 export const MAX_NOTE_LENGTH = 120;
 export const MAX_NAME_LENGTH = 30;
+/** The database keeps dates between these years. */
+const FIRST_DATE = '1900-01-01';
+const LAST_DATE = '2100-12-31';
 
 /**
  * Parses user input like "1,250.50", "₹ 250" or "99." into integer paise.
@@ -22,6 +27,12 @@ export function parseAmount(input: string): number | null {
   const paise = Number((match[2] ?? '').padEnd(2, '0'));
   const value = rupees * 100 + paise;
   return Number.isSafeInteger(value) ? value : null;
+}
+
+/** Like parseAmount, but null above ₹100 crore (the database refuses such amounts). */
+export function parseLimitedAmount(input: string): number | null {
+  const value = parseAmount(input);
+  return value !== null && value <= MAX_AMOUNT ? value : null;
 }
 
 /** Paise → editable text without grouping ("1250.5" → "1250.50"). */
@@ -53,6 +64,10 @@ export type TransactionDraft = {
   settles?: string[];
   /** Receipt photo, checked when it was picked. */
   photo: Photo | null;
+  /** New entries: also repeat it from its date. */
+  repeat?: RecurringFrequency | null;
+  /** Opened from a due recurring entry: saving marks that date as added. */
+  fromRule?: { id: string; date: string } | null;
 };
 
 export type SplitDraft = { personId: string; amountText: string };
@@ -79,9 +94,10 @@ export function validateDraft(
   context: { accounts: Account[]; categories: Category[]; people?: Person[] },
 ): { errors: DraftErrors; value: ValidTransaction | null } {
   const errors: DraftErrors = {};
-  const amount = parseAmount(draft.amountText);
-  if (!isValidIsoDate(draft.date)) errors.date = 'Choose a valid date.';
-  if (amount === null) errors.amount = 'Enter an amount like 250 or 1,250.50.';
+  const amount = evaluateAmount(draft.amountText);
+  if (!isValidIsoDate(draft.date) || draft.date < FIRST_DATE || draft.date > LAST_DATE)
+    errors.date = 'Choose a valid date.';
+  if (amount === null) errors.amount = 'Enter an amount like 250, 1,250.50 or 120+45.';
   else if (amount <= 0) errors.amount = 'Amount must be more than zero.';
   else if (amount > MAX_AMOUNT) errors.amount = 'Amount is too large.';
 
@@ -175,7 +191,7 @@ function draftShares(draft: TransactionDraft, amount: number): Split[] {
 /** Keeps the shown shares in step with the amount and people in the equal modes. */
 export function rebalanceSplits(draft: TransactionDraft): TransactionDraft {
   if (draft.splitMode === 'custom' || !draft.splits.length) return draft;
-  const shares = draftShares(draft, parseAmount(draft.amountText) ?? 0);
+  const shares = draftShares(draft, evaluateAmount(draft.amountText) ?? 0);
   return {
     ...draft,
     splits: draft.splits.map((split, index) => ({

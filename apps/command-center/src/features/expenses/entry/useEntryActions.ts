@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useToast } from '@/components/feedback';
-import type { Transaction, TransactionKind } from '@/lib/domain/expenses';
+import type { TransactionKind } from '@/lib/domain/expenses';
 import { formatEntry } from '../format';
 import { useExpenseStore } from '../state/expenseStore';
+import { advanceRule, createRule } from '../state/recurringActions';
+import { useRecurringStore } from '../state/recurringStore';
 import { useTransactionForm } from '../state/transactionForm';
 
 export const kindLabel: Record<TransactionKind, string> = {
@@ -20,15 +22,21 @@ export function useEntryActions() {
   const [notice, setNotice] = useState<SavedNotice | null>(null);
 
   const save = (mode: 'save' | 'continue') => {
+    const { repeat, fromRule } = useTransactionForm.getState().draft;
+    const rulesBefore = useRecurringStore.getState().rules;
     const result = useTransactionForm.getState().submit(mode);
     if (!result.ok) return;
     const { transaction, created, previous } = result;
+    if (created && repeat) createRule(transaction, repeat);
+    if (fromRule) advanceRule(fromRule.id, fromRule.date);
     const store = useExpenseStore.getState();
     const undo = () => {
       if (created) store.deleteTransaction(transaction.id);
       else if (previous) store.restoreTransactions([previous]);
+      if (repeat || fromRule) useRecurringStore.setState({ rules: rulesBefore });
     };
-    const message = `${kindLabel[transaction.kind]} ${created ? 'added' : 'updated'} · ${formatEntry(transaction.amount)}`;
+    const repeats = created && repeat ? ` · repeats ${repeat}` : '';
+    const message = `${kindLabel[transaction.kind]} ${created ? 'added' : 'updated'} · ${formatEntry(transaction.amount)}${repeats}`;
     if (mode === 'continue') {
       setNotice({
         message,
@@ -46,15 +54,15 @@ export function useEntryActions() {
   const remove = () => {
     const { editingId, close } = useTransactionForm.getState();
     if (!editingId) return;
-    const removed: Transaction | null = useExpenseStore.getState().deleteTransaction(editingId);
+    const deleted = useExpenseStore.getState().deleteTransaction(editingId);
     close();
     setNotice(null);
-    if (removed)
+    if (deleted)
       toast.show({
-        message: `${kindLabel[removed.kind]} deleted · ${formatEntry(removed.amount)}`,
+        message: `${kindLabel[deleted.removed.kind]} deleted · ${formatEntry(deleted.removed.amount)}`,
         action: {
           label: 'Undo',
-          onPress: () => useExpenseStore.getState().restoreTransactions([removed]),
+          onPress: () => useExpenseStore.getState().restoreTransactions(deleted.restore),
         },
       });
   };

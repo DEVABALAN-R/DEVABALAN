@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button, Text } from '@/components/ui';
-import { amountToInput, parseAmount } from '@/lib/domain/expenses';
+import { amountToInput, parseLimitedAmount } from '@/lib/domain/expenses';
 import { useTheme } from '@/theme';
 import { EntryInput } from '../entry/EntryInput';
 
@@ -19,7 +19,7 @@ export function BudgetEditor({ name, value, onSave, onCancel }: BudgetEditorProp
   const [text, setText] = useState(value ? amountToInput(value) : '');
   const [error, setError] = useState<string | null>(null);
   const save = () => {
-    const amount = parseAmount(text);
+    const amount = parseLimitedAmount(text);
     if (amount === null) {
       setError('Enter a monthly amount like 5,000.');
       return;

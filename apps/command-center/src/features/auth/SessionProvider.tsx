@@ -4,6 +4,7 @@ import { currentSession, onAuthChange, setAutoRefresh } from '@/lib/data/authRep
 import { needsSecondStep } from '@/lib/data/mfaRepository';
 import { isSupabaseConfigured } from '@/lib/data/supabaseClient';
 import { useExpenseStore } from '@/features/expenses/state/expenseStore';
+import { useRecurringStore } from '@/features/expenses/state/recurringStore';
 import { useMarketStore } from '@/features/investments/state/marketStore';
 import { usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
@@ -48,6 +49,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         useExpenseStore.getState().resetPreview();
         useNotesStore.getState().resetPreview();
         usePortfolioStore.getState().resetPreview();
+        useRecurringStore.getState().resetPreview();
         useMarketStore.getState().enterPreview();
         session.setSignedOut();
       }

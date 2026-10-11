@@ -6,10 +6,12 @@ import { useTheme } from '@/theme';
 import { iconFor } from '../categoryIcons';
 import { useLookup } from '../hooks/useLedger';
 import { useTransactionForm } from '../state/transactionForm';
+import { AmountField } from './AmountField';
 import { EntryInput } from './EntryInput';
 import { InlinePanel } from './EntryPanel';
 import { FieldRow } from './FieldRow';
 import { PhotoField } from '../photos/PhotoField';
+import { RepeatField } from './RepeatField';
 import { RepaymentRow, SplitRow } from './SplitField';
 
 const kinds: readonly Segment<TransactionKind>[] = [
@@ -80,20 +82,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
         <Text numberOfLines={1}>{dayLabel(draft.date, 'short')}</Text>
       </FieldRow>
       <InlinePanel field="date" />
-      <FieldRow label="Amount" active={active === 'amount'} error={errors.amount}>
-        <EntryInput
-          ref={amountRef}
-          money
-          size="lg"
-          value={draft.amountText}
-          onChangeText={(amountText) => update({ amountText })}
-          onFocus={() => setActive('amount')}
-          onSubmitEditing={() => advance('amount')}
-          returnKeyType="next"
-          placeholder="0"
-          accessibilityLabel="Amount in rupees"
-        />
-      </FieldRow>
+      <AmountField inputRef={amountRef} />
       {draft.personId ? <RepaymentRow /> : null}
       {transfer || draft.personId ? null : (
         <FieldRow
@@ -174,6 +163,7 @@ export function EntryForm({ onSubmit }: { onSubmit: () => void }) {
         />
       </FieldRow>
       <InlinePanel field="note" />
+      <RepeatField />
       {draft.personId ? null : <PhotoField />}
     </View>
   );

@@ -13,11 +13,9 @@ const views: readonly Segment<ExpenseView>[] = [
   { value: 'monthly', label: 'Monthly' },
 ];
 
-/** The chosen view, else the default for the screen: calendar on wide screens, list on phones. */
+/** The chosen view; the calendar until another is chosen, on every screen size. */
 export function useActiveView(): ExpenseView {
-  const view = useExpenseUi((state) => state.view);
-  const { isMobile } = useBreakpoint();
-  return view ?? (isMobile ? 'daily' : 'calendar');
+  return useExpenseUi((state) => state.view) ?? 'calendar';
 }
 
 /** Daily · Calendar · Monthly switch and the account filter. */

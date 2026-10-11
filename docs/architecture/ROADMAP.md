@@ -21,10 +21,11 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 | Old app's data              | Retired         | Not imported (your decision); migration 0008 deletes it. The ledger starts from scratch                                                      |
 | Goals, Insights, Reports    | Not built       | Hidden from the app until they work (October 2026)                                                                                           |
 | Receipt photos              | **Done, saved** | Private Storage bucket, one-minute links; needs migration 0011                                                                               |
+| Expense extras              | **Done**        | Recurring entries (migration 0012), search with totals, CSV export, calculator in the amount; the calendar is the default view               |
 
 > **October 2026:** the old Vite app was removed from the repository (the last commit that has it
 > is `efc04a9`); its saved data is not imported and migration 0008 deletes it. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
-> history at `224176d`); 0005–0011 are in `supabase/migrations`.
+> history at `224176d`); 0005–0012 are in `supabase/migrations`.
 
 ## The plan in one picture
 

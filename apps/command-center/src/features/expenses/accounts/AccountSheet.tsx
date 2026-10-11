@@ -8,7 +8,7 @@ import {
   ACCOUNT_TYPE_LABELS,
   amountToInput,
   MAX_NAME_LENGTH,
-  parseAmount,
+  parseLimitedAmount,
   touchesAccount,
   validateName,
   type Account,
@@ -19,6 +19,7 @@ import { TextField } from '../components/TextField';
 import { PickChip } from '../entry/PickChip';
 import { useLedger } from '../hooks/useLedger';
 import { useExpenseStore } from '../state/expenseStore';
+import { useRecurringStore } from '../state/recurringStore';
 
 type AccountSheetProps = {
   /** null adds a new account. */
@@ -41,10 +42,14 @@ export function AccountSheet({ account, onClose, onSaved }: AccountSheetProps) {
   );
   const [owed, setOwed] = useState(account ? account.openingBalance < 0 : owedByDefault('bank'));
   const [errors, setErrors] = useState<{ name?: string; opening?: string }>({});
-  const used = !!account && transactions.some((item) => touchesAccount(item, account.id));
+  const repeats = useRecurringStore((state) => state.rules);
+  const used =
+    !!account &&
+    (transactions.some((item) => touchesAccount(item, account.id)) ||
+      repeats.some((rule) => rule.accountId === account.id || rule.toAccountId === account.id));
   const save = () => {
     const nameError = validateName(name, accounts, account?.id) ?? undefined;
-    const amount = opening.trim() ? parseAmount(opening) : 0;
+    const amount = opening.trim() ? parseLimitedAmount(opening) : 0;
     const openingError =
       amount === null ? 'Enter an amount like 25,000, or leave it empty for zero.' : undefined;
     if (nameError || openingError) return setErrors({ name: nameError, opening: openingError });
@@ -137,7 +142,7 @@ export function AccountSheet({ account, onClose, onSaved }: AccountSheetProps) {
         </View>
         {used ? (
           <Text variant="caption" color="textTertiary">
-            Accounts with entries cannot be deleted. Move or delete their entries first.
+            Accounts with entries or recurring entries cannot be deleted. Move or delete them first.
           </Text>
         ) : null}
       </View>

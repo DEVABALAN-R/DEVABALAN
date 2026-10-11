@@ -141,7 +141,7 @@ describe('TransactionSheet', () => {
     await open();
     const before = useExpenseStore.getState().transactions.length;
     await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
-    expect(screen.getByText('Enter an amount like 250 or 1,250.50.')).toBeTruthy();
+    expect(screen.getByText('Enter an amount like 250, 1,250.50 or 120+45.')).toBeTruthy();
     expect(screen.getByText('Choose a category.')).toBeTruthy();
     expect(screen.getByText('Choose an account.')).toBeTruthy();
     expect(useExpenseStore.getState().transactions).toHaveLength(before);

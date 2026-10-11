@@ -6,7 +6,7 @@ export type ExpenseView = 'daily' | 'calendar' | 'monthly';
 type ExpenseUiState = {
   /** Selected month (YYYY-MM), shared by every Expenses page. */
   month: string;
-  /** null = default for the screen size (calendar on wide screens, daily on phones). */
+  /** null = the default view (calendar). */
   view: ExpenseView | null;
   accountId: string | null;
   /** Selected calendar day; becomes the default date for new entries. */

@@ -39,6 +39,19 @@ and failure behaviour in [`../architecture/EDGE_CASES.md`](../architecture/EDGE_
   bucket as soon as it is picked (re-encoded in the browser first, which drops location data),
   and Save waits for it; it is shown through links that expire after a minute; unused files are
   deleted at a later sign-in once a day old. In the preview it stays in memory. Needs migration 0011.
+- **Calculator:** the amount accepts sums (`120+45`, `450/3`, with + − × ÷ keys); the result
+  shows underneath and becomes the amount (`lib/domain/expenses/calculator.ts`, no code is
+  evaluated).
+- **Search and export** (`search/`): the header's search button finds entries across all months
+  by words, an amount, type, period, category and account, with totals; **Export** saves the
+  results (or everything) as CSV for Excel. Cells that would run as formulas are neutralised
+  (`lib/domain/expenses/csv.ts`). Web: a file download; phones: the share sheet.
+- **Recurring entries** (`recurring/`, `state/recurring*.ts`): **Repeat** on a new entry (daily,
+  weekly, monthly, yearly; monthly keeps the day, using the month's last day when shorter). Due
+  dates appear on Transactions: **Add** opens the sheet with the amount ready to change, **Skip**
+  moves on, **Add all** adds those that can be added as they are; the repeat button lists and
+  edits them. Nothing is added automatically. Needs migration 0012 when signed in.
+- **Default view:** the calendar, on every screen size.
 - **Edge cases:** validation in the form and the database; a double tap on Save adds one entry.
   Flows in detail:
   [`../architecture/EXPENSE_MANAGER_FLOW.md`](../architecture/EXPENSE_MANAGER_FLOW.md).

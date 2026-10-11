@@ -6,7 +6,7 @@ import { Button, CategoryIcon, IconButton, Text } from '@/components/ui';
 import {
   amountToInput,
   MAX_NAME_LENGTH,
-  parseAmount,
+  parseLimitedAmount,
   topLevelCategories,
   validateName,
   type Category,
@@ -52,7 +52,7 @@ export function CategoryEditor({
   const budgeted = kind === 'expense';
   const save = () => {
     const nameError = validateName(name, topLevelCategories(categories, kind), category?.id);
-    const budget = budgetText.trim() ? parseAmount(budgetText) : null;
+    const budget = budgetText.trim() ? parseLimitedAmount(budgetText) : null;
     const budgetError =
       budgetText.trim() && budget === null
         ? 'Enter a monthly amount like 5,000, or leave it empty.'

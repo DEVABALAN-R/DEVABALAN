@@ -1,9 +1,11 @@
-import type { Account, Category, Person, Transaction } from '@/lib/domain/expenses';
+import type { Account, Category, Person, RecurringEntry, Transaction } from '@/lib/domain/expenses';
 import type { Portfolio } from '@/lib/domain/investments';
 import type { Note } from '@/lib/domain/notes';
 import { diffById, isEmptyDiff } from '@/lib/domain/sync';
+import { accountRow, categoryRow, noteRow, personRow } from './ledgerRows';
 import { portfolioChanges, portfolioFromRemote, type RemotePortfolio } from './portfolioRows';
 import { receiptPhoto, receiptRow } from './receiptRows';
+import { recurringChanges, recurringFromRemote, recurringRow } from './recurringRows';
 import { callRpc } from './rpc';
 
 /** Everything the app keeps in the cloud for one user. */
@@ -15,6 +17,8 @@ export type CloudData = {
   notes: Note[];
   /** Mutual funds and stocks (migration 0007). */
   portfolio: Portfolio;
+  /** Recurring entries (migration 0012); undefined while the database does not have them. */
+  recurring?: RecurringEntry[];
 };
 
 type InvestmentKey = 'mf_funds' | 'mf_sips' | 'mf_transactions' | 'stocks' | 'stock_trades';
@@ -26,9 +30,10 @@ export type LedgerChanges = Partial<Record<InvestmentKey, unknown[]>> & {
   people?: unknown[];
   transactions?: unknown[];
   notes?: unknown[];
+  recurring?: unknown[];
   deleted?: Partial<
     Record<
-      'accounts' | 'categories' | 'people' | 'transactions' | 'notes' | InvestmentKey,
+      'accounts' | 'categories' | 'people' | 'transactions' | 'notes' | 'recurring' | InvestmentKey,
       string[]
     >
   >;
@@ -38,7 +43,14 @@ type Row = Record<string, unknown>;
 type Raw = RemotePortfolio &
   Partial<
     Record<
-      'accounts' | 'categories' | 'people' | 'transactions' | 'splits' | 'settles' | 'notes',
+      | 'accounts'
+      | 'categories'
+      | 'people'
+      | 'transactions'
+      | 'splits'
+      | 'settles'
+      | 'notes'
+      | 'recurring',
       Row[]
     >
   >;
@@ -123,27 +135,10 @@ export function fromRemote(raw: Raw | null): CloudData {
       updatedAt: time(row.updated_at),
     })),
     portfolio: portfolioFromRemote(data),
+    recurring: recurringFromRemote(data.recurring),
   };
 }
 
-const accountRow = (a: Account) => ({
-  id: a.id,
-  name: a.name,
-  account_group: a.group,
-  opening_balance: a.openingBalance,
-  sort_order: a.order,
-});
-const categoryRow = (c: Category) => ({
-  id: c.id,
-  kind: c.kind,
-  parent_id: c.parentId,
-  name: c.name,
-  icon: c.icon,
-  tint: c.tint,
-  budget: c.budget,
-  sort_order: c.order,
-});
-const personRow = (p: Person) => ({ id: p.id, name: p.name, sort_order: p.order });
 const transactionRow = (t: Transaction) => ({
   id: t.id,
   kind: t.kind,
@@ -160,19 +155,6 @@ const transactionRow = (t: Transaction) => ({
   splits: (t.splits ?? []).map((s) => ({ person_id: s.personId, amount: s.amount })),
   settles: t.settles ?? [],
 });
-const noteRow = (n: Note) => ({
-  id: n.id,
-  title: n.title,
-  body: n.body,
-  // Fixed key order: the database stores JSON objects with its own key order.
-  items: n.items?.map((item) => ({ id: item.id, text: item.text, done: item.done })) ?? null,
-  color: n.color,
-  pinned: n.pinned,
-  archived: n.archived,
-  labels: n.labels,
-  created_at: isoTime(n.createdAt),
-});
-
 /** The batch that turns `previous` into `next` in the cloud, or null when nothing changed. */
 export function buildChanges(previous: CloudData, next: CloudData): LedgerChanges | null {
   const accounts = diffById(previous.accounts, next.accounts, accountRow);
@@ -182,7 +164,10 @@ export function buildChanges(previous: CloudData, next: CloudData): LedgerChange
   // Edit times alone are not changes; the server keeps its own.
   const notes = diffById(previous.notes, next.notes, noteRow);
   const portfolio = portfolioChanges(previous.portfolio, next.portfolio);
-  if (isEmptyDiff([accounts, categories, people, transactions, notes, ...portfolio.diffs])) {
+  const recurring = recurringChanges(previous.recurring, next.recurring);
+  if (
+    isEmptyDiff([accounts, categories, people, transactions, notes, recurring, ...portfolio.diffs])
+  ) {
     return null;
   }
   return {
@@ -192,12 +177,14 @@ export function buildChanges(previous: CloudData, next: CloudData): LedgerChange
     people: people.upserts.map(personRow),
     transactions: transactions.upserts.map(transactionRow),
     notes: notes.upserts.map(noteRow),
+    ...(recurring.upserts.length ? { recurring: recurring.upserts.map(recurringRow) } : {}),
     deleted: {
       accounts: accounts.deletes,
       categories: categories.deletes,
       people: people.deletes,
       transactions: transactions.deletes,
       notes: notes.deletes,
+      ...(recurring.deletes.length ? { recurring: recurring.deletes } : {}),
       ...portfolio.deletes,
     },
   };

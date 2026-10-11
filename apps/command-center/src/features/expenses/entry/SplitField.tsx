@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { UserPlus } from '@/components/icons';
 import { SegmentedControl, Text } from '@/components/ui';
-import { amountToInput, parseAmount, type SplitMode } from '@/lib/domain/expenses';
+import { amountToInput, evaluateAmount, parseAmount, type SplitMode } from '@/lib/domain/expenses';
 import { useTheme } from '@/theme';
 import { useLookup } from '../hooks/useLedger';
 import { useExpenseStore } from '../state/expenseStore';
@@ -76,7 +76,7 @@ export function SplitPanel() {
   const editingId = useTransactionForm((state) => state.editingId);
   const update = useTransactionForm((state) => state.update);
   const [adding, setAdding] = useState(false);
-  const amount = parseAmount(draft.amountText) ?? 0;
+  const amount = evaluateAmount(draft.amountText) ?? 0;
   const others = draft.splits.reduce((sum, split) => sum + (parseAmount(split.amountText) ?? 0), 0);
   const toggle = (personId: string) =>
     update({
