@@ -163,4 +163,25 @@ describe('investments', () => {
       expect.objectContaining({ name: 'My fund', manual_nav: 10 }),
     ]);
   });
+
+  it('loads prices again only when a saved change adds a priced holding', async () => {
+    await startCloudSync();
+    await settle();
+    expect(loadMarket).toHaveBeenCalledTimes(1);
+    const fund = {
+      name: 'Index fund',
+      category: '',
+      fundHouse: '',
+      folio: '',
+      manualNav: null,
+      manualNavDate: null,
+      note: '',
+    };
+    usePortfolioStore.getState().saveFund({ ...fund, schemeCode: null });
+    await settle();
+    expect(loadMarket).toHaveBeenCalledTimes(1);
+    usePortfolioStore.getState().saveFund({ ...fund, name: 'AMFI fund', schemeCode: 120716 });
+    await settle();
+    expect(loadMarket).toHaveBeenCalledTimes(2);
+  });
 });

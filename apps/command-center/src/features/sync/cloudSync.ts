@@ -3,7 +3,7 @@ import { getLedger, useExpenseStore } from '@/features/expenses/state/expenseSto
 import { useMarketStore } from '@/features/investments/state/marketStore';
 import { getPortfolio, usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { useNotesStore } from '@/features/notes/state/notesStore';
-import { EMPTY_PORTFOLIO } from '@/lib/domain/investments';
+import { EMPTY_PORTFOLIO, type Portfolio } from '@/lib/domain/investments';
 import {
   buildChanges,
   loadCloudData,
@@ -37,6 +37,19 @@ const snapshot = (): CloudData => {
   return { accounts, categories, people, transactions, notes, portfolio: getPortfolio() };
 };
 
+/**
+ * Prices come only for holdings already saved (load_market), so a newly saved fund
+ * linked to an AMFI scheme, or a share with an ISIN, needs one more price load.
+ */
+const holdingKeys = (portfolio: Portfolio) => [
+  ...portfolio.funds.flatMap((fund) => (fund.schemeCode ? [`f${fund.schemeCode}`] : [])),
+  ...portfolio.stocks.flatMap((stock) => (stock.isin ? [`s${stock.isin}`] : [])),
+];
+const addsHoldings = (before: Portfolio, after: Portfolio) => {
+  const known = new Set(holdingKeys(before));
+  return holdingKeys(after).some((key) => !known.has(key));
+};
+
 const setStatus = (status: Parameters<ReturnType<typeof useSyncStatus.getState>['set']>[0]) =>
   useSyncStatus.getState().set(status);
 
@@ -54,7 +67,10 @@ function clearTimer() {
 
 function schedule(delay = DEBOUNCE_MS) {
   clearTimer();
-  timer = setTimeout(() => void flush(), delay);
+  timer = setTimeout(() => {
+    timer = null;
+    void flush();
+  }, delay);
 }
 
 /** Starts syncing for the signed-in user: replaces sample data with theirs. */
@@ -89,7 +105,40 @@ export async function startCloudSync(): Promise<void> {
     useExpenseStore.subscribe(() => schedule()),
     useNotesStore.subscribe(() => schedule()),
     usePortfolioStore.subscribe(() => schedule()),
+    watchPageLifecycle(),
   ];
+}
+
+/**
+ * Web: a change made just before the tab is hidden is sent at once (phones often
+ * close hidden tabs without warning), and leaving or reloading the page while a
+ * change is still unsaved asks first.
+ */
+function watchPageLifecycle(): () => void {
+  // Phones (React Native) have a window object but no page events.
+  if (typeof document === 'undefined' || typeof window?.addEventListener !== 'function') {
+    return () => {};
+  }
+  const onHide = () => {
+    if (document.visibilityState === 'hidden') void flushCloudSync();
+  };
+  const onLeave = (event: BeforeUnloadEvent) => {
+    if (!hasUnsavedChanges()) return;
+    event.preventDefault();
+    event.returnValue = '';
+  };
+  document.addEventListener('visibilitychange', onHide);
+  window.addEventListener('beforeunload', onLeave);
+  return () => {
+    document.removeEventListener('visibilitychange', onHide);
+    window.removeEventListener('beforeunload', onLeave);
+  };
+}
+
+/** Whether something the user changed has not reached the database yet. */
+export function hasUnsavedChanges(): boolean {
+  if (!baseline) return false;
+  return Boolean(timer || inFlight || buildChanges(baseline, snapshot()));
 }
 
 /**
@@ -134,9 +183,11 @@ async function flush(): Promise<void> {
     try {
       await saveChanges(changes);
       if (run !== generation) return;
+      const newHoldings = baseline ? addsHoldings(baseline.portfolio, next.portfolio) : false;
       baseline = next;
       attempt = 0;
       setStatus('saved');
+      if (newHoldings) void useMarketStore.getState().load();
     } catch (error) {
       if (run !== generation) return;
       if (error instanceof RpcError && !error.retryable) {

@@ -7,6 +7,27 @@ Android, backed by Supabase. The site's home page is a public developer portfoli
 
 Live site: **devabalan-command-center.vercel.app** (portfolio at `/`, the app at `/dashboard`)
 
+**What it is:** a private workspace for one owner to record spending, see where money goes,
+track mutual funds and shares with real returns, and know net worth, with notes alongside and a
+public portfolio as the home page. **What it is not:** a multi-user product, a bank connection,
+a trading app or tax software. Full product definition, feature status and open questions:
+[`docs/PRODUCT.md`](docs/PRODUCT.md).
+
+## Documentation
+
+| Read this                                                                  | To understand                                                          |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`docs/PRODUCT.md`](docs/PRODUCT.md)                                       | What the app is for, each feature's purpose and status, the direction  |
+| [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)   | How it is built: modules, data flow, security, deployment              |
+| [`docs/architecture/DATA_ACCESS.md`](docs/architecture/DATA_ACCESS.md)     | Every call to Supabase, what triggers it and why it is needed          |
+| [`docs/architecture/DATABASE.md`](docs/architecture/DATABASE.md)           | Tables, rules, functions, indexes, retention, how to change the schema |
+| [`docs/architecture/EDGE_CASES.md`](docs/architecture/EDGE_CASES.md)       | What happens offline, on errors, double taps, two devices, and so on   |
+| [`docs/architecture/AUDIT_2026-10.md`](docs/architecture/AUDIT_2026-10.md) | The October 2026 audit: findings, fixes, remaining issues              |
+| [`docs/architecture/decisions/`](docs/architecture/decisions/README.md)    | Why things are the way they are (one record per decision)              |
+| [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md)             | What is next                                                           |
+| [`docs/features/`](docs/features/)                                         | How investments and the portfolio work                                 |
+| [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md)                                   | Setting up and verifying the Supabase project                          |
+
 ## Repository map
 
 ```text
@@ -20,8 +41,10 @@ supabase/migrations/   Ledger and notes (0005), load/save (0006), mutual funds, 
 supabase/one-time/     One-run update (0007 + 0008 + Zerodha funds and stocks), the Zerodha load
                        and the portfolio's starting content from the résumé
 supabase/functions/    market-refresh: fetches NAVs and closing prices on the server
-docs/architecture/     ARCHITECTURE.md, ROADMAP.md, decision records, expense manager flows
-docs/features/         How features work (INVESTMENTS.md, PORTFOLIO.md)
+docs/                  PRODUCT.md (what the app is for)
+docs/architecture/     ARCHITECTURE.md, DATA_ACCESS.md, DATABASE.md, EDGE_CASES.md, the audit
+                       report, ROADMAP.md, decision records, expense manager flows
+docs/features/         How each feature works (README.md index, INVESTMENTS.md, PORTFOLIO.md)
 SUPABASE_SETUP.md      Supabase side: migrations, price function and schedule, sign-in, security
 .github/workflows/     CI (app, portfolio site and Edge Function checks) and Edge Function deployment
 ```
@@ -74,6 +97,16 @@ trackers: [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md). How it
 
 To get automatic prices, run migration 0007 and deploy the price function
 ([`SUPABASE_SETUP.md`](SUPABASE_SETUP.md#prices-the-market-refresh-function)).
+
+## Known issues
+
+From the [October 2026 audit](docs/architecture/AUDIT_2026-10.md):
+
+- Edits made on two devices at the same moment: the last save of a row wins, and nothing made on
+  another device shows until you reload.
+- Reports, Goals, Insights, Search and Settings → Data & privacy are labelled placeholders.
+- Receipt photos stay on the device; there is no data export or account deletion in the app yet.
+- The whole ledger loads at sign-in (fine at personal scale); the web bundle is above its target.
 
 The earlier Vite app was removed in October 2026; it is in Git history (last commit before
 removal: `efc04a9`). Its saved data is deleted by migration 0008.

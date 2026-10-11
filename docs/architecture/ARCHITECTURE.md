@@ -2,7 +2,10 @@
 
 How the Command Center is built today, why, and how it grows. The phase order is in
 [`ROADMAP.md`](ROADMAP.md); decisions are recorded one per file in [`decisions/`](decisions/README.md);
-the original audit is in [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) (historical).
+the original audit is in [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) (historical). What the
+product is for: [`../PRODUCT.md`](../PRODUCT.md). Every Supabase call:
+[`DATA_ACCESS.md`](DATA_ACCESS.md); the schema: [`DATABASE.md`](DATABASE.md); failure states:
+[`EDGE_CASES.md`](EDGE_CASES.md); the October 2026 review: [`AUDIT_2026-10.md`](AUDIT_2026-10.md).
 
 ## 1. What it is
 
@@ -101,7 +104,12 @@ sequenceDiagram
 ```
 
 - **One atomic batch** per change burst. Upserts by id, deletes last; splits and settles are
-  replaced as a whole. Offline and server errors retry with back-off.
+  replaced as a whole. Offline and server errors retry with back-off (1 s to 30 s); every database
+  call gives up after 30 s (the price function after 150 s) and is retried, which is safe
+  because saves are upserts.
+- **Nothing is lost quietly.** A waiting change is sent as soon as the tab is hidden; leaving the
+  page or signing out with a change still unsent asks first (`hasUnsavedChanges`). Saving a new
+  fund or share with a scheme or ISIN loads its prices once.
 - **The database decides.** CHECK constraints, triggers and deferred constraint triggers enforce
   every rule the app checks (amount ranges, transfer accounts, category kinds, split totals, units
   and shares never going negative, SIP and fund matching). A refused batch changes nothing.

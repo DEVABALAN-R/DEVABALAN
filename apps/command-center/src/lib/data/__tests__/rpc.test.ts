@@ -38,6 +38,20 @@ describe('callRpc', () => {
     ).toBe(true);
   });
 
+  it('gives up on a request that hangs, as a retryable failure', async () => {
+    jest.useFakeTimers();
+    fetchMock.mockImplementation(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) =>
+          init.signal?.addEventListener('abort', () => reject(new Error('aborted'))),
+        ),
+    );
+    const pending = callRpc('sync_ledger', { p_changes: {} }).catch((error: unknown) => error);
+    await jest.advanceTimersByTimeAsync(30_000);
+    expect(await pending).toMatchObject({ status: 0, code: 'timeout', retryable: true });
+    jest.useRealTimers();
+  });
+
   it('does not send without a session', async () => {
     jest.mocked(getAuth).mockReturnValue({
       getSession: async () => ({ data: { session: null } }),

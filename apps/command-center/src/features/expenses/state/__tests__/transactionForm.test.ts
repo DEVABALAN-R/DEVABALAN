@@ -92,6 +92,14 @@ describe('fast entry flow', () => {
     expect(form().draft.accountId).toBe('cash');
   });
 
+  it('adds an entry once even if Save is tapped twice while the sheet closes', () => {
+    form().openNew({ date: '2026-10-04' });
+    form().update({ amountText: '60', categoryId: 'tea', accountId: 'cash' });
+    expect(form().submit('save').ok).toBe(true);
+    expect(form().submit('save').ok).toBe(false);
+    expect(useExpenseStore.getState().transactions).toHaveLength(transactions.length + 1);
+  });
+
   it('switching type clears the kind-specific category', () => {
     form().openNew();
     form().update({ categoryId: 'tea' });

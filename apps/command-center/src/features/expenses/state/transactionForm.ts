@@ -192,7 +192,9 @@ export const useTransactionForm = create<FormState>((set, get) => ({
   },
 
   submit: (mode) => {
-    const { draft, editingId } = get();
+    const { draft, editingId, open } = get();
+    // A second tap while the sheet closes must not add the same entry again.
+    if (!open) return { ok: false };
     const ledger = getLedger();
     const { errors, value } = validateDraft(draft, ledger);
     if (!value) {
