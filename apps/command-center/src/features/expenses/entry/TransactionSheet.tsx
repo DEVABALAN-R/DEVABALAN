@@ -24,6 +24,7 @@ export function TransactionSheet() {
   const editingId = useTransactionForm((state) => state.editingId);
   const kind = useTransactionForm((state) => state.draft.kind);
   const close = useTransactionForm((state) => state.close);
+  const uploading = useTransactionForm((state) => state.uploading);
   const { save, remove, notice, clearNotice } = useEntryActions();
   const dismiss = () => {
     clearNotice();
@@ -53,10 +54,11 @@ export function TransactionSheet() {
               label="Continue"
               variant="secondary"
               accessibilityHint="Saves this entry and starts the next one"
+              disabled={uploading}
               onPress={() => save('continue')}
             />
           )}
-          <Button label="Save" onPress={() => save('save')} />
+          <Button label="Save" loading={uploading} onPress={() => save('save')} />
         </>
       }
     >

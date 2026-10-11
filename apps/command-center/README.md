@@ -13,7 +13,7 @@ ledger starts from scratch; next is importing from the export of the app you use
   rules: [`EXPENSE_MANAGER_FLOW.md`](../../docs/architecture/EXPENSE_MANAGER_FLOW.md).
 - **People and splits:** split an expense with friends; Stats and budgets count your share, and
   Expenses › People tracks who owes you and records repayments. Notes are suggested as you type,
-  and entries can carry a receipt photo (kept on the device for now).
+  and entries can carry a receipt photo (stored privately once migration 0011 is applied).
 - **Notes** (Google Keep style): text notes and checklists with colours, pins, labels, archive
   and search.
 - **Mutual funds**: funds from the AMFI list or entered by hand; purchases (stamp duty and units
@@ -28,9 +28,8 @@ ledger starts from scratch; next is importing from the export of the app you use
   private preview link and Publish; read contact messages. The site itself is `apps/portfolio`,
   served as this site's home page by `api/site.mjs` (built by `npm run build:site`); how it
   works: [`docs/features/PORTFOLIO.md`](../../docs/features/PORTFOLIO.md).
-- Goals, Insights and Reports are labelled placeholders.
 
-**Signed in** (migrations 0005–0010 applied), every page loads and saves **your own** data, and
+**Signed in** (migrations 0005–0011 applied), every page loads and saves **your own** data, and
 the badge by the page title reads Saved / Saving… / Offline · will retry. Prices come from the
 `market-refresh` Edge Function (see [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#prices-the-market-refresh-function)).
 **Without the Supabase settings** the app runs as a labelled preview on sample data, and a

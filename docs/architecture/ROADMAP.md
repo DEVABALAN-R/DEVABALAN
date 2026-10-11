@@ -19,11 +19,12 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 | Overview                    | Done            | Net worth includes funds and stocks                                                                                                          |
 | Public portfolio            | **Built**       | The site's home page, edited in Dashboard → Portfolio and published as a snapshot; Dashboard button opens the app; needs migration 0010      |
 | Old app's data              | Retired         | Not imported (your decision); migration 0008 deletes it. The ledger starts from scratch                                                      |
-| Goals, Insights, Reports    | Placeholders    | Labelled "Planned"                                                                                                                           |
+| Goals, Insights, Reports    | Not built       | Hidden from the app until they work (October 2026)                                                                                           |
+| Receipt photos              | **Done, saved** | Private Storage bucket, one-minute links; needs migration 0011                                                                               |
 
 > **October 2026:** the old Vite app was removed from the repository (the last commit that has it
 > is `efc04a9`); its saved data is not imported and migration 0008 deletes it. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
-> history at `224176d`); 0005–0010 are in `supabase/migrations`.
+> history at `224176d`); 0005–0011 are in `supabase/migrations`.
 
 ## The plan in one picture
 
@@ -115,12 +116,12 @@ and the file is not kept. Export from the Command Center comes with it, in the s
 
 Small, high-value engineering steps ([report](AUDIT_2026-10.md)):
 
-1. Reload data when the dashboard tab becomes visible again and nothing is waiting to be saved
-   (changes from another device appear without signing in again).
-2. Decide on the placeholders (Reports, Goals, Insights, Search, Data & privacy): hide them, or
-   build Search and Export first.
-3. Route-level code splitting to bring the web bundle towards its 350 KiB target.
-4. Load history by period instead of all at once, when the ledger grows large.
+1. ~~Reload data when coming back to the app~~ (done: at most once a minute, never over an
+   unsaved edit).
+2. ~~Decide on the placeholders~~ (done: hidden until built). Build search and data export next.
+3. ~~Store receipt photos~~ (done: private `receipts` bucket, migration 0011).
+4. Route-level code splitting to bring the web bundle towards its 350 KiB target.
+5. Load history by period instead of all at once, when the ledger grows large.
 
 ### PF / EPF tracker
 

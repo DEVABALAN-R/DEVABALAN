@@ -97,4 +97,16 @@ describe('unsaved changes', () => {
     stopCloudSync();
     restore();
   });
+
+  it('reloads when the page is shown again a minute or more later', async () => {
+    const { doc, restore } = page();
+    await startCloudSync();
+    jest.setSystemTime(Date.now() + 61_000);
+    doc.visibilityState = 'visible';
+    doc.dispatchEvent(new Event('visibilitychange'));
+    await jest.advanceTimersByTimeAsync(0);
+    expect(loadCloudData).toHaveBeenCalledTimes(2);
+    stopCloudSync();
+    restore();
+  });
 });

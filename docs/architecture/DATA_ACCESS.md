@@ -17,8 +17,8 @@ project**.
    Edits change the in-memory stores immediately; about 0.6 s later the difference from the
    last saved copy goes to the database as one atomic batch (Q2). Nothing re-loads after a
    successful save.
-4. **No polling, no realtime.** Nothing refreshes on a timer. Prices change only on **Update
-   prices** or the server's schedule.
+4. **No polling, no realtime.** Nothing refreshes on a timer. Data reloads when you come back
+   to the app (Q1); prices change only on **Update prices** or the server's schedule.
 5. **Only the publishable key** is sent from browsers, with the user's own access token. Secret
    and service-role keys are refused by the code and exist only in Edge Function secrets.
 
@@ -26,10 +26,10 @@ project**.
 
 ### Dashboard: money and notes
 
-| ID  | Call (file)                                      | Operation                                       | Trigger                                                                                                                                      | Data                                                                                                                                       | Frequency               | Verdict                                                                          |
-| --- | ------------------------------------------------ | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- | -------------------------------------------------------------------------------- |
-| Q1  | `load_ledger` (`ledgerRepository.loadCloudData`) | RPC, read                                       | Sign-in (`cloudSync.startCloudSync`); **Try again** after a failed load; after the database refuses a save                                   | All of the user's accounts, categories, people, transactions (+ splits, repayments), notes, funds, SIPs, fund transactions, stocks, trades | Once per sign-in        | Essential. Grows with history (no paging); fine at personal scale, see Remaining |
-| Q2  | `sync_ledger` (`ledgerRepository.saveChanges`)   | RPC, write (upserts + deletes, one transaction) | Any store change, debounced 600 ms; retried with back-off (1 s → 30 s) when offline; sent at once when the tab is hidden and before sign-out | Only the rows that changed                                                                                                                 | Once per burst of edits | Essential. Idempotent (upsert by id), so retries cannot double-write             |
+| ID  | Call (file)                                      | Operation                                       | Trigger                                                                                                                                                                                                        | Data                                                                                                                                       | Frequency                                                                  | Verdict                                                                          |
+| --- | ------------------------------------------------ | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Q1  | `load_ledger` (`ledgerRepository.loadCloudData`) | RPC, read                                       | Sign-in (`cloudSync.startCloudSync`); **Try again** after a failed load; after the database refuses a save; **coming back to the app** (`refreshCloudData`: at most once a minute, never with an unsaved edit) | All of the user's accounts, categories, people, transactions (+ splits, repayments), notes, funds, SIPs, fund transactions, stocks, trades | Once per sign-in, plus once per return to the app (a minute apart at most) | Essential. Grows with history (no paging); fine at personal scale, see Remaining |
+| Q2  | `sync_ledger` (`ledgerRepository.saveChanges`)   | RPC, write (upserts + deletes, one transaction) | Any store change, debounced 600 ms; retried with back-off (1 s → 30 s) when offline; sent at once when the tab is hidden and before sign-out                                                                   | Only the rows that changed                                                                                                                 | Once per burst of edits                                                    | Essential. Idempotent (upsert by id), so retries cannot double-write             |
 
 ### Dashboard: market data
 
@@ -55,6 +55,14 @@ project**.
 | Q15 | `portfolio_preview_token`                           | RPC, write    | Preview                                                                             | Per preview      | Essential                                                   |
 | Q16 | `portfolio_media_paths` + Storage list + delete     | RPC + Storage | After each publish: removes uploads nothing uses that are over an hour old          | Per publish      | Essential (keeps Storage tidy); failures are ignored        |
 | Q17 | Storage upload (`portfolio-media`)                  | Storage write | Choosing an image (full + small copy) or the résumé PDF                             | Per upload       | Essential                                                   |
+
+### Dashboard: receipt photos (`storageRepository`, private bucket `receipts`, migration 0011)
+
+| ID  | Call                                   | Trigger                                                   | Frequency        | Verdict                                          |
+| --- | -------------------------------------- | --------------------------------------------------------- | ---------------- | ------------------------------------------------ |
+| Q23 | Storage upload (`uploadReceiptFile`)   | Picking a photo in the entry sheet (signed in)            | Per photo        | Essential                                        |
+| Q24 | Signed link (`signedReceiptUrl`, 60 s) | A stored photo is shown (thumbnail in the sheet, viewer)  | Per photo shown  | Essential (the bucket is private)                |
+| Q25 | Storage list + delete                  | After the load at sign-in: unused files a day old or more | Once per sign-in | Essential (keeps Storage tidy); failures ignored |
 
 ### Sign-in (Supabase Auth, `authRepository` / `mfaRepository`)
 
@@ -99,7 +107,7 @@ entries.
 
 - Q1 loads all history at once. At personal scale this is one small request; after many years
   it should move to loading by period (the roadmap's incremental sync).
-- Nothing reloads data changed on another device until the next sign-in or reload
-  (see [EDGE_CASES.md](EDGE_CASES.md)).
+- Data changed on another device appears when you come back to the app, not while you are
+  looking at it (see [EDGE_CASES.md](EDGE_CASES.md)).
 - Call counts above have not been measured against the live project; a quick check is to open
   the browser's Network tab, filter by `rpc/`, and sign in, add an expense, and add a fund.

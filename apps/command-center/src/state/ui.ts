@@ -4,10 +4,7 @@ export type ThemePreference = 'system' | 'light' | 'dark';
 
 type UiState = {
   themePreference: ThemePreference;
-  searchOpen: boolean;
   setThemePreference: (preference: ThemePreference) => void;
-  openSearch: () => void;
-  closeSearch: () => void;
 };
 
 /**
@@ -16,8 +13,5 @@ type UiState = {
  */
 export const useUiStore = create<UiState>((set) => ({
   themePreference: 'system',
-  searchOpen: false,
   setThemePreference: (themePreference) => set({ themePreference }),
-  openSearch: () => set({ searchOpen: true }),
-  closeSearch: () => set({ searchOpen: false }),
 }));

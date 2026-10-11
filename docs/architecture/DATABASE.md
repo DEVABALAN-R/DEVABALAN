@@ -27,6 +27,7 @@ functions below. The `internal` schema is not exposed through the API.
 | Portfolio (public side)      | `portfolio_publications`, `portfolio_preview_tokens`, `portfolio_messages` (0010)                                                                                                                         | The published snapshot (built by a trigger), 20-minute preview links (hash only), contact messages        | The owner; visitors only through three functions                   |
 | Rate limiting                | `internal.portfolio_salt`, `internal.portfolio_contact_attempts` (0010)                                                                                                                                   | Salted IP hashes for the contact form, kept for a day                                                     | `portfolio_contact` only                                           |
 | Storage                      | Bucket `portfolio-media` (0010)                                                                                                                                                                           | Portfolio images and résumé, under the owner's id; public read, owner write (two-step), never overwritten | The owner                                                          |
+| Storage (private)            | Bucket `receipts` (0011); `transactions.receipt` (0011)                                                                                                                                                   | Receipt photos, under the owner's id; only the owner reads or writes (two-step), never overwritten        | The owner (upload from the app; path saved through `sync_ledger`)  |
 
 Money is stored as integer paise, units and NAVs as exact 4-decimal numbers, dates as calendar
 dates ([ADR 0005](decisions/0005-money-units-and-dates.md)).
@@ -45,6 +46,8 @@ Checks run on every write, whatever the app sends:
 - Names unique per user where it matters (accounts, categories, people, stock symbols, skill
   areas); ISINs and links validated (`valid_isin`, `valid_link`); text lengths and list sizes
   bounded on free-text columns.
+- A receipt's path must be in the row owner's own folder, with an image type and size within
+  limits (`valid_receipt`).
 
 ## Functions
 
@@ -84,5 +87,7 @@ small scan.
 - Contact-form rate-limit hashes are deleted after a day; preview links expire after 20 minutes;
   contact messages stay until the owner deletes them.
 - Price history is kept only for schemes and shares someone holds.
-- Account deletion and data export are not built yet (Settings → Data & privacy is a placeholder).
-  Today a full deletion is done by the project owner in the Supabase dashboard.
+- Account deletion and data export are not built yet. Today a full deletion is done by the
+  project owner in the Supabase dashboard (database rows and the `receipts` and
+  `portfolio-media` files).
+- Receipt files no entry uses are deleted by the app at a later sign-in once they are a day old.

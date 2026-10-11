@@ -3,6 +3,7 @@ import type { Portfolio } from '@/lib/domain/investments';
 import type { Note } from '@/lib/domain/notes';
 import { diffById, isEmptyDiff } from '@/lib/domain/sync';
 import { portfolioChanges, portfolioFromRemote, type RemotePortfolio } from './portfolioRows';
+import { receiptPhoto, receiptRow } from './receiptRows';
 import { callRpc } from './rpc';
 
 /** Everything the app keeps in the cloud for one user. */
@@ -90,6 +91,7 @@ export function fromRemote(raw: Raw | null): CloudData {
     })),
     transactions: (data.transactions ?? []).map((row) => {
       const id = str(row.id);
+      const photo = receiptPhoto(row.receipt);
       const transaction: Transaction = {
         id,
         kind: str(row.kind) as Transaction['kind'],
@@ -104,6 +106,7 @@ export function fromRemote(raw: Raw | null): CloudData {
         splits: splits.get(id) ?? [],
         personId: (row.person_id as string | null) ?? null,
         settles: settles.get(id) ?? [],
+        ...(photo ? { photo } : {}),
       };
       return transaction;
     }),
@@ -141,7 +144,6 @@ const categoryRow = (c: Category) => ({
   sort_order: c.order,
 });
 const personRow = (p: Person) => ({ id: p.id, name: p.name, sort_order: p.order });
-// The receipt photo stays on the device (private storage arrives in Phase 5).
 const transactionRow = (t: Transaction) => ({
   id: t.id,
   kind: t.kind,
@@ -153,6 +155,7 @@ const transactionRow = (t: Transaction) => ({
   category_id: t.categoryId,
   note: t.note,
   person_id: t.personId ?? null,
+  receipt: receiptRow(t.photo),
   created_at: isoTime(t.createdAt),
   splits: (t.splits ?? []).map((s) => ({ person_id: s.personId, amount: s.amount })),
   settles: t.settles ?? [],

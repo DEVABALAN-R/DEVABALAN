@@ -3,7 +3,7 @@ export type CollectionDiff<T> = { upserts: T[]; deletes: string[] };
 
 /**
  * Compares two lists of rows by id. `key` reduces a row to what is stored, so fields
- * kept only on the device (like receipt photos) do not count as changes.
+ * kept only on the device (like a picked photo's local file) do not count as changes.
  */
 export function diffById<T extends { id: string }>(
   previous: readonly T[],

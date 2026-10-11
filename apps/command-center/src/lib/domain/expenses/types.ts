@@ -74,7 +74,7 @@ export type Transaction = {
    * first; anything left over settles the person's oldest shares.
    */
   settles?: string[];
-  /** Receipt photo (preview: in memory only). */
+  /** Receipt photo (signed in: stored privately; preview: in memory only). */
   photo?: Photo | null;
 };
 

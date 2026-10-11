@@ -1,5 +1,14 @@
 import { currentSession } from '../rpc';
-import { listMedia, mediaFolder, removeMedia, uploadMedia } from '../storageRepository';
+import {
+  listMedia,
+  listReceipts,
+  mediaFolder,
+  removeMedia,
+  removeReceipts,
+  signedReceiptUrl,
+  uploadMedia,
+  uploadReceiptFile,
+} from '../storageRepository';
 import { getAuth } from '../supabaseClient';
 
 jest.mock('../supabaseConfig', () => ({
@@ -54,5 +63,40 @@ describe('portfolio media storage', () => {
     });
     signIn({ access_token: 'user-token' });
     await expect(currentSession()).rejects.toMatchObject({ status: 401 });
+  });
+});
+
+describe('receipt storage', () => {
+  it('uploads, lists and removes in the private bucket, never overwriting', async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => [{ name: 'r.jpg' }] });
+    await uploadReceiptFile('user-1/r.jpg', new Blob(['x']), 'image/jpeg');
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      'https://abc.supabase.co/storage/v1/object/receipts/user-1/r.jpg',
+    );
+    expect(fetchMock.mock.calls[0][1].headers).toMatchObject({ 'x-upsert': 'false' });
+    expect(await listReceipts('user-1')).toEqual([{ path: 'user-1/r.jpg', createdAt: '' }]);
+    expect(fetchMock.mock.calls[1][0]).toBe(
+      'https://abc.supabase.co/storage/v1/object/list/receipts',
+    );
+    await removeReceipts(['user-1/r.jpg']);
+    expect(fetchMock.mock.calls[2][0]).toBe('https://abc.supabase.co/storage/v1/object/receipts');
+  });
+
+  it('shows a receipt through a link that expires after a minute', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ signedURL: '/object/sign/receipts/user-1/r.jpg?token=t' }),
+    });
+    expect(await signedReceiptUrl('user-1/r.jpg')).toBe(
+      'https://abc.supabase.co/storage/v1/object/sign/receipts/user-1/r.jpg?token=t',
+    );
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://abc.supabase.co/storage/v1/object/sign/receipts/user-1/r.jpg');
+    expect(JSON.parse(init.body)).toEqual({ expiresIn: 60 });
+  });
+
+  it('fails when the link is missing', async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
+    await expect(signedReceiptUrl('user-1/r.jpg')).rejects.toMatchObject({ code: 'storage' });
   });
 });

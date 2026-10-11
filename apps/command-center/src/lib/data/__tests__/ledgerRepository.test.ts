@@ -110,7 +110,7 @@ describe('fromRemote', () => {
 describe('buildChanges', () => {
   const base = (): CloudData => fromRemote(remote);
 
-  it('is null when nothing stored changed (receipt photos stay on the device)', () => {
+  it('is null when nothing stored changed (a picked photo not uploaded is not stored)', () => {
     const next = base();
     next.transactions[0] = {
       ...next.transactions[0],

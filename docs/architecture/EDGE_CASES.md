@@ -35,12 +35,26 @@ audit ([report](AUDIT_2026-10.md)). **Status:** Handled (how), **Fixed** (change
 
 ## Two devices and stale data
 
-| Scenario                                                                  | Current behaviour                                                      | Status                                                             |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Editing on phone and laptop at the same time                              | Each device sends its own changes; for the same row the last save wins | **Risk** (one owner; rare)                                         |
-| A row deleted on one device, then edited on another that has not reloaded | The edit re-creates the row (upsert by id)                             | **Risk**                                                           |
-| Changes made on another device                                            | Not shown until the next sign-in or page reload (no live updates)      | **Risk**; a reload on return to the tab is the suggested next step |
-| New contact messages while Portfolio is open                              | Shown after the next reload of the dashboard                           | Risk (minor)                                                       |
+| Scenario                                                                  | Current behaviour                                                                                                                                  | Status                     |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Editing on phone and laptop at the same time                              | Each device sends its own changes; for the same row the last save wins                                                                             | **Risk** (one owner; rare) |
+| A row deleted on one device, then edited on another that has not reloaded | The edit re-creates the row (upsert by id)                                                                                                         | **Risk**                   |
+| Changes made on another device                                            | Shown when you come back to the app (tab shown again, phone app brought to the front), at most once a minute; no live updates while you look at it | **Fixed** (`refresh.test`) |
+| Coming back with an edit not saved yet                                    | No reload: the edit is sent first; the next return picks up the rest                                                                               | Handled (`refresh.test`)   |
+| An edit made while the reload is on its way                               | The edit wins: the reloaded data is dropped and the edit is saved                                                                                  | Handled (`refresh.test`)   |
+| New contact messages while Portfolio is open                              | Shown after the next reload of the dashboard                                                                                                       | Risk (minor)               |
+
+## Receipt photos
+
+| Scenario                                         | Current behaviour                                                                                                                                                                               | Status             | Test coverage                      |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------------------------------- |
+| Photo picked while signed in                     | Uploaded at once to the private bucket; **Save** waits until the upload ends                                                                                                                    | Handled            | `PhotoField.test`, `receipts.test` |
+| Upload fails (offline, migration 0011 not run)   | "Could not upload the photo…"; nothing is attached and the entry can still be saved                                                                                                             | Handled            | `PhotoField.test`                  |
+| Sheet closed or reopened while uploading         | The finished upload is not attached to the new form; the file is tidied later                                                                                                                   | Handled            | `PhotoField.test`                  |
+| Photo replaced or removed, entry deleted         | The old file stays until a later sign-in deletes unused files over a day old                                                                                                                    | Handled            | `receipts.test`                    |
+| Another account's file path sent to the database | Refused (`valid_receipt`: the path must be in the row owner's folder); Storage refuses other folders too                                                                                        | Handled (database) | Database tests (local)             |
+| Opening a receipt                                | A link valid for one minute, made when the photo is shown; nobody else can read the bucket                                                                                                      | Handled            | `storageRepository.test`           |
+| Location data inside the photo                   | Web: removed by re-encoding before upload (HEIC that the browser cannot draw is uploaded as it is). Phones: the picker re-compresses and is asked for no location data; not verified on devices | Partial            | Not covered by tests               |
 
 ## Forms, input and display
 
