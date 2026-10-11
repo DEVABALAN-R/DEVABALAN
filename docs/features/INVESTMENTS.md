@@ -76,6 +76,23 @@ chart. A price entered by hand (with its date) is used when there is no newer cl
 Bonus issues and splits apply to the shares held before that day; whole shares only (fractions
 are paid in cash and rounded down). ETFs and listed bonds can be tracked as stocks.
 
+## Shares against an index
+
+Stocks → **vs Index** (signed in, migration 0014) shows what your shares would be worth had the
+same money gone into an index fund instead: each buy puts the same amount into the fund at that
+day's NAV, and each sale (after charges) or dividend takes the same amount out. It shows both
+values today, the difference, and the return a year of each once your first trade is a year old.
+
+- **The index fund** is yours to choose from the AMFI list; the search starts at Nifty 50 index
+  funds (direct plan, growth option). **Change** picks another (Sensex, Nifty Next 50, …).
+- **Why a fund, not the index itself:** its NAV is after the fund's costs and with dividends
+  reinvested, so it is something you could actually have bought. The NAVs come from AMFI (daily)
+  and mfapi.in (older history) through the market-refresh function, like your funds' NAVs.
+- **No history yet** (just chosen): press **Update prices** in the sheet. If the fund started
+  after your first trade, choose an older one.
+- **A sale bigger than the index holding** (your shares grew much faster) empties the fund
+  holding; the sheet says so.
+
 ## Import a tradebook (Zerodha)
 
 Add new trades from the tradebooks Zerodha Console gives you, after checking them. Run migration

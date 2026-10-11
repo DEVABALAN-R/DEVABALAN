@@ -9,6 +9,8 @@ export type RpcName =
   | 'search_funds'
   | 'search_securities'
   | 'nav_on'
+  | 'load_stock_benchmark'
+  | 'set_stock_benchmark'
   | 'portfolio_load'
   | 'portfolio_save'
   | 'portfolio_delete'

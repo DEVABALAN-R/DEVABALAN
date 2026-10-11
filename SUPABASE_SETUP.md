@@ -26,6 +26,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 | `transactions.receipt`, private `receipts` bucket   | 0011                | Receipt photos on entries (only you can see them)                           |
 | `recurring_entries`, `load_ledger`/`sync_ledger`    | 0012                | Recurring entries (rent, subscriptions, EMIs)                               |
 | `investment_goals`, fund expense ratio, SIP step-up | 0013                | Mutual funds → Insights (goals, costs) and SIP step-up                      |
+| `stock_benchmarks`, index fund NAV history          | 0014                | Stocks → vs Index                                                           |
 | `user_workspaces`, `public_portfolios`              | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
@@ -37,7 +38,8 @@ reachable from the browser.
    `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
    `202610090007_investments.sql`, `202610100008_retire_old_app.sql`,
    `202610110009_fund_isin.sql`, `202610120010_portfolio.sql`, `202610120011_receipts.sql`
-   `202610130012_recurring.sql` and `202610140013_fund_goals.sql` from `supabase/migrations/`
+   `202610130012_recurring.sql`, `202610140013_fund_goals.sql` and
+   `202610150014_stock_benchmark.sql` from `supabase/migrations/`
    (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
@@ -204,6 +206,19 @@ at the top of the file.
   nothing else changes.
 - **Before this migration** the app hides goals, costs, the expense ratio field and the step-up
   while signed in; capital gains work without it.
+
+## Shares against an index (migration 0014)
+
+Run `202610150014_stock_benchmark.sql` after 0013. Safe to run again; the rollback is in the
+comment at the top of the file.
+
+- **Table:** `stock_benchmarks`, the index fund each user compares their shares with (one per
+  user, own row only, two-step sign-in, audit).
+- **Functions:** `set_stock_benchmark` and `load_stock_benchmark` (the user's own choice and the
+  fund's daily NAVs from just before their first share trade). `market_ingest_schemes` and
+  `market_held_schemes` now also cover chosen index funds, so the market-refresh function keeps
+  their daily NAV and fetches older NAVs from mfapi.in. The Edge Function needs no redeploy.
+- **Before this migration** Stocks → **vs Index** says which file to run.
 
 ## Everything up to now in one file
 
