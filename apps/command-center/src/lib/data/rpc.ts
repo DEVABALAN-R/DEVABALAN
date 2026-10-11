@@ -50,15 +50,23 @@ export class RpcError extends Error {
  * bundle lean; only the publishable key and the user's access token are sent.
  */
 export async function callRpc<T>(name: RpcName, args: Record<string, unknown> = {}): Promise<T> {
-  return post<T>(`rest/v1/rpc/${name}`, args);
+  return post<T>(`rest/v1/rpc/${name}`, args, RPC_TIMEOUT_MS);
 }
+
+/**
+ * A request that hangs is abandoned (and reported as retryable) instead of leaving
+ * "Saving…" on screen for minutes. Retrying a save is safe: sync_ledger upserts by id.
+ */
+const RPC_TIMEOUT_MS = 30_000;
+/** The price function downloads files from AMFI and the exchanges first. */
+const FUNCTION_TIMEOUT_MS = 150_000;
 
 /**
  * Calls one of the project's Edge Functions as the signed-in user (the function checks
  * the token itself). A 404 means the function has not been deployed.
  */
 export async function callFunction<T>(name: FunctionName, body: Record<string, unknown> = {}) {
-  return post<T>(`functions/v1/${name}`, body);
+  return post<T>(`functions/v1/${name}`, body, FUNCTION_TIMEOUT_MS);
 }
 
 async function signedInSession() {
@@ -79,10 +87,12 @@ export async function currentSession(): Promise<{ token: string; userId: string 
   return { token: session.access_token, userId };
 }
 
-async function post<T>(path: string, body: Record<string, unknown>): Promise<T> {
+async function post<T>(path: string, body: Record<string, unknown>, timeoutMs: number): Promise<T> {
   const token = (await signedInSession())?.access_token;
   if (!token || !supabaseConfig) throw new RpcError(401, 'no_session');
   let response: Response;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     response = await fetch(`${supabaseConfig.url}/${path}`, {
       method: 'POST',
@@ -92,9 +102,12 @@ async function post<T>(path: string, body: Record<string, unknown>): Promise<T> 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
   } catch {
-    throw new RpcError(0, 'network');
+    throw new RpcError(0, controller.signal.aborted ? 'timeout' : 'network');
+  } finally {
+    clearTimeout(timer);
   }
   if (!response.ok) {
     let code: string | undefined;
