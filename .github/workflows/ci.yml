@@ -71,3 +71,30 @@ jobs:
         # authoring environment; make this blocking once it is confirmed green here.
         continue-on-error: true
         run: npx expo-doctor
+
+  portfolio:
+    name: Portfolio site (Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/portfolio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: apps/portfolio/package-lock.json
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Format
+        run: npm run format:check
+      - name: Tests
+        run: npm test
+      - name: Build (browser and server bundles)
+        run: npm run build
+      - name: Bundle size
+        run: npm run check:bundle
