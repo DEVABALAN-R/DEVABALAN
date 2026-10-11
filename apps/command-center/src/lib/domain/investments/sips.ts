@@ -69,4 +69,48 @@ export function pendingSipInstalments(
 export const monthlySipTotal = (sips: Sip[], today: string) =>
   sips
     .filter((sip) => sip.active && (!sip.endDate || sip.endDate >= today))
-    .reduce((sum, sip) => sum + sip.amount, 0);
+    .reduce((sum, sip) => sum + sipAmountOn(sip, today), 0);
+
+/** Whole years from the SIP's start to `date` (the step-up count). */
+const yearsSince = (start: string, date: string) => {
+  const years = Number(date.slice(0, 4)) - Number(start.slice(0, 4));
+  return Math.max(0, date.slice(5) < start.slice(5) ? years - 1 : years);
+};
+
+/**
+ * The instalment on `date`: the amount raised by the yearly step-up once for every full
+ * year since the start (₹5,000 with 10 %: ₹5,500 in the second year, ₹6,050 in the third).
+ */
+export function sipAmountOn(sip: Sip, date: string): number {
+  const step = (sip.stepUpPct ?? 0) / 100;
+  return step ? Math.round(sip.amount * (1 + step) ** yearsSince(sip.startDate, date)) : sip.amount;
+}
+
+/** Monthly instalment for each of the next `years` years, from the start. */
+export function stepUpSchedule(amount: number, stepUpPct: number, years: number): number[] {
+  return Array.from({ length: years }, (_, year) =>
+    Math.round(amount * (1 + stepUpPct / 100) ** year),
+  );
+}
+
+/**
+ * Money put in over `years` years of monthly instalments with the step-up, and what it
+ * would grow to at `yearlyReturn` percent a year (invested at the end of each month).
+ */
+export function stepUpProjection(
+  amount: number,
+  stepUpPct: number,
+  years: number,
+  yearlyReturn: number,
+) {
+  const monthly = yearlyReturn / 100 / 12;
+  let invested = 0;
+  let value = 0;
+  stepUpSchedule(amount, stepUpPct, years).forEach((instalment) => {
+    for (let month = 0; month < 12; month += 1) {
+      value = value * (1 + monthly) + instalment;
+      invested += instalment;
+    }
+  });
+  return { invested, value: Math.round(value) };
+}

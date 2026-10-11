@@ -12,6 +12,7 @@ import { todayIso } from '@/lib/domain/expenses';
 import { fundAssetClass, isValidInvestmentDate, parseDecimal } from '@/lib/domain/investments';
 import { useTheme } from '@/theme';
 import { FundSearch } from './FundSearch';
+import { useFundExtras } from './useFundExtras';
 
 /** Category choices for a fund entered by hand (AMFI funds bring their own). */
 const CLASSES = [
@@ -46,6 +47,7 @@ export function FundEditSheet({ fundId, onClose, onSaved }: Props) {
   const [navDate, setNavDate] = useState(fund?.manualNavDate ?? todayIso());
   const [errors, setErrors] = useState<{ name?: string; nav?: string }>({});
   const [confirming, setConfirming] = useState(false);
+  const extras = useFundExtras(fund);
   const set = (patch: Partial<FundInput>) => setInput((current) => ({ ...current, ...patch }));
   const save = () => {
     const name = input.name.trim();
@@ -58,8 +60,10 @@ export function FundEditSheet({ fundId, onClose, onSaved }: Props) {
           : undefined,
     };
     if (next.name || next.nav) return setErrors(next);
+    const more = extras.read();
+    if (!more) return;
     const saved = store.saveFund(
-      { ...input, name, manualNav: nav, manualNavDate: nav ? navDate : null },
+      { ...input, ...more, name, manualNav: nav, manualNavDate: nav ? navDate : null },
       fundId,
     );
     toast.show({ message: fund ? `${saved.name} saved` : `${saved.name} added` });
@@ -149,6 +153,7 @@ export function FundEditSheet({ fundId, onClose, onSaved }: Props) {
           maxLength={40}
           placeholder="Optional"
         />
+        {extras.fields}
         <TextField
           label="NAV entered by hand"
           inputMode="decimal"

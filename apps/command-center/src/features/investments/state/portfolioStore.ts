@@ -74,6 +74,10 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
     const fund: Fund = {
       ...input,
       isin: input.isin !== undefined ? input.isin : (existing?.isin ?? null),
+      // Left out by a form that does not show them (or before migration 0013): kept.
+      expenseRatio:
+        input.expenseRatio !== undefined ? input.expenseRatio : (existing?.expenseRatio ?? null),
+      goalId: input.goalId !== undefined ? input.goalId : (existing?.goalId ?? null),
       id: existing?.id ?? newId(),
       archived: input.archived ?? existing?.archived ?? false,
       order: existing?.order ?? nextOrder(get().funds),

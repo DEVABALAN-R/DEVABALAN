@@ -6,7 +6,7 @@ import { useFundsView } from '@/features/investments/hooks/useInvestments';
 import { usePortfolioStore } from '@/features/investments/state/portfolioStore';
 import { useInteractionState } from '@/hooks/useInteractionState';
 import { dayLabel } from '@/lib/domain/expenses';
-import { fromUnits4, sortFundTxns, type FundTxn } from '@/lib/domain/investments';
+import { fromUnits4, sortFundTxns, yearlyCost, type FundTxn } from '@/lib/domain/investments';
 import { formatMoney, formatMoneyWhole, formatPercent } from '@/lib/formatting/currency';
 import { useTheme } from '@/theme';
 import { PRICE_SOURCE_LABEL, SummaryGrid } from '@/features/investments/components/SummaryGrid';
@@ -87,6 +87,15 @@ export function FundDetailSheet({
                 : undefined,
             },
             { label: 'Realised gain', money: position.realised + position.dividends, tone: 'auto' },
+            ...(fund.expenseRatio != null
+              ? [
+                  {
+                    label: 'Yearly cost',
+                    money: yearlyCost(position.value, fund.expenseRatio),
+                    note: `expense ratio ${fund.expenseRatio}%`,
+                  },
+                ]
+              : []),
           ]}
         />
         <View style={{ gap: theme.space[2] }}>

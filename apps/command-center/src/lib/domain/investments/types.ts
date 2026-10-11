@@ -23,6 +23,10 @@ export type Fund = {
   archived: boolean;
   order: number;
   createdAt: number;
+  /** Yearly expense ratio (TER) in percent, from the factsheet (migration 0013). */
+  expenseRatio?: number | null;
+  /** The goal this fund is for (migration 0013). */
+  goalId?: string | null;
 };
 
 /** buy: lump sum, SIP instalment, switch in, reinvested dividend. sell: redemption, switch out. */
@@ -58,6 +62,8 @@ export type Sip = {
   active: boolean;
   note: string;
   createdAt: number;
+  /** Yearly increase of the instalment in percent, from the start date (migration 0013). */
+  stepUpPct?: number;
 };
 
 export type Exchange = 'NSE' | 'BSE';
