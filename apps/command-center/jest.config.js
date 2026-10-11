@@ -15,5 +15,7 @@ module.exports = {
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|expo-router|react-navigation|@react-navigation/.*|react-native-svg|lucide-react-native)',
   ],
+  // Built copy of the portfolio's server bundle (npm run build:site), not app code.
+  modulePathIgnorePatterns: ['<rootDir>/site-server/'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/app/**', '!src/**/*.d.ts'],
 };

@@ -46,6 +46,8 @@ export default defineConfig(({ mode, isSsrBuild }) => ({
   plugins: [serverRenderedPages(loadEnv(mode, process.cwd(), ''))],
   build: {
     target: 'es2022',
+    // Not /assets: served from the dashboard's project, Expo already uses that folder.
+    assetsDir: 'site',
     rollupOptions: isSsrBuild ? {} : { input: 'app.html' },
   },
   ssr: { noExternal: true, target: 'node' },

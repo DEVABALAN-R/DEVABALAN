@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useRouter } from '../app/router';
 import { monogram, type SectionInfo } from '../app/sections';
-import { Arrow } from '../components/Glyphs';
+import { Arrow, LockGlyph } from '../components/Glyphs';
 import type { PortfolioDocument } from '../lib/types';
 import { Availability } from './Availability';
 
@@ -30,9 +30,12 @@ function useActiveSection(ids: string[], enabled: boolean): string | null {
 export function Header({
   document: doc,
   sections,
+  dashboardUrl,
 }: {
   document: PortfolioDocument;
   sections: SectionInfo[];
+  /** The owner's link to the private dashboard (it asks for sign-in). */
+  dashboardUrl: string | null;
 }) {
   const { path } = useRouter();
   const onHome = path === '/';
@@ -118,6 +121,11 @@ export function Header({
           />
         </nav>
         <Availability profile={profile} className="site-header__status" />
+        {dashboardUrl ? (
+          <a className="site-header__dashboard" href={dashboardUrl} rel="nofollow">
+            <LockGlyph /> Dashboard
+          </a>
+        ) : null}
         <button
           ref={menuButton}
           type="button"
@@ -158,6 +166,11 @@ export function Header({
             ))}
           </ul>
           <Availability profile={profile} />
+          {dashboardUrl ? (
+            <a className="mobile-menu__dashboard" href={dashboardUrl} rel="nofollow">
+              <LockGlyph /> Dashboard <span className="faint">· sign in</span>
+            </a>
+          ) : null}
         </nav>
       </div>
     </header>

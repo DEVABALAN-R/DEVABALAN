@@ -25,8 +25,9 @@ ledger starts from scratch; next is importing from the export of the app you use
 - **Overview** reads the same ledger and portfolio; net worth includes funds and stocks.
 - **Portfolio** (public developer site): edit the profile, projects, skills, experience,
   education, numbers and extra sections; drafts, reorder, image and résumé uploads (web), a
-  private preview link and Publish; read contact messages. The site itself is `apps/portfolio`;
-  how it works: [`docs/features/PORTFOLIO.md`](../../docs/features/PORTFOLIO.md).
+  private preview link and Publish; read contact messages. The site itself is `apps/portfolio`,
+  served as this site's home page by `api/site.mjs` (built by `npm run build:site`); how it
+  works: [`docs/features/PORTFOLIO.md`](../../docs/features/PORTFOLIO.md).
 - Goals, Insights and Reports are labelled placeholders.
 
 **Signed in** (migrations 0005–0010 applied), every page loads and saves **your own** data, and
@@ -109,6 +110,7 @@ npx eslint . --max-warnings 0
 npm run format:check
 npm test
 npm run build:web && npm run check:bundle
+npm run build:site && npm run check:site   # the portfolio at /, as Vercel builds it
 ```
 
 ## Structure

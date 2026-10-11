@@ -119,6 +119,31 @@
   display: none;
 }
 
+.site-header__dashboard,
+.mobile-menu__dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  transition: color var(--t-fast) ease;
+}
+
+.site-header__dashboard:hover,
+.mobile-menu__dashboard:hover {
+  color: var(--text);
+}
+
+/* Desktop: a small pill at the end of the bar. Phones: the last line of the menu. */
+.site-header__dashboard {
+  display: none;
+  flex: none;
+  padding: 8px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  background: rgb(17 19 24 / 55%);
+}
+
 .availability {
   display: inline-flex;
   flex-wrap: wrap;
@@ -259,6 +284,9 @@ html.menu-open {
   .menu-button,
   .mobile-menu {
     display: none !important;
+  }
+  .site-header .site-header__dashboard {
+    display: inline-flex;
   }
 }
 

@@ -77,7 +77,7 @@ export const PROFILE_FIELDS: FieldSpec[] = [
     max: 500,
     format: 'httpsUrl',
     placeholder: 'https://your-site.vercel.app',
-    hint: 'Where the public site runs (used to open Preview).',
+    hint: 'Only if the portfolio runs at another address. Empty: this site (its home page).',
   },
   {
     key: 'seo_title',

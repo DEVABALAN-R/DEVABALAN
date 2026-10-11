@@ -1,6 +1,6 @@
 /**
  * Fails the build when the public site's JavaScript or CSS grows past its budget
- * (gzip sizes of dist/assets after `npm run build`). Fonts are not counted: they are
+ * (gzip sizes of dist/site after `npm run build`). Fonts are not counted: they are
  * cached separately and only the subsets a page uses are downloaded.
  */
 import { readdirSync, readFileSync } from 'node:fs';
@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
 const BUDGET = { js: 110 * 1024, css: 16 * 1024 };
-const dir = new URL('../dist/assets/', import.meta.url).pathname;
+const dir = new URL('../dist/site/', import.meta.url).pathname;
 const totals = { js: 0, css: 0 };
 for (const file of readdirSync(dir)) {
   const kind = file.endsWith('.js') ? 'js' : file.endsWith('.css') ? 'css' : null;

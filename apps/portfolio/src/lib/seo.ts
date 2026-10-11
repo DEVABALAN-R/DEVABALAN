@@ -103,6 +103,7 @@ export function buildHead(input: HeadInput): string {
   return [
     `<title>${escapeHtml(title)}</title>`,
     meta('name', 'description', description),
+    route.name === 'preview' ? '<meta name="referrer" content="no-referrer" />' : '',
     noindex
       ? '<meta name="robots" content="noindex, nofollow" />'
       : `<link rel="canonical" href="${escapeHtml(`${origin}${path}`)}" />`,

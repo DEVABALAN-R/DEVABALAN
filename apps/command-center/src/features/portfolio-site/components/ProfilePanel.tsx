@@ -23,7 +23,7 @@ export function ProfilePanel() {
     typeof profile?.[key] === 'string' ? (profile[key] as string) : '';
   const lines = [
     ['Site address', text('handle') || 'Not set'],
-    ['Public site', text('site_url') || 'Not set'],
+    ['Public site', text('site_url') || 'This site’s home page'],
     ['Location', text('location')],
     ['Contact email', text('public_email') || 'Form only'],
   ].filter(([, value]) => value);

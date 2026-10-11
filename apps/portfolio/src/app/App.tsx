@@ -38,21 +38,30 @@ function Site({ initial, data }: { initial: InitialState; data: SiteData }) {
         </StatusPage>
       );
     }
+    const dashboard = initial.dashboardUrl;
     if (mode === 'unconfigured')
-      return <StatusPage code="Setup" title="This site is not set up yet" />;
+      return (
+        <StatusPage code="Setup" title="This site is not set up yet" dashboardUrl={dashboard} />
+      );
     if (mode === 'offline')
       return (
-        <StatusPage code="Offline" title="The portfolio could not be loaded">
+        <StatusPage
+          code="Offline"
+          title="The portfolio could not be loaded"
+          dashboardUrl={dashboard}
+        >
           <p>Please try again in a moment.</p>
         </StatusPage>
       );
-    return <StatusPage code="Soon" title="Nothing is published here yet" />;
+    return (
+      <StatusPage code="Soon" title="Nothing is published here yet" dashboardUrl={dashboard} />
+    );
   }
 
   return (
     <>
       {mode === 'preview' ? <PreviewBanner expiresAt={doc.previewExpiresAt} /> : null}
-      <Header document={doc} sections={sections} />
+      <Header document={doc} sections={sections} dashboardUrl={initial.dashboardUrl} />
       <main id="main" tabIndex={-1}>
         {route.name === 'home' ? (
           <HomePage

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { rawDocument } from '../test/fixture';
-import { readConfig, siteOrigin, UnsafeConfigError } from './config';
+import { dashboardUrl, readConfig, siteOrigin, UnsafeConfigError } from './config';
 import { jsonForScript } from './escape';
 import { duration, monthsBetween, period } from './format';
 import { parseInline, parseMarkdown, toPlainText } from './markdown';
@@ -89,6 +89,28 @@ describe('settings', () => {
     );
     expect(() => readConfig({ ...base, PORTFOLIO_HANDLE: 'Not valid' })).toThrow(UnsafeConfigError);
     expect(readConfig({})).toBeNull();
+  });
+  it("falls back to the dashboard's own Supabase settings", () => {
+    const shared = {
+      EXPO_PUBLIC_SUPABASE_URL: 'https://p.supabase.co',
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_x',
+      PORTFOLIO_HANDLE: 'sam',
+    };
+    expect(readConfig(shared)?.key).toBe('sb_publishable_x');
+    expect(readConfig({ ...shared, SUPABASE_URL: '' })?.supabaseUrl).toBe('https://p.supabase.co');
+    expect(() =>
+      readConfig({ ...shared, EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_secret_x' }),
+    ).toThrow(UnsafeConfigError);
+  });
+  it('links to the dashboard only by a local path or an https address', () => {
+    expect(dashboardUrl({ DASHBOARD_URL: '/dashboard' })).toBe('/dashboard');
+    expect(dashboardUrl({ DASHBOARD_URL: 'https://app.example.com/dashboard' })).toBe(
+      'https://app.example.com/dashboard',
+    );
+    expect(dashboardUrl({ DASHBOARD_URL: '//evil.example' })).toBeNull();
+    expect(dashboardUrl({ DASHBOARD_URL: 'javascript:alert(1)' })).toBeNull();
+    expect(dashboardUrl({ DASHBOARD_URL: 'http://app.example.com' })).toBeNull();
+    expect(dashboardUrl({})).toBeNull();
   });
   it('uses SITE_URL for canonical links when it is https', () => {
     expect(siteOrigin({ SITE_URL: 'https://me.example/path' }, 'https://x.vercel.app/a')).toBe(

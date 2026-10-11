@@ -44,7 +44,10 @@ export function PublishBar() {
   const { mode, publication, profile, publish, previewToken } = useSiteStore();
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
-  const siteUrl = typeof profile?.site_url === 'string' ? profile.site_url.replace(/\/+$/, '') : '';
+  // The portfolio is this site's home page unless another address is set in Profile.
+  const ownSite = Platform.OS === 'web' ? window.location.origin : '';
+  const siteUrl =
+    (typeof profile?.site_url === 'string' ? profile.site_url.replace(/\/+$/, '') : '') || ownSite;
   const cloud = mode === 'cloud';
 
   const preview = async () => {
