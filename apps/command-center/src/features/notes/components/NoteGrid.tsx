@@ -19,7 +19,16 @@ const columnsFor = (width: number) => (width < 560 ? 2 : width < 860 ? 3 : width
  * Keep-style masonry: cards flow into columns, each card added to the shortest column
  * so far. Reading order (and screen reader order) stays newest first, column by column.
  */
-export function NoteGrid({ notes, onOpen }: { notes: Note[]; onOpen: (note: Note) => void }) {
+export function NoteGrid({
+  notes,
+  onOpen,
+  readOnly = false,
+}: {
+  notes: Note[];
+  onOpen: (note: Note) => void;
+  /** Checklist boxes cannot be ticked (Recently deleted). */
+  readOnly?: boolean;
+}) {
   const theme = useTheme();
   const [width, setWidth] = useState(0);
   const count = columnsFor(width);
@@ -38,7 +47,7 @@ export function NoteGrid({ notes, onOpen }: { notes: Note[]; onOpen: (note: Note
       {columns.map((column, index) => (
         <View key={index} style={{ flex: 1, minWidth: 0, gap: theme.space[3] }}>
           {column.map((note) => (
-            <NoteCard key={note.id} note={note} onOpen={() => onOpen(note)} />
+            <NoteCard key={note.id} note={note} onOpen={() => onOpen(note)} readOnly={readOnly} />
           ))}
         </View>
       ))}

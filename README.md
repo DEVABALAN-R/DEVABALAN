@@ -16,7 +16,7 @@ Supabase provides authentication, the database and storage. Amounts are in India
 | Stocks         | Buys, sales, dividends, bonus issues and splits; FIFO profit and loss; end-of-day NSE/BSE prices; sectors and movers; comparison with an index fund                   |
 | Import         | Zerodha tradebooks for funds and shares, read on the device; every trade is reviewed (possible duplicates unticked) before anything is saved                          |
 | Overview       | Net worth across accounts, funds and shares                                                                                                                           |
-| Notes          | Text notes and checklists with colours, pins, labels, archive and search                                                                                              |
+| Notes          | Text notes and checklists with colours, pins, labels, reminders, archive, search and Recently deleted                                                                 |
 | Portfolio site | Profile, projects, skills and experience edited in the dashboard, previewed privately and published as a snapshot                                                     |
 
 What it is not: a multi-user product, a bank connection, a trading app or tax software. The full
@@ -37,7 +37,7 @@ product definition is in [`docs/PRODUCT.md`](docs/PRODUCT.md).
 apps/command-center/   The app (Expo Router, React Native Web) and the Vercel project that
                        serves both sites
 apps/portfolio/        The public portfolio (Vite + React, server-rendered)
-supabase/migrations/   Database schema, rules and functions, applied in order (0005–0014)
+supabase/migrations/   Database schema, rules and functions, applied in order (0005–0015)
 supabase/functions/    market-refresh: AMFI NAVs and exchange closing prices, fetched server-side
 docs/                  Product definition, architecture, decisions and feature guides
 SUPABASE_SETUP.md      Setting up and verifying the Supabase project

@@ -1,91 +1,85 @@
 import { useMemo, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
-import { Archive, ListChecks, Search, StickyNote } from '@/components/icons';
+import { Pressable, View } from 'react-native';
+import { Archive, Bell, ListChecks, StickyNote, Trash2 } from '@/components/icons';
 import { EmptyState } from '@/components/feedback';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Screen } from '@/components/layout/Screen';
-import { Chip, IconButton, Text } from '@/components/ui';
-import { allLabels, visibleNotes, type Note } from '@/lib/domain/notes';
+import { IconButton, Text } from '@/components/ui';
+import { allLabels, TRASH_DAYS, visibleNotes, type Note } from '@/lib/domain/notes';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
-import { fontFamily, useTheme } from '@/theme';
+import { useTheme } from '@/theme';
 import { NoteEditor } from './components/NoteEditor';
 import { NoteGrid } from './components/NoteGrid';
+import { NotesFilters, type NotesView } from './components/NotesFilters';
+import { TrashedNoteSheet } from './components/TrashedNoteSheet';
 import { useNotesStore } from './state/notesStore';
 
 type Editing = { note: Note | null; checklist?: boolean } | null;
 
-/** Notes (Google Keep style): quick capture, pinned and other notes, labels, archive, search. */
+const EMPTY: Record<NotesView, { title: string; body: string }> = {
+  notes: { title: 'No notes yet', body: 'Notes you add appear here.' },
+  reminders: { title: 'No reminders', body: 'Open a note and press the bell to add one.' },
+  archive: { title: 'Nothing archived', body: 'Archived notes appear here.' },
+  trash: {
+    title: 'Nothing deleted',
+    body: `Deleted notes wait here for ${TRASH_DAYS} days before they go for good.`,
+  },
+};
+
+/**
+ * Notes (Google Keep style): quick capture, pinned and other notes, labels, reminders,
+ * archive, Recently deleted and search.
+ */
 export function NotesScreen() {
   const theme = useTheme();
-  const notes = useNotesStore((state) => state.notes);
+  const { notes, extras } = useNotesStore();
   const [query, setQuery] = useState('');
   const [chosen, setLabel] = useState<string | null>(null);
-  const [archived, setArchived] = useState(false);
+  const [picked, setView] = useState<NotesView>('notes');
   const [editing, setEditing] = useState<Editing>(null);
+  const [trashed, setTrashed] = useState<Note | null>(null);
+  // Reminders and Recently deleted disappear when the database cannot keep them.
+  const view = !extras && (picked === 'reminders' || picked === 'trash') ? 'notes' : picked;
   const labels = useMemo(() => allLabels(notes), [notes]);
   // A label whose last note was deleted or relabelled falls back to all notes.
-  const label = chosen && labels.includes(chosen) ? chosen : null;
-  const view = useMemo(
-    () => visibleNotes(notes, { query, label, archived }),
-    [notes, query, label, archived],
+  const label = view === 'notes' && chosen && labels.includes(chosen) ? chosen : null;
+  const shown = useMemo(
+    () =>
+      visibleNotes(notes, {
+        query,
+        label,
+        archived: view === 'archive',
+        trash: view === 'trash',
+        reminders: view === 'reminders',
+      }),
+    [notes, query, label, view],
   );
-  const open = (note: Note) => setEditing({ note });
-  const empty = !view.pinned.length && !view.others.length;
+  const open = (note: Note) => (view === 'trash' ? setTrashed(note) : setEditing({ note }));
+  const empty = !shown.pinned.length && !shown.others.length;
+  const emptyText = query
+    ? { title: 'No notes match', body: 'Try another word, or clear the search.' }
+    : EMPTY[view];
   return (
     <Screen>
       <PageHeader title="Notes" meta={<SampleDataBadge editable />} size="compact" />
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: theme.space[2],
-          paddingHorizontal: theme.space[3],
-          borderRadius: theme.radius.pill,
-          backgroundColor: theme.colors.surface,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
+      <NotesFilters
+        query={query}
+        onQuery={setQuery}
+        view={view}
+        label={label}
+        labels={labels}
+        extras={extras}
+        onChoose={(next, nextLabel) => {
+          setView(next);
+          if (nextLabel !== undefined) setLabel(nextLabel);
         }}
-      >
-        <Search size={16} color={theme.colors.textSecondary} aria-hidden />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search notes"
-          placeholderTextColor={theme.colors.textTertiary}
-          accessibilityLabel="Search notes"
-          style={{
-            flex: 1,
-            paddingVertical: 9,
-            color: theme.colors.textPrimary,
-            fontFamily: fontFamily.regular,
-            fontSize: 14,
-            outlineWidth: 0,
-          }}
-        />
-      </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space[2] }}>
-        <Chip
-          label="All notes"
-          selected={!label && !archived}
-          onPress={() => {
-            setLabel(null);
-            setArchived(false);
-          }}
-        />
-        {labels.map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            selected={label === item && !archived}
-            onPress={() => {
-              setLabel(item);
-              setArchived(false);
-            }}
-          />
-        ))}
-        <Chip label="Archive" selected={archived} onPress={() => setArchived(true)} />
-      </View>
-      {archived ? null : (
+      />
+      {view === 'trash' && !empty ? (
+        <Text variant="caption" color="textSecondary">
+          {`Deleted notes are removed for good after ${TRASH_DAYS} days. Open one to restore it.`}
+        </Text>
+      ) : null}
+      {view !== 'notes' ? null : (
         <View
           style={{
             flexDirection: 'row',
@@ -118,35 +112,38 @@ export function NotesScreen() {
       )}
       {empty ? (
         <EmptyState
-          icon={archived ? Archive : StickyNote}
-          title={archived ? 'Nothing archived' : query ? 'No notes match' : 'No notes yet'}
-          body={
-            archived
-              ? 'Archived notes appear here.'
-              : query
-                ? 'Try another word, or clear the search.'
-                : 'Notes you add appear here.'
+          icon={
+            view === 'archive'
+              ? Archive
+              : view === 'trash'
+                ? Trash2
+                : view === 'reminders'
+                  ? Bell
+                  : StickyNote
           }
+          title={emptyText.title}
+          body={emptyText.body}
         />
       ) : null}
-      {view.pinned.length ? (
+      {shown.pinned.length ? (
         <View style={{ gap: theme.space[2] }}>
           <Text variant="eyebrow" color="textTertiary" uppercase>
             Pinned
           </Text>
-          <NoteGrid notes={view.pinned} onOpen={open} />
+          <NoteGrid notes={shown.pinned} onOpen={open} />
         </View>
       ) : null}
-      {view.others.length ? (
+      {shown.others.length ? (
         <View style={{ gap: theme.space[2] }}>
-          {view.pinned.length ? (
+          {shown.pinned.length ? (
             <Text variant="eyebrow" color="textTertiary" uppercase>
               Others
             </Text>
           ) : null}
-          <NoteGrid notes={view.others} onOpen={open} />
+          <NoteGrid notes={shown.others} onOpen={open} readOnly={view === 'trash'} />
         </View>
       ) : null}
+      {trashed ? <TrashedNoteSheet note={trashed} onClose={() => setTrashed(null)} /> : null}
       {editing ? (
         <NoteEditor
           key={editing.note?.id ?? 'new'}

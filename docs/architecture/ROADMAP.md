@@ -13,7 +13,7 @@ original migration plan from the Vite app was completed and removed (in git hist
 | Expo app, design system, CI | Done            | Web on Vercel (`devabalan-command-center`); iOS/Android from the same code                                                                   |
 | Sign-in and security        | Done            | Allowlisted sign-up, two-step sign-in (TOTP, aal2 in the database), sessions, idle sign-out                                                  |
 | Expense manager             | Done, saved     | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts                                                    |
-| Notes                       | Done, saved     | Text and checklists, colours, pins, labels, archive                                                                                          |
+| Notes                       | Done, saved     | Text and checklists, colours, pins, labels, archive, reminders, Recently deleted (migration 0015)                                            |
 | Mutual funds                | **Done, saved** | AMFI search, purchases/SIPs/redemptions/dividends, SIP plans with due and missed instalments, FIFO cost, XIRR, allocation, growth, AMFI NAVs |
 | Stocks                      | **Done, saved** | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
 | Tradebook import            | **Done**        | Zerodha tradebooks (.xlsx/.csv) read on the device; you review each trade and approve before anything is saved                               |
@@ -28,7 +28,7 @@ original migration plan from the Vite app was completed and removed (in git hist
 
 > **October 2026:** the old Vite app was removed from the repository (the last commit that has it
 > is `efc04a9`); its saved data is not imported and migration 0008 deletes it. Migrations 0001–0004, their rollbacks and SQL tests were removed after being applied (in
-> history at `224176d`); 0005–0014 are in `supabase/migrations`.
+> history at `224176d`); 0005–0015 are in `supabase/migrations`.
 
 ## The plan in one picture
 

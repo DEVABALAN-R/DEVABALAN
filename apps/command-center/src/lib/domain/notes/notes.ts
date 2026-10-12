@@ -1,6 +1,14 @@
-import { NOTE_LIMITS, type Note } from './types';
+import { NOTE_LIMITS, TRASH_DAYS, type Note } from './types';
 
-export type NoteFilter = { query: string; label: string | null; archived: boolean };
+export type NoteFilter = {
+  query: string;
+  label: string | null;
+  archived: boolean;
+  /** Recently deleted instead of the notes themselves. */
+  trash?: boolean;
+  /** Notes with a reminder, soonest first. */
+  reminders?: boolean;
+};
 
 /** Text searched for a note: title, body, checklist items and labels. */
 const haystack = (note: Note) =>
@@ -12,9 +20,25 @@ const haystack = (note: Note) =>
  * Notes for the current view, split into pinned and others (Keep's sections), each
  * most recently edited first. Archived notes show only in the archive, never pinned.
  */
-export function visibleNotes(notes: Note[], { query, label, archived }: NoteFilter) {
+export function visibleNotes(notes: Note[], filter: NoteFilter) {
+  const { query, label, archived, trash, reminders } = filter;
   const needle = query.trim().toLocaleLowerCase();
+  if (reminders) {
+    const dated = notes
+      .filter((note) => note.remindOn && !note.trashedAt && !note.archived)
+      .filter((note) => !needle || haystack(note).includes(needle))
+      .sort((a, b) => (a.remindOn ?? '').localeCompare(b.remindOn ?? ''));
+    return { pinned: [], others: dated };
+  }
+  if (trash) {
+    const deleted = notes
+      .filter((note) => note.trashedAt)
+      .filter((note) => !needle || haystack(note).includes(needle))
+      .sort((a, b) => (b.trashedAt ?? 0) - (a.trashedAt ?? 0));
+    return { pinned: [], others: deleted };
+  }
   const matches = notes
+    .filter((note) => !note.trashedAt)
     .filter((note) => note.archived === archived)
     .filter((note) => !label || note.labels.includes(label))
     .filter((note) => !needle || haystack(note).includes(needle))
@@ -25,10 +49,10 @@ export function visibleNotes(notes: Note[], { query, label, archived }: NoteFilt
   };
 }
 
-/** Every label in use, alphabetically (case-insensitive). */
+/** Every label in use (deleted notes aside), alphabetically (case-insensitive). */
 export const allLabels = (notes: Note[]): string[] =>
-  [...new Set(notes.flatMap((note) => note.labels))].sort((a, b) =>
-    a.localeCompare(b, undefined, { sensitivity: 'base' }),
+  [...new Set(notes.filter((note) => !note.trashedAt).flatMap((note) => note.labels))].sort(
+    (a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }),
   );
 
 /** A note with nothing in it is discarded instead of saved (as Keep does). */
@@ -54,7 +78,7 @@ export function clampNote<T extends Pick<Note, 'title' | 'body' | 'items' | 'lab
   };
 }
 
-type Content = Pick<Note, 'title' | 'body' | 'items' | 'color' | 'pinned' | 'labels'>;
+type Content = Pick<Note, 'title' | 'body' | 'items' | 'color' | 'pinned' | 'labels' | 'remindOn'>;
 
 /** Whether an edit changed anything (closing an untouched note must not move it to the top). */
 export const sameContent = (a: Content, b: Content) =>
@@ -62,6 +86,7 @@ export const sameContent = (a: Content, b: Content) =>
   a.body === b.body &&
   a.color === b.color &&
   a.pinned === b.pinned &&
+  (a.remindOn ?? null) === (b.remindOn ?? null) &&
   JSON.stringify(a.items) === JSON.stringify(b.items) &&
   JSON.stringify(a.labels) === JSON.stringify(b.labels);
 
@@ -112,3 +137,21 @@ export function checklistProgress(note: Note): { done: number; total: number } |
   if (!note.items) return null;
   return { done: note.items.filter((item) => item.done).length, total: note.items.length };
 }
+
+/** Notes whose reminder date has come (deleted and archived ones aside), oldest first. */
+export const dueNotes = (notes: Note[], today: string): Note[] =>
+  notes
+    .filter((note) => note.remindOn && note.remindOn <= today && !note.archived && !note.trashedAt)
+    .sort(
+      (a, b) => (a.remindOn ?? '').localeCompare(b.remindOn ?? '') || b.updatedAt - a.updatedAt,
+    );
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Deleted notes older than TRASH_DAYS, to remove for good. */
+export const expiredTrash = (notes: Note[], now: number): Note[] =>
+  notes.filter((note) => note.trashedAt && now - note.trashedAt >= TRASH_DAYS * DAY_MS);
+
+/** Whole days left before a deleted note goes for good (at least 0). */
+export const trashDaysLeft = (note: Note, now: number): number =>
+  Math.max(0, TRASH_DAYS - Math.floor((now - (note.trashedAt ?? now)) / DAY_MS));

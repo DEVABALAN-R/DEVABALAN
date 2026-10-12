@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';
-import { Archive, ArchiveRestore, ListChecks, Pin, PinOff, Trash2 } from '@/components/icons';
+import { Archive, ArchiveRestore, Bell, ListChecks, Pin, PinOff, Trash2 } from '@/components/icons';
 import { useToast } from '@/components/feedback';
 import { Sheet } from '@/components/overlays';
 import { Button, IconButton } from '@/components/ui';
@@ -13,12 +13,14 @@ import {
   toggleChecklist,
   type Note,
 } from '@/lib/domain/notes';
+import { addDays, todayIso } from '@/lib/domain/expenses';
 import { newId } from '@/lib/ids';
 import { fontFamily, useTheme } from '@/theme';
 import { useNotesStore, type NoteDraft } from '../state/notesStore';
 import { ChecklistEditor } from './ChecklistEditor';
 import { useNoteStyle } from './noteStyle';
 import { ColorPicker, LabelEditor } from './NoteOptions';
+import { ReminderField } from './ReminderField';
 
 type NoteEditorProps = {
   /** null = a new note. */
@@ -37,6 +39,7 @@ const blank = (checklist: boolean, label: string | null | undefined): NoteDraft 
   color: 'default',
   pinned: false,
   labels: label ? [label] : [],
+  remindOn: null,
 });
 
 /**
@@ -49,6 +52,7 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
   const toast = useToast();
   const store = useNotesStore();
   const [draft, setDraft] = useState<NoteDraft>(note ?? blank(checklist, label));
+  const [deleted] = useState(() => (store.extras ? 'Moved to Recently deleted' : 'Note deleted'));
   const style = useNoteStyle(draft.color);
   const known = allLabels(store.notes);
   const change = (patch: Partial<NoteDraft>) => setDraft((current) => ({ ...current, ...patch }));
@@ -75,7 +79,7 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
       },
     });
   };
-  function remove(message = 'Note deleted') {
+  function remove(message = deleted) {
     if (!note) return onClose();
     const removed = store.deleteNote(note.id);
     onClose();
@@ -111,6 +115,14 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
             selected={!!draft.items}
             onPress={toggleList}
           />
+          {store.extras ? (
+            <IconButton
+              icon={Bell}
+              accessibilityLabel={draft.remindOn ? 'Remove reminder' : 'Add reminder'}
+              selected={!!draft.remindOn}
+              onPress={() => change({ remindOn: draft.remindOn ? null : addDays(todayIso(), 1) })}
+            />
+          ) : null}
           {note ? (
             <IconButton
               icon={note.archived ? ArchiveRestore : Archive}
@@ -164,6 +176,9 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
             }}
           />
         )}
+        {draft.remindOn ? (
+          <ReminderField value={draft.remindOn} onChange={(remindOn) => change({ remindOn })} />
+        ) : null}
         <LabelEditor
           labels={draft.labels}
           known={known}

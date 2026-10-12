@@ -62,9 +62,17 @@ and failure behaviour in [`../architecture/EDGE_CASES.md`](../architecture/EDGE_
 
 - **Purpose:** notes and checklists next to the numbers (colours, pins, labels, archive, search).
 - **Access:** Notes.
-- **Code:** `features/notes/` (`NotesScreen.tsx`, `components/`, `state/notesStore.ts`).
-- **Data:** `notes` through `load_ledger` / `sync_ledger`.
-- **Edge cases:** checklist and label sizes are bounded in the database.
+- **Reminders:** the bell in a note sets a day it comes back on. Due notes show on the card (in
+  red), under **Reminders** and in **Reminders due** on Overview, where **Done** clears them.
+  There are no push notifications: the app shows them when you open it.
+- **Recently deleted:** a deleted note waits there for 7 days (Undo right after deleting,
+  **Restore** later, **Delete for good** at once), then the app removes it when it next loads.
+- **Code:** `features/notes/` (`NotesScreen.tsx`, `components/`, `state/notesStore.ts`); the
+  Overview card is `features/overview/RemindersCard.tsx`.
+- **Data:** `notes` through `load_ledger` / `sync_ledger`. Reminders and Recently deleted need
+  migration 0015; before it they are hidden and deleting removes a note at once.
+- **Edge cases:** checklist and label sizes are bounded in the database; see
+  [`EDGE_CASES.md`](../architecture/EDGE_CASES.md).
 
 ## Mutual funds, stocks and tradebook import
 

@@ -3,6 +3,9 @@ import {
   checklistProgress,
   checklistToggleProblem,
   clampNote,
+  dueNotes,
+  expiredTrash,
+  trashDaysLeft,
   matchLabel,
   sameContent,
   isEmptyNote,
@@ -126,5 +129,41 @@ describe('edge cases', () => {
     const a = note({ title: 'T', labels: ['x'] });
     expect(sameContent(a, { ...a })).toBe(true);
     expect(sameContent(a, { ...a, labels: ['y'] })).toBe(false);
+  });
+});
+
+describe('reminders and Recently deleted', () => {
+  const day = 24 * 60 * 60 * 1000;
+  const now = Date.parse('2026-10-12T12:00:00Z');
+  const list = [
+    note({ id: 'due', remindOn: '2026-10-10' }),
+    note({ id: 'today', remindOn: '2026-10-12' }),
+    note({ id: 'later', remindOn: '2026-10-20' }),
+    note({ id: 'archived', remindOn: '2026-10-01', archived: true }),
+    note({ id: 'gone', remindOn: '2026-10-01', trashedAt: now - 8 * day }),
+    note({ id: 'fresh', trashedAt: now - 2 * day }),
+  ];
+
+  it('lists due reminders, oldest first, without archived or deleted notes', () => {
+    expect(dueNotes(list, '2026-10-12').map((n) => n.id)).toEqual(['due', 'today']);
+  });
+
+  it('keeps deleted notes out of the notes and in Recently deleted', () => {
+    const filter = { query: '', label: null, archived: false };
+    expect(visibleNotes(list, filter).others.map((n) => n.id)).not.toContain('fresh');
+    expect(visibleNotes(list, { ...filter, trash: true }).others.map((n) => n.id)).toEqual([
+      'fresh',
+      'gone',
+    ]);
+    expect(visibleNotes(list, { ...filter, reminders: true }).others.map((n) => n.id)).toEqual([
+      'due',
+      'today',
+      'later',
+    ]);
+  });
+
+  it('expires deleted notes after 7 days', () => {
+    expect(expiredTrash(list, now).map((n) => n.id)).toEqual(['gone']);
+    expect(trashDaysLeft(list[5], now)).toBe(5);
   });
 });

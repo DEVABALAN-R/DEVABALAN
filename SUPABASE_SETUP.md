@@ -27,6 +27,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 | `recurring_entries`, `load_ledger`/`sync_ledger`    | 0012                | Recurring entries (rent, subscriptions, EMIs)                               |
 | `investment_goals`, fund expense ratio, SIP step-up | 0013                | Mutual funds → Insights (goals, costs) and SIP step-up                      |
 | `stock_benchmarks`, index fund NAV history          | 0014                | Stocks → vs Index                                                           |
+| `notes.remind_on`, `notes.trashed_at`               | 0015                | Notes → reminders and Recently deleted                                      |
 | `user_workspaces`, `public_portfolios`              | 0001–0003 (old app) | Nothing. Deleted by 0008 (the app starts from scratch)                      |
 
 `internal` (allowlist, hook, helpers) is not exposed through the Data API, so none of it is
@@ -38,8 +39,9 @@ reachable from the browser.
    `202610080005_core_finance.sql`, `202610080006_ledger_sync.sql`,
    `202610090007_investments.sql`, `202610100008_retire_old_app.sql`,
    `202610110009_fund_isin.sql`, `202610120010_portfolio.sql`, `202610120011_receipts.sql`
-   `202610130012_recurring.sql`, `202610140013_fund_goals.sql` and
-   `202610150014_stock_benchmark.sql` from `supabase/migrations/`
+   `202610130012_recurring.sql`, `202610140013_fund_goals.sql`,
+   `202610150014_stock_benchmark.sql` and `202610160015_note_reminders.sql` from
+   `supabase/migrations/`
    (SQL Editor → paste → Run).
 2. **Sign-up hook on:** Authentication → Hooks → Before User Created → Postgres → schema `internal`,
    function `before_user_created`. The **Allow new users to sign up** switch can stay off as a
@@ -217,6 +219,18 @@ comment at the top of the file.
   `market_held_schemes` now also cover chosen index funds, so the market-refresh function keeps
   their daily NAV and fetches older NAVs from mfapi.in. The Edge Function needs no redeploy.
 - **Before this migration** Stocks → **vs Index** says which file to run.
+
+## Note reminders and Recently deleted (migration 0015)
+
+Run `202610160015_note_reminders.sql` after 0014. Safe to run again; the rollback is in the
+comment at the top of the file.
+
+- **Columns:** `notes.remind_on` (a date, 1990–2100) and `notes.trashed_at` (when the note was
+  deleted). Deleted notes stay for 7 days, then the app removes them when it loads.
+- **Functions:** `load_ledger` also returns `note_extras` so the app knows the columns exist;
+  `sync_ledger` saves them. Everything else is unchanged from 0013.
+- **Before this migration** the app hides reminders and Recently deleted while signed in, and
+  deleting a note removes it at once (with Undo).
 
 ## Bringing in existing funds and shares
 
