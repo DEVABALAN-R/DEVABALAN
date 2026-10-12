@@ -32,5 +32,28 @@ export const noteRow = (n: Note) => ({
   pinned: n.pinned,
   archived: n.archived,
   labels: n.labels,
+  remind_on: n.remindOn ?? null,
+  trashed_at: n.trashedAt ? isoTime(n.trashedAt) : null,
   created_at: isoTime(n.createdAt),
+});
+
+const noteTime = (value: unknown) => {
+  const parsed = typeof value === 'string' ? Date.parse(value) : NaN;
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+/** A row of `notes` as the app's Note (reminder and deletion date from migration 0015). */
+export const noteFromRemote = (row: Record<string, unknown>): Note => ({
+  id: String(row.id ?? ''),
+  title: typeof row.title === 'string' ? row.title : '',
+  body: typeof row.body === 'string' ? row.body : '',
+  items: Array.isArray(row.items) ? (row.items as Note['items']) : null,
+  color: ((typeof row.color === 'string' && row.color) || 'default') as Note['color'],
+  pinned: row.pinned === true,
+  archived: row.archived === true,
+  labels: Array.isArray(row.labels) ? (row.labels as string[]) : [],
+  remindOn: typeof row.remind_on === 'string' ? row.remind_on.slice(0, 10) : null,
+  trashedAt: noteTime(row.trashed_at) || null,
+  createdAt: noteTime(row.created_at),
+  updatedAt: noteTime(row.updated_at),
 });

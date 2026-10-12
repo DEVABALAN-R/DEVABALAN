@@ -46,9 +46,9 @@ describe('NotesScreen', () => {
     await fireEvent.press(screen.getByRole('checkbox', { name: 'Archive' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Delete note' }));
-    expect(notes().some((note) => note.id === 'note-trip')).toBe(false);
+    expect(notes().find((note) => note.id === 'note-trip')?.trashedAt).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Undo' }));
-    expect(notes().some((note) => note.id === 'note-trip')).toBe(true);
+    expect(notes().find((note) => note.id === 'note-trip')?.trashedAt).toBeFalsy();
   });
 
   it('turns a text note into a checklist', async () => {
@@ -58,5 +58,81 @@ describe('NotesScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Show as checklist' }));
     await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
     expect(notes()[0].items?.map((item) => item.text)).toEqual(['Eggs', 'Bread']);
+  });
+
+  it('keeps an untouched note in place and deletes one emptied out, with undo', async () => {
+    await renderWithProviders(<NotesScreen />);
+    const before = notes().find((note) => note.id === 'note-trip')!;
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    expect(notes().find((note) => note.id === 'note-trip')!.updatedAt).toBe(before.updatedAt);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.changeText(screen.getByLabelText('Title'), '');
+    await fireEvent.changeText(screen.getByLabelText('Note'), '');
+    await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByText('Empty note deleted')).toBeTruthy();
+    expect(notes().find((note) => note.id === 'note-trip')?.trashedAt).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Undo' }));
+    expect(notes().find((note) => note.id === 'note-trip')).toEqual(before);
+  });
+
+  it('goes back to all notes when the chosen label is no longer used', async () => {
+    await renderWithProviders(<NotesScreen />);
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Travel' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Remove label Travel' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    expect(
+      screen.getByRole('checkbox', { name: 'All notes' }).props.accessibilityState,
+    ).toMatchObject({
+      checked: true,
+    });
+    expect(screen.getByRole('button', { name: 'Open note: Groceries' })).toBeTruthy();
+  });
+
+  it('restores a deleted note from Recently deleted, or deletes it for good', async () => {
+    await renderWithProviders(<NotesScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Delete note' }));
+    expect(screen.queryByRole('button', { name: 'Open note: Hometown trip' })).toBeNull();
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Recently deleted' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    expect(screen.getByText(/Deleted for good in 7 days/)).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Restore' }));
+    expect(notes().find((note) => note.id === 'note-trip')?.trashedAt).toBeFalsy();
+
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'All notes' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Delete note' }));
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Recently deleted' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Delete for good' }));
+    expect(notes().some((note) => note.id === 'note-trip')).toBe(false);
+  });
+
+  it('adds a reminder and lists it under Reminders', async () => {
+    await renderWithProviders(<NotesScreen />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Add reminder' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    expect(notes().find((note) => note.id === 'note-trip')?.remindOn).toMatch(
+      /^\d{4}-\d{2}-\d{2}$/,
+    );
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Reminders' }));
+    expect(
+      screen.getByRole('button', { name: /^Open note: Hometown trip, reminder \d+ \w+$/ }),
+    ).toBeTruthy();
+    expect(screen.getByText(/^Reminder · /, { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  it('deletes at once and hides the extras without migration 0015', async () => {
+    useNotesStore.setState({ extras: false });
+    await renderWithProviders(<NotesScreen />);
+    expect(screen.queryByRole('checkbox', { name: 'Recently deleted' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    expect(screen.queryByRole('button', { name: 'Add reminder' })).toBeNull();
+    await fireEvent.press(screen.getByRole('button', { name: 'Delete note' }));
+    expect(notes().some((note) => note.id === 'note-trip')).toBe(false);
   });
 });

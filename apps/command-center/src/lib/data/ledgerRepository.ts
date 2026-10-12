@@ -2,7 +2,7 @@ import type { Account, Category, Person, RecurringEntry, Transaction } from '@/l
 import type { Goal, Portfolio } from '@/lib/domain/investments';
 import type { Note } from '@/lib/domain/notes';
 import { diffById, isEmptyDiff } from '@/lib/domain/sync';
-import { accountRow, categoryRow, noteRow, personRow } from './ledgerRows';
+import { accountRow, categoryRow, noteFromRemote, noteRow, personRow } from './ledgerRows';
 import { portfolioChanges, portfolioFromRemote, type RemotePortfolio } from './portfolioRows';
 import { receiptPhoto, receiptRow } from './receiptRows';
 import { extrasChanges, extrasFromRemote } from './extrasRows';
@@ -21,6 +21,8 @@ export type CloudData = {
   recurring?: RecurringEntry[];
   /** Investment goals (migration 0013); undefined while the database does not have them. */
   goals?: Goal[];
+  /** Notes keep reminders and Recently deleted (migration 0015). */
+  noteExtras?: boolean;
 };
 
 type InvestmentKey = 'mf_funds' | 'mf_sips' | 'mf_transactions' | 'stocks' | 'stock_trades';
@@ -33,7 +35,8 @@ export type LedgerChanges = Partial<Record<InvestmentKey | LedgerKey | ExtraKey,
 };
 
 type Row = Record<string, unknown>;
-type Raw = RemotePortfolio & Partial<Record<LedgerKey | ExtraKey | 'splits' | 'settles', Row[]>>;
+type Raw = RemotePortfolio &
+  Partial<Record<LedgerKey | ExtraKey | 'splits' | 'settles', Row[]>> & { note_extras?: unknown };
 
 const str = (value: unknown) => (typeof value === 'string' ? value : '');
 const num = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : 0);
@@ -102,18 +105,8 @@ export function fromRemote(raw: Raw | null): CloudData {
       };
       return transaction;
     }),
-    notes: (data.notes ?? []).map((row) => ({
-      id: str(row.id),
-      title: str(row.title),
-      body: str(row.body),
-      items: Array.isArray(row.items) ? (row.items as Note['items']) : null,
-      color: (str(row.color) || 'default') as Note['color'],
-      pinned: row.pinned === true,
-      archived: row.archived === true,
-      labels: Array.isArray(row.labels) ? (row.labels as string[]) : [],
-      createdAt: time(row.created_at),
-      updatedAt: time(row.updated_at),
-    })),
+    notes: (data.notes ?? []).map(noteFromRemote),
+    noteExtras: data.note_extras === true,
     portfolio: portfolioFromRemote(data),
     ...extrasFromRemote(data),
   };

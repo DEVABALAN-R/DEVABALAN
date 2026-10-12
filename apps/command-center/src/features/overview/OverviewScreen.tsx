@@ -14,6 +14,7 @@ import { InvestmentsSnapshot } from './InvestmentsSnapshot';
 import { KpiQuad } from './KpiQuad';
 import { NetWorthCard } from './NetWorthCard';
 import { RecentActivityCard } from './RecentActivityCard';
+import { RemindersCard } from './RemindersCard';
 import { SpendingLimitCard } from './SpendingLimitCard';
 import { useOverviewData } from './useOverviewData';
 
@@ -55,6 +56,7 @@ export function OverviewScreen() {
           )
         }
       />
+      <RemindersCard />
       <BentoRow stackBelow="desktop">
         <BentoCell flex={4}>
           <NetWorthCard data={data} />

@@ -16,6 +16,7 @@ export { default as ArrowUpRight } from 'lucide-react-native/icons/arrow-up-righ
 export { default as Baby } from 'lucide-react-native/icons/baby';
 export { default as Banknote } from 'lucide-react-native/icons/banknote';
 export { default as BookOpen } from 'lucide-react-native/icons/book-open';
+export { default as Bell } from 'lucide-react-native/icons/bell';
 export { default as Bot } from 'lucide-react-native/icons/bot';
 export { default as Box } from 'lucide-react-native/icons/box';
 export { default as Braces } from 'lucide-react-native/icons/braces';

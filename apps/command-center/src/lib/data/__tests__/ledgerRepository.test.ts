@@ -97,6 +97,7 @@ describe('fromRemote', () => {
 
   it('copes with an empty or missing response', () => {
     expect(fromRemote(null)).toEqual({
+      noteExtras: false,
       accounts: [],
       categories: [],
       people: [],

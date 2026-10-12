@@ -1,16 +1,26 @@
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';
-import { Archive, ArchiveRestore, ListChecks, Pin, PinOff, Trash2 } from '@/components/icons';
+import { Archive, ArchiveRestore, Bell, ListChecks, Pin, PinOff, Trash2 } from '@/components/icons';
 import { useToast } from '@/components/feedback';
 import { Sheet } from '@/components/overlays';
 import { Button, IconButton } from '@/components/ui';
-import { NOTE_LIMITS, toggleChecklist, type Note } from '@/lib/domain/notes';
+import {
+  allLabels,
+  checklistToggleProblem,
+  clampNote,
+  isEmptyNote,
+  NOTE_LIMITS,
+  toggleChecklist,
+  type Note,
+} from '@/lib/domain/notes';
+import { addDays, todayIso } from '@/lib/domain/expenses';
 import { newId } from '@/lib/ids';
 import { fontFamily, useTheme } from '@/theme';
 import { useNotesStore, type NoteDraft } from '../state/notesStore';
 import { ChecklistEditor } from './ChecklistEditor';
 import { useNoteStyle } from './noteStyle';
 import { ColorPicker, LabelEditor } from './NoteOptions';
+import { ReminderField } from './ReminderField';
 
 type NoteEditorProps = {
   /** null = a new note. */
@@ -29,22 +39,32 @@ const blank = (checklist: boolean, label: string | null | undefined): NoteDraft 
   color: 'default',
   pinned: false,
   labels: label ? [label] : [],
+  remindOn: null,
 });
 
 /**
  * Edit a note, Keep style: title, text or checklist, colour, labels, pin, archive and
- * delete. Closing saves; a new note left empty is discarded.
+ * delete. Closing saves; a new note left empty is discarded, and a note emptied out is
+ * deleted (with Undo).
  */
 export function NoteEditor({ note, checklist = false, label, onClose }: NoteEditorProps) {
   const theme = useTheme();
   const toast = useToast();
   const store = useNotesStore();
   const [draft, setDraft] = useState<NoteDraft>(note ?? blank(checklist, label));
+  const [deleted] = useState(() => (store.extras ? 'Moved to Recently deleted' : 'Note deleted'));
   const style = useNoteStyle(draft.color);
+  const known = allLabels(store.notes);
   const change = (patch: Partial<NoteDraft>) => setDraft((current) => ({ ...current, ...patch }));
   const close = () => {
+    if (note && isEmptyNote(clampNote(draft))) return remove('Empty note deleted');
     store.saveNote(draft, note?.id);
     onClose();
+  };
+  const toggleList = () => {
+    const problem = checklistToggleProblem(draft);
+    if (problem) toast.show({ message: problem });
+    else setDraft((current) => toggleChecklist(current, newId));
   };
   const archive = () => {
     if (!note) return;
@@ -55,21 +75,21 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
       message: note.archived ? 'Note restored' : 'Note archived',
       action: {
         label: 'Undo',
-        onPress: () => store.patchNote(note.id, { archived: note.archived }),
+        onPress: () => store.patchNote(note.id, { archived: note.archived, pinned: draft.pinned }),
       },
     });
   };
-  const remove = () => {
+  function remove(message = deleted) {
     if (!note) return onClose();
     const removed = store.deleteNote(note.id);
     onClose();
     if (removed) {
       toast.show({
-        message: 'Note deleted',
+        message,
         action: { label: 'Undo', onPress: () => store.restoreNote(removed) },
       });
     }
-  };
+  }
   const input = {
     color: theme.colors.textPrimary,
     outlineWidth: 0,
@@ -93,8 +113,16 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
             icon={ListChecks}
             accessibilityLabel={draft.items ? 'Show as text' : 'Show as checklist'}
             selected={!!draft.items}
-            onPress={() => setDraft((current) => toggleChecklist(current, newId))}
+            onPress={toggleList}
           />
+          {store.extras ? (
+            <IconButton
+              icon={Bell}
+              accessibilityLabel={draft.remindOn ? 'Remove reminder' : 'Add reminder'}
+              selected={!!draft.remindOn}
+              onPress={() => change({ remindOn: draft.remindOn ? null : addDays(todayIso(), 1) })}
+            />
+          ) : null}
           {note ? (
             <IconButton
               icon={note.archived ? ArchiveRestore : Archive}
@@ -102,7 +130,7 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
               onPress={archive}
             />
           ) : null}
-          <IconButton icon={Trash2} accessibilityLabel="Delete note" onPress={remove} />
+          <IconButton icon={Trash2} accessibilityLabel="Delete note" onPress={() => remove()} />
           <View style={{ flex: 1 }} />
           <Button label="Done" onPress={close} />
         </View>
@@ -148,7 +176,14 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
             }}
           />
         )}
-        <LabelEditor labels={draft.labels} onChange={(labels) => change({ labels })} />
+        {draft.remindOn ? (
+          <ReminderField value={draft.remindOn} onChange={(remindOn) => change({ remindOn })} />
+        ) : null}
+        <LabelEditor
+          labels={draft.labels}
+          known={known}
+          onChange={(labels) => change({ labels })}
+        />
       </View>
       <View style={{ marginTop: theme.space[3] }}>
         <ColorPicker value={draft.color} onChange={(color) => change({ color })} />

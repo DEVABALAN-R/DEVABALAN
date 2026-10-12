@@ -1,7 +1,13 @@
 import {
   allLabels,
   checklistProgress,
+  checklistToggleProblem,
   clampNote,
+  dueNotes,
+  expiredTrash,
+  trashDaysLeft,
+  matchLabel,
+  sameContent,
   isEmptyNote,
   toggleChecklist,
   visibleNotes,
@@ -91,5 +97,73 @@ describe('notes', () => {
     const clamped = clampNote(note({ title: 'x'.repeat(200), labels: ['A', ' A ', '', 'B'] }));
     expect(clamped.title).toHaveLength(120);
     expect(clamped.labels).toEqual(['A', 'B']);
+  });
+});
+
+describe('edge cases', () => {
+  it('drops blank checklist items when saving', () => {
+    const items = [
+      { id: 'a', text: 'Milk', done: false },
+      { id: 'b', text: '  ', done: false },
+    ];
+    expect(clampNote(note({ items })).items).toEqual([items[0]]);
+  });
+
+  it('refuses a switch that would lose content', () => {
+    expect(checklistToggleProblem({ body: 'a\n'.repeat(201), items: null })).toMatch(/200 items/);
+    expect(checklistToggleProblem({ body: 'a\nb', items: null })).toBeNull();
+    const long = Array.from({ length: 70 }, (_, i) => ({
+      id: `${i}`,
+      text: 'x'.repeat(300),
+      done: false,
+    }));
+    expect(checklistToggleProblem({ body: '', items: long })).toMatch(/20,000 characters/);
+  });
+
+  it('spells a label like the one already in use', () => {
+    expect(matchLabel(' finance ', ['Finance', 'Home'])).toBe('Finance');
+    expect(matchLabel('Travel', ['Finance'])).toBe('Travel');
+  });
+
+  it('notices whether anything changed', () => {
+    const a = note({ title: 'T', labels: ['x'] });
+    expect(sameContent(a, { ...a })).toBe(true);
+    expect(sameContent(a, { ...a, labels: ['y'] })).toBe(false);
+  });
+});
+
+describe('reminders and Recently deleted', () => {
+  const day = 24 * 60 * 60 * 1000;
+  const now = Date.parse('2026-10-12T12:00:00Z');
+  const list = [
+    note({ id: 'due', remindOn: '2026-10-10' }),
+    note({ id: 'today', remindOn: '2026-10-12' }),
+    note({ id: 'later', remindOn: '2026-10-20' }),
+    note({ id: 'archived', remindOn: '2026-10-01', archived: true }),
+    note({ id: 'gone', remindOn: '2026-10-01', trashedAt: now - 8 * day }),
+    note({ id: 'fresh', trashedAt: now - 2 * day }),
+  ];
+
+  it('lists due reminders, oldest first, without archived or deleted notes', () => {
+    expect(dueNotes(list, '2026-10-12').map((n) => n.id)).toEqual(['due', 'today']);
+  });
+
+  it('keeps deleted notes out of the notes and in Recently deleted', () => {
+    const filter = { query: '', label: null, archived: false };
+    expect(visibleNotes(list, filter).others.map((n) => n.id)).not.toContain('fresh');
+    expect(visibleNotes(list, { ...filter, trash: true }).others.map((n) => n.id)).toEqual([
+      'fresh',
+      'gone',
+    ]);
+    expect(visibleNotes(list, { ...filter, reminders: true }).others.map((n) => n.id)).toEqual([
+      'due',
+      'today',
+      'later',
+    ]);
+  });
+
+  it('expires deleted notes after 7 days', () => {
+    expect(expiredTrash(list, now).map((n) => n.id)).toEqual(['gone']);
+    expect(trashDaysLeft(list[5], now)).toBe(5);
   });
 });

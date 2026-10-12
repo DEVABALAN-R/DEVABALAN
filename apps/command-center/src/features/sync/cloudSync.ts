@@ -56,12 +56,13 @@ const setStatus = (status: Parameters<ReturnType<typeof useSyncStatus.getState>[
   useSyncStatus.getState().set(status);
 
 function applyToStores(data: CloudData) {
-  const { notes, portfolio, recurring, goals, ...ledger } = data;
+  const { notes, portfolio, recurring, goals, noteExtras, ...ledger } = data;
   useExpenseStore.setState(ledger);
   // Without migration 0012 there is nowhere to keep recurring entries: Repeat is hidden.
   useRecurringStore.setState({ rules: recurring ?? [], available: recurring !== undefined });
   useGoalStore.setState({ goals: goals ?? [], available: goals !== undefined });
-  useNotesStore.setState({ notes });
+  // Without migration 0015, deleted notes cannot wait in Recently deleted: delete removes them.
+  useNotesStore.setState({ notes, extras: noteExtras === true });
   usePortfolioStore.setState(portfolio);
 }
 
@@ -123,6 +124,8 @@ export async function startCloudSync(): Promise<void> {
       hasUnsavedChanges,
     }),
   ];
+  // Notes deleted more than a week ago go for good (sent like any other change).
+  useNotesStore.getState().purgeTrash();
 }
 
 /**

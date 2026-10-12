@@ -1,24 +1,52 @@
 import type { ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
-import { Pin, Square, SquareCheck } from '@/components/icons';
+import { Bell, Pin, Square, SquareCheck } from '@/components/icons';
 import { Text } from '@/components/ui';
 import { useInteractionState } from '@/hooks/useInteractionState';
+import { parseIsoDate, todayIso } from '@/lib/domain/expenses';
 import { checklistProgress, type Note } from '@/lib/domain/notes';
 import { useTheme } from '@/theme';
 import { useNotesStore } from '../state/notesStore';
 import { useNoteStyle } from './noteStyle';
 
 const PREVIEW_ITEMS = 6;
+const reminderDay = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' });
+
+/** "Reminder · 12 Oct", in the warning colour once the day has come. */
+function ReminderChip({ date, muted }: { date: string; muted: 'textPrimary' | 'textSecondary' }) {
+  const theme = useTheme();
+  const due = date <= todayIso();
+  const tone = due ? 'danger' : muted;
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+      <Bell size={12} color={theme.colors[tone]} aria-hidden />
+      <Text variant="caption" color={tone}>
+        {`${due ? 'Due' : 'Reminder'} · ${reminderDay.format(parseIsoDate(date))}`}
+      </Text>
+    </View>
+  );
+}
 
 /** One note in the grid: title, text or checklist preview, labels. Press to edit. */
-export function NoteCard({ note, onOpen }: { note: Note; onOpen: () => void }) {
+export function NoteCard({
+  note,
+  onOpen,
+  readOnly = false,
+}: {
+  note: Note;
+  onOpen: () => void;
+  readOnly?: boolean;
+}) {
   const theme = useTheme();
   const style = useNoteStyle(note.color);
   const toggleItem = useNotesStore((state) => state.toggleItem);
   const progress = checklistProgress(note);
   const items = note.items ? [...note.items].sort((a, b) => Number(a.done) - Number(b.done)) : [];
   const summary = note.title || note.body.split('\n')[0] || note.items?.[0]?.text || 'Empty note';
-  const openLabel = `Open ${note.pinned ? 'pinned note' : 'note'}: ${summary}`;
+  const reminder = note.remindOn
+    ? `, reminder ${reminderDay.format(parseIsoDate(note.remindOn))}`
+    : '';
+  const openLabel = `Open ${note.pinned ? 'pinned note' : 'note'}: ${summary}${reminder}`;
   return (
     <View
       style={{
@@ -65,6 +93,7 @@ export function NoteCard({ note, onOpen }: { note: Note; onOpen: () => void }) {
                 role="checkbox"
                 accessibilityState={{ checked: item.done }}
                 accessibilityLabel={item.text || 'Empty item'}
+                disabled={readOnly}
                 onPress={() => toggleItem(note.id, item.id)}
                 hitSlop={4}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: theme.space[2] }}
@@ -83,8 +112,9 @@ export function NoteCard({ note, onOpen }: { note: Note; onOpen: () => void }) {
           })}
         </View>
       ) : null}
-      {progress || note.labels.length ? (
+      {progress || note.labels.length || note.remindOn ? (
         <NoteOpener label={openLabel} onOpen={onOpen} secondary>
+          {note.remindOn ? <ReminderChip date={note.remindOn} muted={style.muted} /> : null}
           {progress ? (
             <Text variant="caption" color={style.muted}>
               {`${progress.done}/${progress.total} done${items.length > PREVIEW_ITEMS ? ` · ${items.length - PREVIEW_ITEMS} more` : ''}`}
