@@ -1,9 +1,8 @@
 import type { Photo } from './photos';
 
 /**
- * Expense-manager domain model. Mirrors the planned Supabase tables
- * (docs/architecture/MODERNIZATION_PLAN.md §7) so the preview store can be
- * replaced by repositories without touching calculations or UI.
+ * Expense-manager domain model. Mirrors the Supabase tables (docs/architecture/DATABASE.md),
+ * so the preview store and the cloud repositories share calculations and UI.
  * All money is integer paise; dates are local calendar dates (YYYY-MM-DD).
  */
 

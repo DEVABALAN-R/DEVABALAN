@@ -42,12 +42,3 @@ export function deleteGoal(id: string): (() => void) | null {
     });
   };
 }
-
-/** Ties a fund to a goal, or unties it with null. */
-export function setFundGoal(fundId: string, goalId: string | null): void {
-  usePortfolioStore.setState({
-    funds: usePortfolioStore
-      .getState()
-      .funds.map((fund) => (fund.id === fundId ? { ...fund, goalId } : fund)),
-  });
-}

@@ -33,7 +33,7 @@ export function pageTitle(document: PortfolioDocument | null, route: Route): str
   return seoTitle || (title ? `${name} — ${title}` : name);
 }
 
-export function pageDescription(document: PortfolioDocument | null, route: Route): string {
+function pageDescription(document: PortfolioDocument | null, route: Route): string {
   if (!document) return '';
   const project = findProject(document, route);
   if (project) return project.summary || project.tagline || toPlainText(project.body, 200);

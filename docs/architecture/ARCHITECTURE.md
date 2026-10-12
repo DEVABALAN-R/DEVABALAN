@@ -1,8 +1,8 @@
 # Architecture (October 2026)
 
 How the Command Center is built today, why, and how it grows. The phase order is in
-[`ROADMAP.md`](ROADMAP.md); decisions are recorded one per file in [`decisions/`](decisions/README.md);
-the original audit is in [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) (historical). What the
+[`ROADMAP.md`](ROADMAP.md); decisions are recorded one per file in [`decisions/`](decisions/README.md).
+What the
 product is for: [`../PRODUCT.md`](../PRODUCT.md). Every Supabase call:
 [`DATA_ACCESS.md`](DATA_ACCESS.md); the schema: [`DATABASE.md`](DATABASE.md); failure states:
 [`EDGE_CASES.md`](EDGE_CASES.md); the October 2026 review: [`AUDIT_2026-10.md`](AUDIT_2026-10.md).

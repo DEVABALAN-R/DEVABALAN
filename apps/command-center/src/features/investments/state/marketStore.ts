@@ -39,6 +39,24 @@ export function describeRefresh(result: RefreshResult): string {
   return `${text[0].toUpperCase()}${text.slice(1)}.`;
 }
 
+/**
+ * Why "Update prices" failed. A browser cannot tell an undeployed function or a web address
+ * the function does not allow (both blocked by CORS) from being offline, so that case names
+ * all three.
+ */
+export function refreshFailure(error: unknown): string {
+  if (error instanceof RpcError && error.status === 404) {
+    return 'Automatic prices are not set up yet (see SUPABASE_SETUP.md). You can enter a NAV or price by hand.';
+  }
+  if (error instanceof RpcError && error.status === 0 && error.code === 'timeout') {
+    return 'The price update took too long. It may still finish; check again in a few minutes.';
+  }
+  if (error instanceof RpcError && error.status === 0) {
+    return 'The price function did not answer. If you are online, it is not deployed yet, or this web address is not in its ALLOWED_ORIGINS (SUPABASE_SETUP.md → Prices).';
+  }
+  return 'Prices could not be updated. Try again in a few minutes.';
+}
+
 export const useMarketStore = create<MarketStore>((set, get) => ({
   mode: 'preview',
   market: seedPortfolio().market,
@@ -65,10 +83,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       message = describeRefresh(await refreshMarket());
       await get().load();
     } catch (error) {
-      message =
-        error instanceof RpcError && error.status === 404
-          ? 'Automatic prices are not set up yet (see SUPABASE_SETUP.md). You can enter a NAV or price by hand.'
-          : 'Prices could not be updated. Check your connection and try again.';
+      message = refreshFailure(error);
     }
     set({ refreshing: false, notice: message });
     return message;

@@ -3,7 +3,8 @@
 What is done, what comes next and why, and the longer plan for turning the app into Devabalan's
 everyday personal command center. The architecture behind it is in
 [`ARCHITECTURE.md`](ARCHITECTURE.md); decisions are in [`decisions/`](decisions/README.md). The
-original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md)) is historical.
+original migration plan from the Vite app was completed and removed (in git history up to
+`cadcab9`).
 
 ## Where we are
 
@@ -11,7 +12,7 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 | --------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | Expo app, design system, CI | Done            | Web on Vercel (`devabalan-command-center`); iOS/Android from the same code                                                                   |
 | Sign-in and security        | Done            | Allowlisted sign-up, two-step sign-in (TOTP, aal2 in the database), sessions, idle sign-out                                                  |
-| Expense manager             | Done, saved     | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts on device                                          |
+| Expense manager             | Done, saved     | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts                                                    |
 | Notes                       | Done, saved     | Text and checklists, colours, pins, labels, archive                                                                                          |
 | Mutual funds                | **Done, saved** | AMFI search, purchases/SIPs/redemptions/dividends, SIP plans with due and missed instalments, FIFO cost, XIRR, allocation, growth, AMFI NAVs |
 | Stocks                      | **Done, saved** | Buys, sells, dividends, bonus, splits, FIFO P&L, XIRR, sectors, day change, end-of-day prices                                                |
@@ -19,7 +20,7 @@ original audit and phase design ([`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md
 | Overview                    | Done            | Net worth includes funds and stocks                                                                                                          |
 | Public portfolio            | **Built**       | The site's home page, edited in Dashboard → Portfolio and published as a snapshot; Dashboard button opens the app; needs migration 0010      |
 | Old app's data              | Retired         | Not imported (your decision); migration 0008 deletes it. The ledger starts from scratch                                                      |
-| Goals, Insights, Reports    | Not built       | Hidden from the app until they work (October 2026)                                                                                           |
+| App-wide Reports, Insights  | Not built       | Hidden from the app until they work; fund insights are under Mutual funds                                                                    |
 | Receipt photos              | **Done, saved** | Private Storage bucket, one-minute links; needs migration 0011                                                                               |
 | Expense extras              | **Done**        | Recurring entries (migration 0012), search with totals, CSV export, calculator in the amount; the calendar is the default view               |
 | Fund extras                 | **Done**        | Capital gains by financial year, goals, expense ratio and yearly cost, similar-fund hint, SIP step-up (migration 0013)                       |
@@ -71,8 +72,7 @@ You chose not to bring the old app's data over. Instead:
   then import) was built and then withdrawn before it was ever run
   ([ADR 0008](decisions/0008-start-from-scratch.md)).
 - **Funds and shares from Zerodha**
-  ([`supabase/one-time/20261010_investments_zerodha.sql`](../../supabase/one-time/20261010_investments_zerodha.sql),
-  committed at your request): every SIP instalment, buy and sale from your Zerodha tradebooks,
+  (a one-time SQL load, run once and since removed from the repository): every SIP instalment, buy and sale from your Zerodha tradebooks,
   checked against your Kite holdings (units, invested and shares match). It replaced a first load
   from the Excel tracker, which lacked trades the tradebooks have.
 - The expense manager starts empty: **Add starter categories** sets up the usual categories and a

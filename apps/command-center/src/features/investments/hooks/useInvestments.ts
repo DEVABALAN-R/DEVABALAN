@@ -18,7 +18,7 @@ import { useMarketStore } from '../state/marketStore';
 import { usePortfolioStore } from '../state/portfolioStore';
 
 /** The portfolio arrays (stable while nothing changes). */
-export function usePortfolio(): Portfolio {
+function usePortfolio(): Portfolio {
   return usePortfolioStore(
     useShallow((state) => ({
       funds: state.funds,

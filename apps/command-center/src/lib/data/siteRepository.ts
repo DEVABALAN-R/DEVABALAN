@@ -34,7 +34,7 @@ const isObject = (value: unknown): value is Raw =>
 const isRow = (value: unknown): value is Row => isObject(value) && typeof value.id === 'string';
 const str = (value: unknown) => (typeof value === 'string' ? value : '');
 
-export function publicationFromRemote(raw: unknown): Publication | null {
+function publicationFromRemote(raw: unknown): Publication | null {
   if (!isObject(raw) || typeof raw.handle !== 'string') return null;
   return {
     handle: raw.handle,

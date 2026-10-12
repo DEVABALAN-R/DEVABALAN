@@ -4,7 +4,7 @@ import { parseIsoDate } from '../expenses/dates';
  * Units are kept as integers of ten-thousandths (4 decimals, as stored), so adding and
  * splitting lots never drifts. NAVs are rupees per unit; value = units × NAV in paise.
  */
-export const UNIT_SCALE = 10_000;
+const UNIT_SCALE = 10_000;
 
 export const toUnits4 = (units: number) => Math.round(units * UNIT_SCALE);
 export const fromUnits4 = (units4: number) => units4 / UNIT_SCALE;
@@ -19,8 +19,6 @@ export const roundTo = (value: number, places: number) => {
   return Math.round(value * factor) / factor;
 };
 
-export const percent = (part: number, whole: number) => (whole ? (part / whole) * 100 : 0);
-
 const DAY_MS = 86_400_000;
 
 export const daysBetween = (from: string, to: string) =>
@@ -29,7 +27,7 @@ export const daysBetween = (from: string, to: string) =>
 export type CashFlow = { date: string; amount: number };
 
 /** A year of history before a return is annualised. */
-export const XIRR_MIN_DAYS = 365;
+const XIRR_MIN_DAYS = 365;
 
 /**
  * XIRR once the first money went in at least a year before `asOf`; null before that.
