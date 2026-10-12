@@ -270,3 +270,17 @@ export function safeEqual(a: string, b: string): boolean {
   }
   return diff === 0;
 }
+
+/**
+ * Whether a browser origin may call the function. An entry may hold one "*", which stands
+ * for letters, digits and hyphens only (one part of a host name, never a dot), so
+ * "https://app-*-team.vercel.app" admits that project's preview deployments and nothing else.
+ */
+export function originAllowed(origin: string, allowed: string[]): boolean {
+  return allowed.some((entry) => {
+    if (!entry.includes("*")) return entry === origin;
+    const [before, after] = entry.split("*", 2);
+    const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`^${escape(before)}[a-z0-9-]+${escape(after)}$`).test(origin);
+  });
+}

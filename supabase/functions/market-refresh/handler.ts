@@ -4,6 +4,7 @@ import {
   chunk,
   indiaToday,
   minusDays,
+  originAllowed,
   parseAmfi,
   parseBhavcopy,
   parseMfapiHistory,
@@ -17,9 +18,11 @@ function settings() {
     url: Deno.env.get("SUPABASE_URL") ?? "",
     key: serviceKey(),
     secret: Deno.env.get("MARKET_REFRESH_SECRET") ?? "",
+    // Vercel preview deployments of the project match the second entry ("*" is one label).
     origins: (
       Deno.env.get("ALLOWED_ORIGINS") ??
-        "https://devabalan-command-center.vercel.app,http://localhost:8081"
+        "https://devabalan-command-center.vercel.app," +
+          "https://devabalan-command-center-*-devabalan-r.vercel.app,http://localhost:8081"
     ).split(",").map((origin) => origin.trim()).filter(Boolean),
   };
 }
@@ -64,7 +67,7 @@ function serviceKey(): string {
 
 function cors(origin: string | null): Record<string, string> {
   const { origins } = settings();
-  const allowed = origin && origins.includes(origin) ? origin : origins[0] ?? "";
+  const allowed = origin && originAllowed(origin, origins) ? origin : origins[0] ?? "";
   return {
     "Access-Control-Allow-Origin": allowed,
     "Access-Control-Allow-Headers": "authorization, content-type, apikey, x-client-info",

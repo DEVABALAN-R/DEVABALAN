@@ -1,4 +1,5 @@
-import { describeRefresh } from '../marketStore';
+import { RpcError } from '@/lib/data/rpc';
+import { describeRefresh, refreshFailure } from '../marketStore';
 import { usePortfolioStore } from '../portfolioStore';
 
 describe('describeRefresh', () => {
@@ -84,5 +85,14 @@ describe('portfolio store', () => {
     expect(usePortfolioStore.getState().fundTxns).toEqual([]);
     usePortfolioStore.getState().restorePortfolio(previous);
     expect(usePortfolioStore.getState().funds).toHaveLength(1);
+  });
+});
+
+describe('refreshFailure', () => {
+  it('names the likely cause', () => {
+    expect(refreshFailure(new RpcError(404))).toMatch(/not set up yet/);
+    expect(refreshFailure(new RpcError(0, 'network'))).toMatch(/not deployed yet.*ALLOWED_ORIGINS/);
+    expect(refreshFailure(new RpcError(0, 'timeout'))).toMatch(/took too long/);
+    expect(refreshFailure(new RpcError(500))).toMatch(/Try again in a few minutes/);
   });
 });

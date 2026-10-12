@@ -317,8 +317,13 @@ the app. To stop: `select cron.unschedule('market-refresh-evening');` (and `-mor
 ### Other settings and troubleshooting
 
 - `ALLOWED_ORIGINS` (function secret, optional): the web addresses allowed to call the function,
-  comma-separated. Default: `https://devabalan-command-center.vercel.app,http://localhost:8081`.
-- "Automatic prices are not set up yet": the function is not deployed (step 1).
+  comma-separated. An entry may hold one `*` for one part of a host name (letters, digits,
+  hyphens). Default: `https://devabalan-command-center.vercel.app`,
+  `https://devabalan-command-center-*-devabalan-r.vercel.app` (Vercel previews) and
+  `http://localhost:8081`. Add your own domain here if the app runs on one.
+- "Automatic prices are not set up yet", or "The price function did not answer" while online:
+  the function is not deployed (step 1), or the app's web address is not in `ALLOWED_ORIGINS`.
+  "NAVs: not fetched yet" on the Funds page means no run has finished yet.
 - A failed NSE run followed by an ok BSE run is normal if NSE refuses downloads from the server.
   If both fail, the run's message says why; values keep the last known price, and a price entered
   by hand (Edit stock / Edit fund) is used when it is newer.
