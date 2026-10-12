@@ -3,7 +3,7 @@
 The Command Center (`apps/command-center`) uses one hosted Supabase project for sign-in and data.
 This page lists what is set up on the Supabase side and how to manage it. Connecting the app
 (the two `EXPO_PUBLIC_` variables on Vercel) is in
-[`apps/command-center/README.md` → Sign-in](apps/command-center/README.md#sign-in-phase-2).
+[`apps/command-center/README.md` → Sign-in](apps/command-center/README.md#sign-in).
 
 > **History.** Migrations 0001–0004 (the old app's workspace, conflict-safe saves, mutual funds,
 > and auth hardening) have been applied and were removed from the repository with their rollback
@@ -149,10 +149,8 @@ in the comment at the top of the file.
   hosted project), create the bucket by hand with those settings and rerun the file.
 - **No email:** messages from the contact form appear under Portfolio → Messages only.
 
-**Starting content (optional):** [`supabase/one-time/20261011_portfolio_from_resume.sql`](supabase/one-time/20261011_portfolio_from_resume.sql)
-fills the portfolio from the résumé (profile, links, skills, projects, experience, education).
-Run it once after this migration; it stops without changing anything if the portfolio already has
-content, and nothing is public until you Publish.
+**Starting content:** fill the portfolio in Dashboard → Portfolio (profile, links, skills,
+projects, experience, education). Nothing is public until you Publish.
 
 After running it: add `PORTFOLIO_HANDLE` to the Vercel project and redeploy
 ([`apps/portfolio/README.md`](apps/portfolio/README.md#deploy-on-vercel)); the portfolio is then
@@ -220,35 +218,12 @@ comment at the top of the file.
   their daily NAV and fetches older NAVs from mfapi.in. The Edge Function needs no redeploy.
 - **Before this migration** Stocks → **vs Index** says which file to run.
 
-## Everything up to now in one file
+## Bringing in existing funds and shares
 
-[`supabase/one-time/20261010_update_all.sql`](supabase/one-time/20261010_update_all.sql) is
-migration 0007, migration 0008 and the Zerodha load below, in that order, so one run brings the
-database up to date. It is safe whether or not 0007 or 0008 were already run, stops at once if
-0005 or 0006 are missing, and leaves entries, accounts, categories, people and notes as they are.
-Run it once, then migration 0009. Do not run it after 0009 or any later migration (it holds the
-0007 versions of the load and save functions). To reload funds and stocks later, run the Zerodha file on its own.
-
-## Your funds and stocks from Zerodha (one-time)
-
-[`supabase/one-time/20261010_investments_zerodha.sql`](supabase/one-time/20261010_investments_zerodha.sql)
-replaces your funds and stocks with the history in your Zerodha Console tradebooks: every SIP
-instalment, buy and sale with Zerodha's own dates, units, NAVs and prices. Entries, accounts,
-categories, people and notes are not touched. It runs as you, with the same Row Level Security and
-checks as the app, and keeps nothing if the units, invested amounts or shares differ from your
-Kite holdings.
-
-1. Close the app (or sign out). Migrations 0005–0007 must be in place (after 0009, each fund also
-   gets its ISIN).
-2. SQL Editor → paste the whole file → Run.
-3. Open the app again.
-
-Invested amounts are units × NAV and shares × price, as Kite shows them (stamp duty and charges
-are not in the tradebooks). Today's values use the NAVs and prices from your Kite screen as prices
-entered by hand until the price function runs. Run the file again after the first price update so
-each fund links to its AMFI scheme by ISIN (do it before adding SIP plans: it replaces funds and
-stocks). It holds personal financial data and was committed at the owner's request, although the
-repository is public.
+Use **Import** on the Mutual funds and Stocks pages with your broker's tradebooks
+([`docs/features/INVESTMENTS.md`](docs/features/INVESTMENTS.md#import-a-tradebook-zerodha)): you
+review every trade before anything is saved. The one-time SQL loads used while the app was being
+built have been run and were removed from the repository.
 
 ## Prices: the market-refresh function
 

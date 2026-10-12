@@ -20,8 +20,8 @@ through Zerodha; a personal Excel tracker also recorded them, with gaps.
   replaces only funds and stocks and refuses to commit unless units, invested amounts and shares
   match the owner's Kite holdings. A first load from the Excel tracker was replaced the same day:
   the sheet lacked trades (a later SIP instalment, extra buys and sales) that the tradebooks have.
-  The file holds personal data; it is committed in `supabase/one-time/` at the owner's request,
-  although the repository is public.
+  The file held personal data; after it was run it was removed from the repository (October
+  2026). Later loads use the in-app tradebook import ([ADR 0009](0009-tradebook-import-on-device.md)).
 - The next importer is built around the export file of the app used today, together with export.
 
 ## Consequences

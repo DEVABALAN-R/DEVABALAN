@@ -2,7 +2,7 @@
 
 > Scope: the Expenses module of `apps/command-center`.
 > References: the owner's current Vite expense tracker (calendar view) and the Money Manager app by Realbyte Inc. (transaction entry, category grid with subcategories, stats pie, category management).
-> Status (Oct 2026): **implemented** in `apps/command-center` against an **in-memory preview store** seeded with labelled sample data ("Preview · not saved"; changes are lost on reload). The flows, rules and calculations are final. Persistence moves to Supabase in Phases 2–3 (§9). Where things live: §10.
+> Status (Oct 2026): **implemented** in `apps/command-center` and saved to Supabase when signed in (a labelled sample-data preview otherwise). Later additions (recurring entries, search and CSV export, receipts, the calculator) are described in [`../features/README.md`](../features/README.md).
 
 ---
 

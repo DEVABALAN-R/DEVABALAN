@@ -2,7 +2,7 @@ import type { Picked, PreparedFile, PreparedImage } from './media';
 
 export type { Picked, PreparedFile, PreparedImage } from './media';
 
-export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export const canPickPdf = true;
 
 const FULL_WIDTH = 1600;

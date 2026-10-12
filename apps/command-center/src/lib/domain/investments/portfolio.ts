@@ -101,7 +101,7 @@ export function stockRows(portfolio: Portfolio, market: MarketData, today: strin
 
 type Positioned = { position: FundPosition | StockPosition; dayChange?: number };
 
-export function totalsOf(rows: Positioned[], today: string, dayChange: number): Totals {
+function totalsOf(rows: Positioned[], today: string, dayChange: number): Totals {
   const flows: CashFlow[] = rows.flatMap((row) => row.position.flows);
   const value = rows.reduce((sum, row) => sum + row.position.value, 0);
   if (value) flows.push({ date: today, amount: value });

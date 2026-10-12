@@ -6,7 +6,7 @@ import { supabaseConfig } from './supabaseConfig';
  * bucket. Storage policies allow writes only in the signed-in user's own folder, with
  * two-step sign-in, and never overwrite a file: each upload gets a new random name.
  */
-export const MEDIA_BUCKET = 'portfolio-media';
+const MEDIA_BUCKET = 'portfolio-media';
 
 export const mediaUrl = (path: string) =>
   supabaseConfig ? `${supabaseConfig.url}/storage/v1/object/public/${MEDIA_BUCKET}/${path}` : '';
@@ -42,7 +42,7 @@ export const removeMedia = (paths: string[]) => remove(MEDIA_BUCKET, paths);
  * Receipt photos in the private `receipts` bucket (migration 0011): only the owner can
  * read, add or delete them, and they are shown through links that expire after a minute.
  */
-export const RECEIPT_BUCKET = 'receipts';
+const RECEIPT_BUCKET = 'receipts';
 
 export const uploadReceiptFile = (path: string, body: Blob, contentType: string) =>
   upload(RECEIPT_BUCKET, path, body, contentType, 'private, max-age=3600');

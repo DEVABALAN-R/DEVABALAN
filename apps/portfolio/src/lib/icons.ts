@@ -188,5 +188,3 @@ export const ICONS: Record<string, IconNode> = {
     ['path', { d: 'm19 9-5 5-4-4-3 3' }],
   ],
 };
-
-export const ICON_NAMES = Object.keys(ICONS);

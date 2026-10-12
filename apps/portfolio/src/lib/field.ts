@@ -8,7 +8,7 @@ export type FieldNode = FieldSkill & { x: number; y: number; phase: number };
 export type FieldEdge = [number, number];
 export type Area = { x: number; y: number; width: number; height: number };
 
-export function seeded(seed: string): () => number {
+function seeded(seed: string): () => number {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i += 1) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
   return () => {

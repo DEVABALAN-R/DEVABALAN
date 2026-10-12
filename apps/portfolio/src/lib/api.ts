@@ -6,13 +6,13 @@ import type { SiteConfig } from './config';
  */
 type Rpc = 'portfolio_public' | 'portfolio_preview' | 'portfolio_contact';
 
-export class ApiError extends Error {
+class ApiError extends Error {
   constructor(readonly status: number) {
     super(`Request failed (${status})`);
   }
 }
 
-export async function callRpc<T>(
+async function callRpc<T>(
   config: SiteConfig,
   name: Rpc,
   args: Record<string, unknown>,

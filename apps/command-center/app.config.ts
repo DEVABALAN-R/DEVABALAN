@@ -6,14 +6,14 @@ const config: ExpoConfig = {
   name: 'Devabalan',
   slug: 'devabalan-command-center',
   scheme: 'devabalan',
-  version: '0.1.0',
+  version: '1.0.0',
   orientation: 'default',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   ios: { supportsTablet: true },
   android: {
     adaptiveIcon: {
-      backgroundColor: '#EEF0FB',
+      backgroundColor: '#0B0D10',
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',

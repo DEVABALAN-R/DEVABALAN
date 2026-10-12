@@ -34,7 +34,7 @@ export function safeUrl(v: unknown): string | null {
   }
 }
 
-export const MEDIA_PATH = /^[0-9a-f-]{36}\/[0-9a-f-]{36}(-sm)?\.(webp|jpe?g|png|avif)$/;
+const MEDIA_PATH = /^[0-9a-f-]{36}\/[0-9a-f-]{36}(-sm)?\.(webp|jpe?g|png|avif)$/;
 const FILE_PATH = /^[0-9a-f-]{36}\/[0-9a-f-]{36}\.pdf$/;
 
 export function media(v: unknown): Media | null {

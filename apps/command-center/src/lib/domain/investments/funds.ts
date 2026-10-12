@@ -192,9 +192,6 @@ export function fundCategoryLabel(category: string): string {
   return (parts.length > 1 ? parts.slice(1).join(' - ') : category).trim() || 'Unclassified';
 }
 
-/** Equity-oriented funds count as long term after a year (shown as an indication only). */
-export const isEquityFund = (fund: Fund) => fundAssetClass(fund.category) === 'Equity';
-
 export function fundXirr(position: FundPosition, asOf: string): number | null {
   const flows = [...position.flows];
   if (position.value) flows.push({ date: asOf, amount: position.value });

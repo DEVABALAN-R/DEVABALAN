@@ -18,7 +18,7 @@ const FORMATS: Record<string, [RegExp, string]> = {
 };
 
 /** https://… (or mailto: when allowed), as the database's valid_link(). */
-export function isSafeUrl(value: string, allowMail = true): boolean {
+function isSafeUrl(value: string, allowMail = true): boolean {
   if (allowMail && /^mailto:[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(value)) return true;
   return /^https:\/\/[A-Za-z0-9.-]+(:\d{1,5})?(\/[^\s<>"]*)?$/.test(value) && value.length <= 500;
 }

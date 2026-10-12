@@ -84,7 +84,7 @@ const STATUSES: readonly ProjectStatus[] = [
 ];
 const ACCENTS: readonly Accent[] = ['ember', 'ion', 'lime', 'violet', 'rose', 'sand'];
 
-export function galleryItem(v: unknown): GalleryItem | null {
+function galleryItem(v: unknown): GalleryItem | null {
   const g = obj(v);
   const m = media(g);
   return m

@@ -11,9 +11,9 @@ type Fields = { name: string; email: string; message: string };
 type Status = 'idle' | 'sending' | ContactResult | 'network';
 
 const EMAIL = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
-export const MESSAGE_MAX = 4000;
+const MESSAGE_MAX = 4000;
 
-export function validate(fields: Fields): Partial<Record<keyof Fields, string>> {
+function validate(fields: Fields): Partial<Record<keyof Fields, string>> {
   const errors: Partial<Record<keyof Fields, string>> = {};
   if (!fields.name.trim()) errors.name = 'Please add your name.';
   else if (fields.name.trim().length > 100)

@@ -1,12 +1,7 @@
 # Command Center (Expo)
 
-The cross-platform app (iOS, Android, web) for Devabalan's finances and notes, built in phases.
-The current phase order is in [`ROADMAP.md`](../../docs/architecture/ROADMAP.md); the original
-design is in [`MODERNIZATION_PLAN.md`](../../docs/architecture/MODERNIZATION_PLAN.md).
-
-**Status: Phases 1–2, 3.1–3.2 and the investment pages are done** (design system, sign-in with
-two-step codes, the expense manager, Notes, mutual funds and stocks saved to Supabase). The
-ledger starts from scratch; next is importing from the export of the app you use today.
+The cross-platform app (iOS, Android, web) for Devabalan's finances and notes. What comes next is
+in [`ROADMAP.md`](../../docs/architecture/ROADMAP.md).
 
 - **Expense manager** (Expenses › Transactions, Stats, Budget, Categories, plus Accounts and the
   add/edit sheet): add, edit and delete entries, categories, budgets and accounts. Flows and
@@ -31,13 +26,13 @@ ledger starts from scratch; next is importing from the export of the app you use
   served as this site's home page by `api/site.mjs` (built by `npm run build:site`); how it
   works: [`docs/features/PORTFOLIO.md`](../../docs/features/PORTFOLIO.md).
 
-**Signed in** (migrations 0005–0012 applied), every page loads and saves **your own** data, and
+**Signed in** (migrations 0005–0014 applied), every page loads and saves **your own** data, and
 the badge by the page title reads Saved / Saving… / Offline · will retry. Prices come from the
 `market-refresh` Edge Function (see [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#prices-the-market-refresh-function)).
 **Without the Supabase settings** the app runs as a labelled preview on sample data, and a
 "Preview · not saved" badge says every change is lost on reload.
 
-## Sign-in (Phase 2)
+## Sign-in
 
 Without Supabase settings the app runs as a labelled **preview** and asks for no sign-in. With
 them, every `/dashboard` page requires a session (the guard is convenience; Row Level Security

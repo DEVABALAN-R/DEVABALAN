@@ -16,7 +16,7 @@ export type PreparedImage = {
 export type PreparedFile = { blob: Blob; name: string; size: number };
 export type Picked<T> = T | { error: string } | null;
 
-export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 export const canPickPdf = false;
 
 export async function pickImage(): Promise<Picked<PreparedImage>> {

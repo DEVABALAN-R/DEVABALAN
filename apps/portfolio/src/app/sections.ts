@@ -27,7 +27,7 @@ const ORDER: SectionKey[] = [
   'contact',
 ];
 
-export function hasContent(document: PortfolioDocument, key: SectionKey): boolean {
+function hasContent(document: PortfolioDocument, key: SectionKey): boolean {
   switch (key) {
     case 'projects':
       return document.projects.length > 0;
