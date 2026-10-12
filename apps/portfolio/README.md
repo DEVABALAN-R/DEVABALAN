@@ -1,6 +1,6 @@
-# Devabalan portfolio (public site)
+# Ledgerly portfolio (public site)
 
-The public developer portfolio. Its content is edited in the Command Center (Dashboard →
+The public developer portfolio. Its content is edited in Ledgerly (Dashboard →
 Portfolio) and stored in Supabase; this site shows the version you last **published**. How it
 fits together: [`docs/features/PORTFOLIO.md`](../../docs/features/PORTFOLIO.md),
 [ADR 0010](../../docs/architecture/decisions/0010-public-portfolio-site.md) and
@@ -26,7 +26,7 @@ local runs; see [`.env.example`](.env.example)):
 | -------------------------- | -------- | ----------------------------------------------------------------------------------- |
 | `SUPABASE_URL`             | Yes¹     | The Supabase Project URL (`https://<ref>.supabase.co`)                              |
 | `SUPABASE_PUBLISHABLE_KEY` | Yes¹     | The **publishable** key (`sb_publishable_…`). Never the secret or service-role key  |
-| `PORTFOLIO_HANDLE`         | Yes      | The site address set in Dashboard → Portfolio → Profile (e.g. `devabalan`)          |
+| `PORTFOLIO_HANDLE`         | Yes      | The site address set in Dashboard → Portfolio → Profile (e.g. `your-name`)          |
 | `SITE_URL`                 | No       | This site's public address, used for canonical links, the sitemap and social cards  |
 | `DASHBOARD_URL`            | No       | Where the Dashboard button goes: `/dashboard` or an https address. Unset: no button |
 
@@ -81,12 +81,12 @@ When adding or updating packages, use npm 11.
 
 ### As the dashboard's home page (how it is set up)
 
-Nothing extra to create: the existing Vercel project **devabalan-command-center** (Root Directory
+Nothing extra to create: the existing Vercel project **ledgerly** (Root Directory
 `apps/command-center`) builds both apps. Its `vercel.json` runs `npm run build:web && npm run
 build:site`; `build:site` installs and builds this app and copies its browser files to
 `dist/site/` and its server bundle to `site-server/`, used by `api/site.mjs`.
 
-1. Settings → Environment Variables: add `PORTFOLIO_HANDLE` (e.g. `devabalan`) for all
+1. Settings → Environment Variables: add `PORTFOLIO_HANDLE` (e.g. `your-name`) for all
    environments. The Supabase values are the dashboard's own. Optional: `SITE_URL`.
 2. Settings → Build and Deployment → Root Directory: keep **Include files outside the root
    directory in the Build Step** on (the default). Without it the build stops with "apps/portfolio

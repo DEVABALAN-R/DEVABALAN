@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 import { GradientFill, Text } from '@/components/ui';
+import { BRAND } from '@/branding';
 import { useTheme } from '@/theme';
 
 /** Gradient roundel with a white monogram; optional wordmark. */
@@ -23,12 +24,12 @@ export function BrandMark({ size = 40, wordmark = true }: { size?: number; wordm
           variant="title"
           style={{ color: theme.colors.onBrand, fontSize: size * 0.48, lineHeight: size * 0.6 }}
         >
-          D
+          {BRAND.name[0]}
         </Text>
       </View>
       {wordmark ? (
         <Text variant="title" numberOfLines={1}>
-          Devabalan
+          {BRAND.name}
         </Text>
       ) : null}
     </View>

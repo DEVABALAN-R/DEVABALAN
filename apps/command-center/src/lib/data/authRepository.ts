@@ -78,6 +78,54 @@ export async function updatePassword(password: string): Promise<AuthResult> {
   }
 }
 
+/** The name the user set in Settings (stored in their Auth profile), or null. */
+export function displayNameOf(user: { user_metadata?: unknown }): string | null {
+  const meta = user.user_metadata as { display_name?: unknown } | undefined;
+  const name = typeof meta?.display_name === 'string' ? meta.display_name.trim() : '';
+  return name ? name.slice(0, 60) : null;
+}
+
+/** Saves the name shown in the app (Auth profile metadata; no table needed). */
+export async function updateDisplayName(name: string): Promise<AuthResult> {
+  const auth = getAuth();
+  if (!auth) return NOT_CONFIGURED;
+  try {
+    const { error } = await auth.updateUser({ data: { display_name: name.trim().slice(0, 60) } });
+    return error ? { ok: false, message: GENERIC } : { ok: true };
+  } catch {
+    return { ok: false, message: GENERIC };
+  }
+}
+
+/**
+ * Starts an email change. Supabase sends a confirmation link to the new address (and to
+ * the current one when secure email change is on); the email changes only once confirmed.
+ * The account, its data and its two-step sign-in stay the same.
+ */
+export async function requestEmailChange(email: string): Promise<AuthResult> {
+  const auth = getAuth();
+  if (!auth) return NOT_CONFIGURED;
+  try {
+    const { error } = await auth.updateUser(
+      { email: email.trim() },
+      { emailRedirectTo: Linking.createURL('/dashboard/settings') },
+    );
+    if (!error) return { ok: true };
+    if (error.code === 'email_exists') {
+      return { ok: false, message: 'That email is already used by another account.' };
+    }
+    if (error.status === 429) {
+      return { ok: false, message: 'Too many requests. Wait a few minutes and try again.' };
+    }
+    if (error.code === 'validation_failed' || error.code === 'email_address_invalid') {
+      return { ok: false, message: 'Enter a valid email address.' };
+    }
+    return { ok: false, message: GENERIC };
+  } catch {
+    return { ok: false, message: GENERIC };
+  }
+}
+
 /** Ends the session on this device only. */
 export async function signOut(): Promise<void> {
   try {

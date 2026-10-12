@@ -9,6 +9,7 @@ import { useTheme, type ColorRoles } from '@/theme';
 import { useSession } from '@/features/auth/sessionStore';
 import { AccountCard } from './AccountCard';
 import { DeviceSignInCard } from './DeviceSignInCard';
+import { ProfileCard } from './ProfileCard';
 import { SecurityCard } from './SecurityCard';
 
 const themeSegments = [
@@ -61,6 +62,7 @@ export function SettingsScreen() {
         </BentoCell>
         <BentoCell>
           <AccountCard index={1} />
+          {signedIn ? <ProfileCard index={2} /> : null}
           {signedIn ? <SecurityCard index={2} /> : null}
           {signedIn ? <DeviceSignInCard index={3} /> : null}
         </BentoCell>

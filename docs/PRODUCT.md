@@ -5,7 +5,7 @@ differ, the code wins here, and the difference is listed under [Open questions](
 
 ## In one sentence
 
-**Devabalan Command Center is a private money-and-notes workspace for its one owner that helps
+**Ledgerly is a private money-and-notes workspace for its one owner that helps
 them see and manage everyday spending, mutual funds and shares, and a public developer portfolio
 in one place, by keeping everything in the owner's own secured Supabase database and showing it
 on web and phone from a single app.**

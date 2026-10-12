@@ -15,7 +15,7 @@ under `/dashboard`).
 ## Decision
 
 - **One Vercel project, one address.** The dashboard's project
-  (`devabalan-command-center`) also builds `apps/portfolio` (`npm run build:site` after the Expo
+  (`ledgerly`) also builds `apps/portfolio` (`npm run build:site` after the Expo
   export) and serves it from one function, `api/site.mjs`:
   - `/`, `/projects/…`, `/preview`, `/sitemap.xml` and `/robots.txt` → the portfolio
     (server-rendered, cached for 60 seconds);

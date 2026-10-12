@@ -1,6 +1,6 @@
-# Command Center (Expo)
+# Ledgerly app (Expo)
 
-The cross-platform app (iOS, Android, web) for Devabalan's finances and notes. What comes next is
+The cross-platform app (iOS, Android, web) for personal finances and notes. What comes next is
 in [`ROADMAP.md`](../../docs/architecture/ROADMAP.md).
 
 - **Expense manager** (Expenses › Transactions, Stats, Budget, Categories, plus Accounts and the
@@ -51,7 +51,7 @@ Never use the **secret** (`sb_secret_…`) or **service_role** key: the app refu
 ### On Vercel (the live site)
 
 1. Open the Vercel project that builds `apps/command-center` (named
-   **devabalan-command-center**; it serves `devabalan-command-center.vercel.app`).
+   **ledgerly**; it serves `ledgerly.vercel.app`).
 2. **Settings → Environment Variables**: add both variables with the exact names above,
    **Environments: All Environments** (at least Production and Preview). Leave **Sensitive**
    off: Vercel refuses it for public (`EXPO_PUBLIC_`) variables, and these values are public by
@@ -71,7 +71,7 @@ Copy `.env.example` to `.env.local`, fill in the same two values, and restart wi
 ### Supabase redirect URLs
 
 In Supabase → Authentication → URL configuration, add the app's URLs to the redirect allowlist,
-for example `https://devabalan-command-center.vercel.app/reset-password` and
+for example `https://ledgerly.vercel.app/reset-password` and
 `http://localhost:8081/reset-password`.
 
 ### What you get

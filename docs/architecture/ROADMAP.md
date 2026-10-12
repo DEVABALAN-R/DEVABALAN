@@ -1,6 +1,6 @@
-# Command Center roadmap (October 2026)
+# Ledgerly roadmap (October 2026)
 
-What is done, what comes next and why, and the longer plan for turning the app into Devabalan's
+What is done, what comes next and why, and the longer plan for turning the app into an
 everyday personal command center. The architecture behind it is in
 [`ARCHITECTURE.md`](ARCHITECTURE.md); decisions are in [`decisions/`](decisions/README.md). The
 original migration plan from the Vite app was completed and removed (in git history up to
@@ -10,7 +10,7 @@ original migration plan from the Vite app was completed and removed (in git hist
 
 | Area                        | Status          | Notes                                                                                                                                        |
 | --------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Expo app, design system, CI | Done            | Web on Vercel (`devabalan-command-center`); iOS/Android from the same code                                                                   |
+| Expo app, design system, CI | Done            | Web on Vercel (`ledgerly`); iOS/Android from the same code                                                                                   |
 | Sign-in and security        | Done            | Allowlisted sign-up, two-step sign-in (TOTP, aal2 in the database), sessions, idle sign-out                                                  |
 | Expense manager             | Done, saved     | Transactions, calendar, stats, budgets, categories, accounts, people and splits, receipts                                                    |
 | Notes                       | Done, saved     | Text and checklists, colours, pins, labels, archive, reminders, Recently deleted (migration 0015)                                            |
@@ -103,7 +103,7 @@ add content, Preview, Publish. Later: email notification of new messages, analyt
 
 You will share an export from the app you use today; the importer is built around that file:
 upload, match its columns, a preview with duplicates flagged, then import. It runs on the server
-and the file is not kept. Export from the Command Center comes with it, in the same shape.
+and the file is not kept. Export from Ledgerly comes with it, in the same shape.
 
 ### Price updates live
 

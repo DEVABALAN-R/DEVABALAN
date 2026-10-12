@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui';
-import { previewProfile } from '@/features/preview/notice';
+import { useDisplayName } from '@/features/auth/useDisplayName';
 import { greeting } from '@/lib/formatting/greeting';
 import { useTheme } from '@/theme';
 import { BrandMark } from './BrandMark';
@@ -9,6 +9,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 export function MobileHeader() {
   const theme = useTheme();
+  const name = useDisplayName();
   const insets = useSafeAreaInsets();
   return (
     <View
@@ -28,7 +29,7 @@ export function MobileHeader() {
           {greeting()}
         </Text>
         <Text variant="bodyStrong" numberOfLines={1}>
-          {previewProfile.name}
+          {name}
         </Text>
       </View>
       <ThemeToggle />

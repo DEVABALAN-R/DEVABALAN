@@ -1,6 +1,11 @@
 import { useEffect, type ReactNode } from 'react';
 import { AppState, Platform } from 'react-native';
-import { currentSession, onAuthChange, setAutoRefresh } from '@/lib/data/authRepository';
+import {
+  currentSession,
+  displayNameOf,
+  onAuthChange,
+  setAutoRefresh,
+} from '@/lib/data/authRepository';
 import { needsSecondStep } from '@/lib/data/mfaRepository';
 import { isSupabaseConfigured } from '@/lib/data/supabaseClient';
 import { useExpenseStore } from '@/features/expenses/state/expenseStore';
@@ -25,23 +30,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     let active = true;
     let latest = 0;
     // A password-only session of an account with two-step sign-in still owes its code.
-    const signedIn = (email: string | null) => {
+    const signedIn = (user: { email?: string; user_metadata?: unknown }) => {
       const run = ++latest;
+      const email = user.email ?? null;
+      const name = displayNameOf(user);
       void needsSecondStep().then((needsCode) => {
         if (!active || run !== latest) return;
-        if (needsCode) session.setNeedsCode(email);
-        else session.setSignedIn(email);
+        if (needsCode) session.setNeedsCode(email, name);
+        else session.setSignedIn(email, name);
       });
     };
     void currentSession().then((current) => {
       if (!active) return;
-      if (current) signedIn(current.user.email ?? null);
+      if (current) signedIn(current.user);
       else session.setSignedOut();
     });
     const unsubscribe = onAuthChange((event, next) => {
       if (event === 'PASSWORD_RECOVERY') session.setRecovery(true);
       if (next) {
-        signedIn(next.user.email ?? null);
+        signedIn(next.user);
       } else {
         latest += 1;
         // Signed out (here, elsewhere, or the session expired): stop syncing first, so

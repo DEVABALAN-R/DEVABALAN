@@ -157,20 +157,20 @@ Deno.test("small helpers", () => {
 Deno.test("allows listed origins and the project's preview deployments only", () => {
   const list = [
     "https://app.example",
-    "https://devabalan-command-center-*-devabalan-r.vercel.app",
+    "https://ledgerly-*-studio.vercel.app",
   ];
   strictEqual(originAllowed("https://app.example", list), true);
   strictEqual(
-    originAllowed("https://devabalan-command-center-zmkzjqvnc-devabalan-r.vercel.app", list),
+    originAllowed("https://ledgerly-zmkzjqvnc-studio.vercel.app", list),
     true,
   );
   strictEqual(originAllowed("https://evil.example", list), false);
   strictEqual(
-    originAllowed("https://devabalan-command-center-x.evil-devabalan-r.vercel.app", list),
+    originAllowed("https://ledgerly-x.evil-studio.vercel.app", list),
     false,
   );
   strictEqual(
-    originAllowed("https://devabalan-command-center--devabalan-r.vercel.app", list),
+    originAllowed("https://ledgerly--studio.vercel.app", list),
     false,
   );
   strictEqual(originAllowed("https://app.example.evil", list), false);

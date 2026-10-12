@@ -122,6 +122,7 @@ export { default as Trash2 } from 'lucide-react-native/icons/trash';
 export { default as TrendingDown } from 'lucide-react-native/icons/trending-down';
 export { default as TrendingUp } from 'lucide-react-native/icons/trending-up';
 export { default as UserPlus } from 'lucide-react-native/icons/user-plus';
+export { default as UserRound } from 'lucide-react-native/icons/user-round';
 export { default as Users } from 'lucide-react-native/icons/users';
 export { default as Utensils } from 'lucide-react-native/icons/utensils';
 export { default as Wallet } from 'lucide-react-native/icons/wallet';

@@ -1,10 +1,10 @@
-# Devabalan Command Center
+# Ledgerly
 
-A private, single-owner workspace for personal finance and notes, with a public developer
+Ledgerly, by StoicBytes, is a private, single-owner workspace for personal finance and notes, with a public developer
 portfolio as its home page. One Expo codebase serves the app on the web, iOS and Android;
 Supabase provides authentication, the database and storage. Amounts are in Indian rupees (INR).
 
-**Live:** [devabalan-command-center.vercel.app](https://devabalan-command-center.vercel.app)
+**Live:** [ledgerly.vercel.app](https://ledgerly.vercel.app)
 (portfolio at `/`, the app at `/dashboard`).
 
 ## Features
@@ -104,5 +104,5 @@ See [`SECURITY.md`](SECURITY.md).
 
 ## License
 
-Copyright © 2026 Devabalan R. All rights reserved. The source is published for reference; no
+Copyright © 2026 StoicBytes. All rights reserved. The source is published for reference; no
 licence to use, copy or distribute it is granted.
