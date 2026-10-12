@@ -113,8 +113,8 @@ These limits make abuse slow and bounded, not impossible. Messages are visible o
 
 1. Run `supabase/migrations/202610120010_portfolio.sql` (see
    [`SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md#public-portfolio-migration-0010)).
-2. In the existing Vercel project (`devabalan-command-center`) add the variable
-   `PORTFOLIO_HANDLE` (e.g. `devabalan`) and redeploy. The portfolio uses the dashboard's own
+2. In the existing Vercel project (`ledgerly`) add the variable
+   `PORTFOLIO_HANDLE` (e.g. `your-name`) and redeploy. The portfolio uses the dashboard's own
    Supabase settings ([`apps/portfolio/README.md`](../../apps/portfolio/README.md#deploy-on-vercel)).
 3. In the dashboard → Portfolio → Profile, set the site address (handle) to the same value as
    `PORTFOLIO_HANDLE`; add content; Preview; Publish. Leave "Public site URL" empty: the

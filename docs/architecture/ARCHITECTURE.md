@@ -1,6 +1,6 @@
 # Architecture (October 2026)
 
-How the Command Center is built today, why, and how it grows. The phase order is in
+How Ledgerly is built today, why, and how it grows. The phase order is in
 [`ROADMAP.md`](ROADMAP.md); decisions are recorded one per file in [`decisions/`](decisions/README.md).
 What the
 product is for: [`../PRODUCT.md`](../PRODUCT.md). Every Supabase call:
@@ -9,7 +9,7 @@ product is for: [`../PRODUCT.md`](../PRODUCT.md). Every Supabase call:
 
 ## 1. What it is
 
-A personal command center for one owner (Devabalan): expenses and budgets, people and splits,
+A personal finance workspace for one owner: expenses and budgets, people and splits,
 notes, mutual funds and stocks today; goals, other assets and personal trackers next. One Expo
 codebase runs on the web (Vercel), iOS and Android. Supabase provides sign-in, the Postgres
 database and server functions. The site's home page is a public developer portfolio
@@ -23,7 +23,7 @@ flowchart LR
   owner([Owner: browser / phone])
   visitor([Visitor])
   subgraph Vercel
-    web[Command Center web app<br/>static Expo export]
+    web[Ledgerly web app<br/>static Expo export]
     site[Portfolio site<br/>server-rendered function]
   end
   subgraph Supabase
@@ -200,7 +200,7 @@ flowchart LR
 
 ## 9. Deployment
 
-- **Web:** Vercel project `devabalan-command-center`, root `apps/command-center`, `vercel.json`
+- **Web:** Vercel project `ledgerly`, root `apps/command-center`, `vercel.json`
   (Expo export plus the portfolio build, the portfolio's render function `api/site.mjs`, rewrites,
   security headers per part). Settings: the two `EXPO_PUBLIC_` variables and `PORTFOLIO_HANDLE`.
 - **Database:** SQL migrations in `supabase/migrations`, run in order in the SQL editor.

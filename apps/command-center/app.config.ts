@@ -3,9 +3,9 @@ import type { ExpoConfig } from 'expo/config';
 // Only EXPO_PUBLIC_* variables may be read here or in app code; they are embedded in the
 // client bundle. Server secrets belong in Supabase Edge Function secrets, never here.
 const config: ExpoConfig = {
-  name: 'Devabalan',
-  slug: 'devabalan-command-center',
-  scheme: 'devabalan',
+  name: 'Ledgerly',
+  slug: 'ledgerly',
+  scheme: 'ledgerly',
   version: '1.0.0',
   orientation: 'default',
   icon: './assets/icon.png',

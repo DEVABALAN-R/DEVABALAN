@@ -1,6 +1,6 @@
 # Supabase setup
 
-The Command Center (`apps/command-center`) uses one hosted Supabase project for sign-in and data.
+Ledgerly (`apps/command-center`) uses one hosted Supabase project for sign-in and data.
 This page lists what is set up on the Supabase side and how to manage it. Connecting the app
 (the two `EXPO_PUBLIC_` variables on Vercel) is in
 [`apps/command-center/README.md` → Sign-in](apps/command-center/README.md#sign-in).
@@ -8,7 +8,7 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 > **History.** Migrations 0001–0004 (the old app's workspace, conflict-safe saves, mutual funds,
 > and auth hardening) have been applied and were removed from the repository with their rollback
 > scripts and SQL tests; they are in Git history at commit `224176d`. The old Vite app itself was
-> removed in October 2026. Migrations 0005–0010, which the Command Center depends on, are in
+> removed in October 2026. Migrations 0005–0010, which Ledgerly depends on, are in
 > `supabase/migrations/`. New database changes add new numbered files there.
 
 ## What is in the database
@@ -17,8 +17,8 @@ This page lists what is set up on the Supabase side and how to manage it. Connec
 | --------------------------------------------------- | ------------------- | --------------------------------------------------------------------------- |
 | Sign-up allowlist and its Before User Created hook  | 0004                | Every new account (only allowlisted emails can sign up)                     |
 | `profiles`, `user_preferences`, `audit_logs`        | 0004                | Created per account; `audit_logs` records changes by column name, no values |
-| Finance and notes tables                            | 0005                | The Command Center                                                          |
-| `load_ledger()` and `sync_ledger(jsonb)`            | 0006, replaced 0007 | The Command Center, to load and save (now including investments)            |
+| Finance and notes tables                            | 0005                | The Ledgerly                                                                |
+| `load_ledger()` and `sync_ledger(jsonb)`            | 0006, replaced 0007 | The Ledgerly, to load and save (now including investments)                  |
 | Mutual fund and stock tables                        | 0007                | Mutual funds and Stocks pages                                               |
 | `mf_funds.isin`, `sync_ledger` saving it            | 0009                | Matching tradebook imports to your funds                                    |
 | Market data tables and their functions              | 0007                | Prices, written only by the `market-refresh` Edge Function                  |
@@ -48,9 +48,9 @@ reachable from the browser.
    second layer.
 3. **Two-step sign-in available:** Authentication → Multi-Factor → TOTP enabled (on by default).
 4. **Redirect URLs:** Authentication → URL Configuration → add
-   `https://devabalan-command-center.vercel.app/reset-password` (and
+   `https://ledgerly.vercel.app/reset-password` (and
    `http://localhost:8081/reset-password` for local development). Set the Site URL to
-   `https://devabalan-command-center.vercel.app`.
+   `https://ledgerly.vercel.app`.
 5. **Keys:** the app uses only the **Project URL** and the **publishable** key. Never use the
    secret or service-role key anywhere in the app or its Vercel variables.
 6. **Prices (optional, recommended):** deploy the `market-refresh` Edge Function and its daily
@@ -109,12 +109,12 @@ The file ends with a commented rollback.
 
 ## Retiring the old app's data (migration 0008)
 
-The Command Center starts from scratch: the old app's data is not imported (owner's decision,
+The Ledgerly starts from scratch: the old app's data is not imported (owner's decision,
 October 2026). `202610100008_retire_old_app.sql` **permanently deletes** `user_workspaces` and
-`public_portfolios` with the functions that wrote them. Nothing in the Command Center reads them.
+`public_portfolios` with the functions that wrote them. Nothing in Ledgerly reads them.
 Take a backup first (Database → Backups) if you might want them again; there is no rollback.
 
-Your own data in the Command Center (entries, notes, funds, stocks) is not touched by it.
+Your own data in Ledgerly (entries, notes, funds, stocks) is not touched by it.
 
 ## Fund ISINs for imports (migration 0009)
 
@@ -307,9 +307,9 @@ the app. To stop: `select cron.unschedule('market-refresh-evening');` (and `-mor
 
 - `ALLOWED_ORIGINS` (function secret, optional): the web addresses allowed to call the function,
   comma-separated. An entry may hold one `*` for one part of a host name (letters, digits,
-  hyphens). Default: `https://devabalan-command-center.vercel.app`,
-  `https://devabalan-command-center-*-devabalan-r.vercel.app` (Vercel previews) and
-  `http://localhost:8081`. Add your own domain here if the app runs on one.
+  hyphens). Default: `https://ledgerly.vercel.app` and `http://localhost:8081`. Add your own
+  domain here if the app runs on one, and Vercel previews as
+  `https://ledgerly-*-<team>.vercel.app` (the team's address part from a preview URL).
 - "Automatic prices are not set up yet", or "The price function did not answer" while online:
   the function is not deployed (step 1), or the app's web address is not in `ALLOWED_ORIGINS`.
   "NAVs: not fetched yet" on the Funds page means no run has finished yet.

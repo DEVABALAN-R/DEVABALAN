@@ -18,16 +18,15 @@ function settings() {
     url: Deno.env.get("SUPABASE_URL") ?? "",
     key: serviceKey(),
     secret: Deno.env.get("MARKET_REFRESH_SECRET") ?? "",
-    // Vercel preview deployments of the project match the second entry ("*" is one label).
+    // Add Vercel preview deployments through the secret, e.g.
+    // "https://ledgerly-*-<team>.vercel.app" ("*" matches one label).
     origins: (
-      Deno.env.get("ALLOWED_ORIGINS") ??
-        "https://devabalan-command-center.vercel.app," +
-          "https://devabalan-command-center-*-devabalan-r.vercel.app,http://localhost:8081"
+      Deno.env.get("ALLOWED_ORIGINS") ?? "https://ledgerly.vercel.app,http://localhost:8081"
     ).split(",").map((origin) => origin.trim()).filter(Boolean),
   };
 }
 
-const USER_AGENT = "Mozilla/5.0 (compatible; DevabalanCommandCenter/1.0; personal portfolio)";
+const USER_AGENT = "Mozilla/5.0 (compatible; Ledgerly/1.0; StoicBytes)";
 const AMFI_URL = "https://www.amfiindia.com/spages/NAVAll.txt";
 const nseUrl = (ymd: string) =>
   `https://nsearchives.nseindia.com/content/cm/BhavCopy_NSE_CM_0_0_0_${ymd}_F_0000.csv.zip`;

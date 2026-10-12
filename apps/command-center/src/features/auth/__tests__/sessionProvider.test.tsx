@@ -7,6 +7,7 @@ import { useSession } from '../sessionStore';
 
 jest.mock('@/lib/data/supabaseClient', () => ({ isSupabaseConfigured: () => true }));
 jest.mock('@/lib/data/authRepository', () => ({
+  displayNameOf: jest.requireActual('@/lib/data/authRepository').displayNameOf,
   currentSession: jest.fn(),
   onAuthChange: jest.fn(),
   setAutoRefresh: jest.fn(),

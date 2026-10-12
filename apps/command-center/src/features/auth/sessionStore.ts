@@ -12,10 +12,12 @@ export type SessionStatus = 'loading' | 'preview' | 'signedOut' | 'needsCode' | 
 type SessionState = {
   status: SessionStatus;
   email: string | null;
+  /** The name the user gave in Settings (Supabase user metadata), or null. */
+  name: string | null;
   /** Opened from a password-reset link: the reset screen may set a new password. */
   recovery: boolean;
-  setSignedIn: (email: string | null) => void;
-  setNeedsCode: (email: string | null) => void;
+  setSignedIn: (email: string | null, name?: string | null) => void;
+  setNeedsCode: (email: string | null, name?: string | null) => void;
   setSignedOut: () => void;
   setPreview: () => void;
   setRecovery: (recovery: boolean) => void;
@@ -24,10 +26,11 @@ type SessionState = {
 export const useSession = create<SessionState>()((set) => ({
   status: 'loading',
   email: null,
+  name: null,
   recovery: false,
-  setSignedIn: (email) => set({ status: 'signedIn', email }),
-  setNeedsCode: (email) => set({ status: 'needsCode', email }),
-  setSignedOut: () => set({ status: 'signedOut', email: null, recovery: false }),
-  setPreview: () => set({ status: 'preview', email: null, recovery: false }),
+  setSignedIn: (email, name = null) => set({ status: 'signedIn', email, name }),
+  setNeedsCode: (email, name = null) => set({ status: 'needsCode', email, name }),
+  setSignedOut: () => set({ status: 'signedOut', email: null, name: null, recovery: false }),
+  setPreview: () => set({ status: 'preview', email: null, name: null, recovery: false }),
   setRecovery: (recovery) => set({ recovery }),
 }));

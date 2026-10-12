@@ -15,4 +15,5 @@ export const PREVIEW_STORE_LABEL = 'Preview · not saved';
 export const PREVIEW_STORE_DESCRIPTION =
   'Preview with sample data. Entries you add or change stay in this tab only and are lost when the page reloads.';
 
-export const previewProfile = { name: 'Devabalan', plan: 'Personal' } as const;
+/** The plan label under the user's name in the header. */
+export const PLAN_LABEL = 'Personal';

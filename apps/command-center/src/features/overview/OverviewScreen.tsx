@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Screen } from '@/components/layout/Screen';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { Text } from '@/components/ui';
-import { previewProfile } from '@/features/preview/notice';
+import { useDisplayName } from '@/features/auth/useDisplayName';
 import { SampleDataBadge } from '@/features/preview/SampleDataBadge';
 import { greeting } from '@/lib/formatting/greeting';
 import { useTheme } from '@/theme';
@@ -22,6 +22,7 @@ import { useOverviewData } from './useOverviewData';
 export function OverviewScreen() {
   const theme = useTheme();
   const data = useOverviewData();
+  const name = useDisplayName();
   // Phones: the header already greets; the date chip and description are dropped.
   const { isMobile } = useBreakpoint();
   const today = new Intl.DateTimeFormat('en-IN', {
@@ -34,7 +35,7 @@ export function OverviewScreen() {
     <Screen>
       <PageHeader
         size="hero"
-        title={`${greeting()}, ${previewProfile.name}`}
+        title={`${greeting()}, ${name}`}
         description="Your money at a glance: balances, cash flow, spending and investments."
         meta={<SampleDataBadge editable />}
         actions={

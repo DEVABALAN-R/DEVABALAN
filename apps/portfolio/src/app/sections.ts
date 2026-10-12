@@ -59,7 +59,7 @@ export function visibleSections(document: PortfolioDocument): SectionInfo[] {
   }));
 }
 
-/** "Devabalan R" → ["Devabalan", "R"]: the last word gets the serif accent. */
+/** "Ada Lovelace" → ["Ada", "Lovelace"]: the last word gets the serif accent. */
 export function splitName(name: string): [string, string] {
   const words = name.trim().split(/\s+/);
   if (words.length < 2) return [name.trim(), ''];

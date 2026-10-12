@@ -1,7 +1,8 @@
 import { View } from 'react-native';
 import { ChevronDown } from '@/components/icons';
 import { Avatar, Text } from '@/components/ui';
-import { previewProfile } from '@/features/preview/notice';
+import { useDisplayName } from '@/features/auth/useDisplayName';
+import { PLAN_LABEL } from '@/features/preview/notice';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { layout, useTheme } from '@/theme';
 import { BrandMark } from './BrandMark';
@@ -10,6 +11,7 @@ import { TopNav } from './TopNav';
 /** Floating header for tablet and desktop: brand, primary nav, actions, profile. */
 export function DesktopHeader() {
   const theme = useTheme();
+  const name = useDisplayName();
   const { isDesktop } = useBreakpoint();
   const pill = {
     height: 44,
@@ -55,13 +57,13 @@ export function DesktopHeader() {
               },
             ]}
           >
-            <Avatar name={previewProfile.name} size={40} />
+            <Avatar name={name} size={40} />
             <View>
               <Text variant="label" numberOfLines={1}>
-                {previewProfile.name}
+                {name}
               </Text>
               <Text variant="caption" color="textSecondary" numberOfLines={1}>
-                {previewProfile.plan}
+                {PLAN_LABEL}
               </Text>
             </View>
             <ChevronDown size={16} color={theme.colors.textSecondary} />
