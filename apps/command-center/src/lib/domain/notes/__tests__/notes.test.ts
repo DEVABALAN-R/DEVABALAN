@@ -1,7 +1,10 @@
 import {
   allLabels,
   checklistProgress,
+  checklistToggleProblem,
   clampNote,
+  matchLabel,
+  sameContent,
   isEmptyNote,
   toggleChecklist,
   visibleNotes,
@@ -91,5 +94,37 @@ describe('notes', () => {
     const clamped = clampNote(note({ title: 'x'.repeat(200), labels: ['A', ' A ', '', 'B'] }));
     expect(clamped.title).toHaveLength(120);
     expect(clamped.labels).toEqual(['A', 'B']);
+  });
+});
+
+describe('edge cases', () => {
+  it('drops blank checklist items when saving', () => {
+    const items = [
+      { id: 'a', text: 'Milk', done: false },
+      { id: 'b', text: '  ', done: false },
+    ];
+    expect(clampNote(note({ items })).items).toEqual([items[0]]);
+  });
+
+  it('refuses a switch that would lose content', () => {
+    expect(checklistToggleProblem({ body: 'a\n'.repeat(201), items: null })).toMatch(/200 items/);
+    expect(checklistToggleProblem({ body: 'a\nb', items: null })).toBeNull();
+    const long = Array.from({ length: 70 }, (_, i) => ({
+      id: `${i}`,
+      text: 'x'.repeat(300),
+      done: false,
+    }));
+    expect(checklistToggleProblem({ body: '', items: long })).toMatch(/20,000 characters/);
+  });
+
+  it('spells a label like the one already in use', () => {
+    expect(matchLabel(' finance ', ['Finance', 'Home'])).toBe('Finance');
+    expect(matchLabel('Travel', ['Finance'])).toBe('Travel');
+  });
+
+  it('notices whether anything changed', () => {
+    const a = note({ title: 'T', labels: ['x'] });
+    expect(sameContent(a, { ...a })).toBe(true);
+    expect(sameContent(a, { ...a, labels: ['y'] })).toBe(false);
   });
 });

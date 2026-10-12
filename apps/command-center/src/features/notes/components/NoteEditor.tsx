@@ -4,7 +4,15 @@ import { Archive, ArchiveRestore, ListChecks, Pin, PinOff, Trash2 } from '@/comp
 import { useToast } from '@/components/feedback';
 import { Sheet } from '@/components/overlays';
 import { Button, IconButton } from '@/components/ui';
-import { NOTE_LIMITS, toggleChecklist, type Note } from '@/lib/domain/notes';
+import {
+  allLabels,
+  checklistToggleProblem,
+  clampNote,
+  isEmptyNote,
+  NOTE_LIMITS,
+  toggleChecklist,
+  type Note,
+} from '@/lib/domain/notes';
 import { newId } from '@/lib/ids';
 import { fontFamily, useTheme } from '@/theme';
 import { useNotesStore, type NoteDraft } from '../state/notesStore';
@@ -33,7 +41,8 @@ const blank = (checklist: boolean, label: string | null | undefined): NoteDraft 
 
 /**
  * Edit a note, Keep style: title, text or checklist, colour, labels, pin, archive and
- * delete. Closing saves; a new note left empty is discarded.
+ * delete. Closing saves; a new note left empty is discarded, and a note emptied out is
+ * deleted (with Undo).
  */
 export function NoteEditor({ note, checklist = false, label, onClose }: NoteEditorProps) {
   const theme = useTheme();
@@ -41,10 +50,17 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
   const store = useNotesStore();
   const [draft, setDraft] = useState<NoteDraft>(note ?? blank(checklist, label));
   const style = useNoteStyle(draft.color);
+  const known = allLabels(store.notes);
   const change = (patch: Partial<NoteDraft>) => setDraft((current) => ({ ...current, ...patch }));
   const close = () => {
+    if (note && isEmptyNote(clampNote(draft))) return remove('Empty note deleted');
     store.saveNote(draft, note?.id);
     onClose();
+  };
+  const toggleList = () => {
+    const problem = checklistToggleProblem(draft);
+    if (problem) toast.show({ message: problem });
+    else setDraft((current) => toggleChecklist(current, newId));
   };
   const archive = () => {
     if (!note) return;
@@ -55,21 +71,21 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
       message: note.archived ? 'Note restored' : 'Note archived',
       action: {
         label: 'Undo',
-        onPress: () => store.patchNote(note.id, { archived: note.archived }),
+        onPress: () => store.patchNote(note.id, { archived: note.archived, pinned: draft.pinned }),
       },
     });
   };
-  const remove = () => {
+  function remove(message = 'Note deleted') {
     if (!note) return onClose();
     const removed = store.deleteNote(note.id);
     onClose();
     if (removed) {
       toast.show({
-        message: 'Note deleted',
+        message,
         action: { label: 'Undo', onPress: () => store.restoreNote(removed) },
       });
     }
-  };
+  }
   const input = {
     color: theme.colors.textPrimary,
     outlineWidth: 0,
@@ -93,7 +109,7 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
             icon={ListChecks}
             accessibilityLabel={draft.items ? 'Show as text' : 'Show as checklist'}
             selected={!!draft.items}
-            onPress={() => setDraft((current) => toggleChecklist(current, newId))}
+            onPress={toggleList}
           />
           {note ? (
             <IconButton
@@ -102,7 +118,7 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
               onPress={archive}
             />
           ) : null}
-          <IconButton icon={Trash2} accessibilityLabel="Delete note" onPress={remove} />
+          <IconButton icon={Trash2} accessibilityLabel="Delete note" onPress={() => remove()} />
           <View style={{ flex: 1 }} />
           <Button label="Done" onPress={close} />
         </View>
@@ -148,7 +164,11 @@ export function NoteEditor({ note, checklist = false, label, onClose }: NoteEdit
             }}
           />
         )}
-        <LabelEditor labels={draft.labels} onChange={(labels) => change({ labels })} />
+        <LabelEditor
+          labels={draft.labels}
+          known={known}
+          onChange={(labels) => change({ labels })}
+        />
       </View>
       <View style={{ marginTop: theme.space[3] }}>
         <ColorPicker value={draft.color} onChange={(color) => change({ color })} />

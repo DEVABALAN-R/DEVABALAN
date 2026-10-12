@@ -59,4 +59,35 @@ describe('NotesScreen', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
     expect(notes()[0].items?.map((item) => item.text)).toEqual(['Eggs', 'Bread']);
   });
+
+  it('keeps an untouched note in place and deletes one emptied out, with undo', async () => {
+    await renderWithProviders(<NotesScreen />);
+    const before = notes().find((note) => note.id === 'note-trip')!;
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    expect(notes().find((note) => note.id === 'note-trip')!.updatedAt).toBe(before.updatedAt);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.changeText(screen.getByLabelText('Title'), '');
+    await fireEvent.changeText(screen.getByLabelText('Note'), '');
+    await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.getByText('Empty note deleted')).toBeTruthy();
+    expect(notes().some((note) => note.id === 'note-trip')).toBe(false);
+    await fireEvent.press(screen.getByRole('button', { name: 'Undo' }));
+    expect(notes().find((note) => note.id === 'note-trip')).toEqual(before);
+  });
+
+  it('goes back to all notes when the chosen label is no longer used', async () => {
+    await renderWithProviders(<NotesScreen />);
+    await fireEvent.press(screen.getByRole('checkbox', { name: 'Travel' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Open note: Hometown trip' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Remove label Travel' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Done' }));
+    expect(
+      screen.getByRole('checkbox', { name: 'All notes' }).props.accessibilityState,
+    ).toMatchObject({
+      checked: true,
+    });
+    expect(screen.getByRole('button', { name: 'Open note: Groceries' })).toBeTruthy();
+  });
 });

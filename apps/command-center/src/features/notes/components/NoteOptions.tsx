@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { Check, X } from '@/components/icons';
 import { Text } from '@/components/ui';
-import { NOTE_LIMITS } from '@/lib/domain/notes';
+import { matchLabel, NOTE_LIMITS } from '@/lib/domain/notes';
 import { fontFamily, useTheme } from '@/theme';
 import { NOTE_COLORS, noteColors, type NoteColor } from '@/theme/noteColors';
 
@@ -53,16 +53,20 @@ export function ColorPicker({
 /** Labels on a note: remove with ×, add by typing and pressing Enter. */
 export function LabelEditor({
   labels,
+  known = [],
   onChange,
 }: {
   labels: string[];
+  /** Labels on other notes: a label typed in another case reuses their spelling. */
+  known?: string[];
   onChange: (labels: string[]) => void;
 }) {
   const theme = useTheme();
   const [draft, setDraft] = useState('');
+  const full = labels.length >= NOTE_LIMITS.labels;
   const add = () => {
-    const label = draft.trim().slice(0, NOTE_LIMITS.label);
-    if (!label || labels.length >= NOTE_LIMITS.labels) return;
+    const label = matchLabel(draft, known);
+    if (!label || full) return;
     if (!labels.some((item) => item.toLocaleLowerCase() === label.toLocaleLowerCase())) {
       onChange([...labels, label]);
     }
@@ -98,7 +102,8 @@ export function LabelEditor({
         onChangeText={setDraft}
         onSubmitEditing={add}
         blurOnSubmit={false}
-        placeholder="Add label"
+        placeholder={full ? `${NOTE_LIMITS.labels} labels at most` : 'Add label'}
+        editable={!full}
         placeholderTextColor={theme.colors.textSecondary}
         maxLength={NOTE_LIMITS.label}
         accessibilityLabel="Add a label"

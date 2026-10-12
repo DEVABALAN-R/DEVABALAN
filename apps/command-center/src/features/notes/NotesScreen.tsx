@@ -19,10 +19,12 @@ export function NotesScreen() {
   const theme = useTheme();
   const notes = useNotesStore((state) => state.notes);
   const [query, setQuery] = useState('');
-  const [label, setLabel] = useState<string | null>(null);
+  const [chosen, setLabel] = useState<string | null>(null);
   const [archived, setArchived] = useState(false);
   const [editing, setEditing] = useState<Editing>(null);
   const labels = useMemo(() => allLabels(notes), [notes]);
+  // A label whose last note was deleted or relabelled falls back to all notes.
+  const label = chosen && labels.includes(chosen) ? chosen : null;
   const view = useMemo(
     () => visibleNotes(notes, { query, label, archived }),
     [notes, query, label, archived],

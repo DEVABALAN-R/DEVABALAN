@@ -36,7 +36,7 @@ export const isEmptyNote = (note: Pick<Note, 'title' | 'body' | 'items'>) =>
   !note.title.trim() &&
   (note.items ? note.items.every((item) => !item.text.trim()) : !note.body.trim());
 
-/** Trims a note to the stored limits (titles, text, checklist and labels). */
+/** Trims a note to the stored limits (titles, text, checklist and labels); blank list items go. */
 export function clampNote<T extends Pick<Note, 'title' | 'body' | 'items' | 'labels'>>(note: T): T {
   return {
     ...note,
@@ -44,6 +44,7 @@ export function clampNote<T extends Pick<Note, 'title' | 'body' | 'items' | 'lab
     body: note.body.slice(0, NOTE_LIMITS.body),
     items: note.items
       ? note.items
+          .filter((item) => item.text.trim())
           .slice(0, NOTE_LIMITS.items)
           .map((item) => ({ ...item, text: item.text.slice(0, NOTE_LIMITS.itemText) }))
       : null,
@@ -51,6 +52,40 @@ export function clampNote<T extends Pick<Note, 'title' | 'body' | 'items' | 'lab
       .filter(Boolean)
       .slice(0, NOTE_LIMITS.labels),
   };
+}
+
+type Content = Pick<Note, 'title' | 'body' | 'items' | 'color' | 'pinned' | 'labels'>;
+
+/** Whether an edit changed anything (closing an untouched note must not move it to the top). */
+export const sameContent = (a: Content, b: Content) =>
+  a.title === b.title &&
+  a.body === b.body &&
+  a.color === b.color &&
+  a.pinned === b.pinned &&
+  JSON.stringify(a.items) === JSON.stringify(b.items) &&
+  JSON.stringify(a.labels) === JSON.stringify(b.labels);
+
+/**
+ * Why a note cannot switch between text and checklist without losing content, or null:
+ * a checklist holds 200 items, and a text note 20,000 characters.
+ */
+export function checklistToggleProblem(note: Pick<Note, 'body' | 'items'>): string | null {
+  if (note.items) {
+    const length = note.items.map((item) => item.text).join('\n').length;
+    return length > NOTE_LIMITS.body
+      ? `Too long for a text note (${NOTE_LIMITS.body.toLocaleString('en-IN')} characters at most).`
+      : null;
+  }
+  const lines = note.body.split('\n').filter((line) => line.trim()).length;
+  return lines > NOTE_LIMITS.items
+    ? `Too many lines for a checklist (${NOTE_LIMITS.items} items at most).`
+    : null;
+}
+
+/** A label typed in a note, spelled like the same label already in use (any case). */
+export function matchLabel(typed: string, known: string[]): string {
+  const label = typed.trim().slice(0, NOTE_LIMITS.label);
+  return known.find((item) => item.toLocaleLowerCase() === label.toLocaleLowerCase()) ?? label;
 }
 
 /** Text note ⇄ checklist, keeping the content: lines become items and back. */

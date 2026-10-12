@@ -1,11 +1,17 @@
 import { create } from 'zustand';
-import { clampNote, isEmptyNote, type ChecklistItem, type Note } from '@/lib/domain/notes';
+import {
+  clampNote,
+  isEmptyNote,
+  sameContent,
+  type ChecklistItem,
+  type Note,
+} from '@/lib/domain/notes';
 import { newId } from '@/lib/ids';
 import { seedNotes } from './seedNotes';
 
 /**
- * PREVIEW notes store (in memory, resets on reload), like the expense store. Each
- * action maps to a future `notes` repository call (Phase 3 adds the table with RLS).
+ * Notes in memory. Signed in, cloud sync loads them and saves every change to the `notes`
+ * table; in the preview they are sample notes that reset on reload.
  */
 export type NoteDraft = Pick<Note, 'title' | 'body' | 'items' | 'color' | 'pinned' | 'labels'>;
 
@@ -28,6 +34,8 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     const existing = id ? get().notes.find((note) => note.id === id) : undefined;
     const clean = clampNote(draft);
     if (!existing && isEmptyNote(clean)) return null;
+    // Closing an untouched note keeps its place (notes are ordered by last edit).
+    if (existing && sameContent(existing, clean)) return existing;
     const now = Date.now();
     const note: Note = {
       ...clean,

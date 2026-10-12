@@ -74,7 +74,10 @@ export function ChecklistEditor({ items, onChange }: ChecklistEditorProps) {
           onSubmitEditing={add}
           blurOnSubmit={false}
           returnKeyType="next"
-          placeholder="List item"
+          placeholder={
+            items.length >= NOTE_LIMITS.items ? `${NOTE_LIMITS.items} items at most` : 'List item'
+          }
+          editable={items.length < NOTE_LIMITS.items}
           placeholderTextColor={theme.colors.textSecondary}
           maxLength={NOTE_LIMITS.itemText}
           accessibilityLabel="New list item"
